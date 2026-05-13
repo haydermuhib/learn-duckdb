@@ -1,0 +1,340 @@
+/* ═══════════════════════════════════════════════════════════
+   learn-duckdb — Premium Dark Theme
+   Inspired by Tokyo Night + DuckDB brand yellow (#FEC62E)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Global ─── */
+Screen {
+    background: #1a1b26;
+    color: #c0caf5;
+}
+
+/* ─── Header ─── */
+Header {
+    background: #16161e;
+    color: #FEC62E;
+    dock: top;
+    height: 1;
+}
+
+/* ─── Footer ─── */
+Footer {
+    background: #16161e;
+    color: #565f89;
+}
+
+FooterKey {
+    color: #FEC62E;
+    background: #16161e;
+}
+
+/* ─── Main Layout ─── */
+#main-container {
+    layout: horizontal;
+    height: 1fr;
+}
+
+/* ─── Sidebar ─── */
+#sidebar {
+    width: 32;
+    min-width: 28;
+    max-width: 40;
+    background: #16161e;
+    border-right: thick #292e42;
+    padding: 0 1;
+}
+
+#sidebar-title {
+    text-style: bold;
+    color: #FEC62E;
+    padding: 1 0;
+    text-align: center;
+}
+
+#lecture-tree {
+    height: auto;
+    max-height: 50%;
+    padding: 0;
+    scrollbar-size: 1 1;
+}
+
+#lecture-tree > .tree--cursor {
+    background: #292e42;
+    color: #FEC62E;
+}
+
+#lecture-tree > .tree--highlight {
+    background: #292e42;
+}
+
+#schema-section {
+    height: 1fr;
+    padding: 1 0 0 0;
+    border-top: dashed #292e42;
+}
+
+#schema-title {
+    text-style: bold;
+    color: #7aa2f7;
+    padding: 0 0 1 0;
+}
+
+#schema-tree {
+    height: 1fr;
+    scrollbar-size: 1 1;
+}
+
+/* ─── Content Area ─── */
+#content-area {
+    width: 1fr;
+    layout: vertical;
+}
+
+/* ─── Task Panel ─── */
+#task-panel {
+    height: auto;
+    min-height: 5;
+    max-height: 12;
+    background: #1e2030;
+    border-bottom: solid #292e42;
+    padding: 1 2;
+}
+
+#task-header {
+    layout: horizontal;
+    height: auto;
+}
+
+#task-title {
+    width: 1fr;
+    text-style: bold;
+    color: #bb9af7;
+}
+
+#task-progress {
+    width: auto;
+    color: #565f89;
+}
+
+#task-instruction {
+    padding: 1 0 0 0;
+    color: #c0caf5;
+}
+
+#task-hint {
+    padding: 1 0 0 0;
+    color: #e0af68;
+    display: none;
+}
+
+/* ─── Editor Section ─── */
+#editor-section {
+    height: 1fr;
+    min-height: 6;
+    layout: vertical;
+}
+
+#editor-label {
+    height: 1;
+    padding: 0 1;
+    background: #292e42;
+    color: #7aa2f7;
+    text-style: bold;
+}
+
+#sql-editor {
+    height: 1fr;
+    min-height: 4;
+    border: none;
+}
+
+#run-bar {
+    height: 1;
+    layout: horizontal;
+    background: #292e42;
+    padding: 0 1;
+}
+
+#run-hint {
+    width: 1fr;
+    color: #565f89;
+}
+
+#mode-indicator {
+    width: auto;
+    color: #73daca;
+}
+
+/* ─── Results Panel ─── */
+#results-section {
+    height: 1fr;
+    min-height: 5;
+    layout: vertical;
+    border-top: solid #292e42;
+}
+
+#results-header {
+    height: 1;
+    layout: horizontal;
+    background: #292e42;
+    padding: 0 1;
+}
+
+#results-title {
+    width: 1fr;
+    color: #7aa2f7;
+    text-style: bold;
+}
+
+#results-stats {
+    width: auto;
+    color: #565f89;
+}
+
+#results-table {
+    height: 1fr;
+    scrollbar-size: 1 1;
+}
+
+DataTable {
+    height: 1fr;
+    scrollbar-size: 1 1;
+}
+
+DataTable > .datatable--cursor {
+    background: #292e42;
+    color: #c0caf5;
+}
+
+DataTable > .datatable--header {
+    background: #24283b;
+    color: #7aa2f7;
+    text-style: bold;
+}
+
+#feedback-bar {
+    height: auto;
+    min-height: 1;
+    max-height: 4;
+    padding: 0 1;
+}
+
+.feedback-pass {
+    color: #9ece6a;
+    text-style: bold;
+}
+
+.feedback-fail {
+    color: #f7768e;
+}
+
+.feedback-error {
+    color: #e0af68;
+}
+
+.feedback-idle {
+    color: #565f89;
+}
+
+/* ─── Welcome / Splash ─── */
+#welcome-container {
+    align: center middle;
+    padding: 2 4;
+}
+
+#welcome-title {
+    text-align: center;
+    color: #FEC62E;
+    text-style: bold;
+    padding: 1 0;
+}
+
+#welcome-subtitle {
+    text-align: center;
+    color: #c0caf5;
+    padding: 0 0 2 0;
+}
+
+#welcome-instructions {
+    text-align: center;
+    color: #565f89;
+}
+
+/* ─── Sandbox Mode ─── */
+#sandbox-bar {
+    height: 1;
+    layout: horizontal;
+    background: #1e2030;
+    border-bottom: solid #292e42;
+    padding: 0 1;
+}
+
+#sandbox-db-name {
+    width: 1fr;
+    color: #73daca;
+    text-style: bold;
+}
+
+#sandbox-hint {
+    width: auto;
+    color: #565f89;
+}
+
+/* ─── Mode Tabs ─── */
+#mode-tabs {
+    height: 3;
+    background: #16161e;
+    dock: top;
+}
+
+TabbedContent {
+    height: 1fr;
+}
+
+TabPane {
+    padding: 0;
+}
+
+ContentSwitcher {
+    height: 1fr;
+}
+
+Tabs {
+    background: #16161e;
+    color: #565f89;
+}
+
+Tab {
+    color: #565f89;
+    padding: 0 2;
+}
+
+Tab.-active {
+    color: #FEC62E;
+    text-style: bold;
+}
+
+Tab:hover {
+    color: #c0caf5;
+}
+
+/* ─── Scrollbar Customization ─── */
+Scrollbar {
+    background: #16161e;
+    color: #292e42;
+}
+
+/* ─── Tree Widget ─── */
+Tree {
+    background: transparent;
+    scrollbar-size: 1 1;
+}
+
+Tree > .tree--cursor {
+    background: #292e42;
+    color: #FEC62E;
+}
+
+Tree > .tree--guides {
+    color: #292e42;
+}

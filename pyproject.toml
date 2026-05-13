@@ -1,0 +1,23 @@
+[project]
+name = "learn-duckdb"
+version = "0.1.0"
+description = "🦆 Interactive SQL learning in your terminal — powered by DuckDB"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.2.0",
+    "textual[syntax]>=3.0.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+learn-duckdb = "app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "app.py"]

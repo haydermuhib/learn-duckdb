@@ -1,0 +1,88 @@
+title: "SELECT Basics"
+description: "Learn to retrieve data from tables using SELECT — the foundation of every SQL query."
+difficulty: beginner
+
+tables:
+  - name: products
+    description: "E-commerce product catalog with names, prices, and stock levels"
+  - name: categories
+    description: "Product categories for organizing the catalog"
+
+tasks:
+  - id: 1
+    title: "Select Everything"
+    instruction: |
+      Select **all columns** from the `products` table.
+
+      This is the simplest query you can write — it retrieves every row and every column.
+    hint: "Use `SELECT * FROM table_name`"
+    expected_row_count: 10
+    order_matters: false
+
+  - id: 2
+    title: "Pick Your Columns"
+    instruction: |
+      Select only the `name` and `price` columns from the `products` table.
+
+      In practice, you rarely need every column — selecting only what you need is faster and cleaner.
+    hint: "List column names after SELECT, separated by commas"
+    expected_columns: ["name", "price"]
+    order_matters: false
+
+  - id: 3
+    title: "Alias Magic"
+    instruction: |
+      Select the `name` column as `product_name` and the `price` column as `cost` from `products`.
+
+      Column aliases let you rename output columns for clarity.
+    hint: "Use `AS` to rename: `SELECT col AS new_name`"
+    expected_columns: ["product_name", "cost"]
+    order_matters: false
+
+  - id: 4
+    title: "Calculated Columns"
+    instruction: |
+      Select `name`, `price`, and a new column called `price_with_tax` that is the price multiplied by 1.15 (15% tax).
+
+      DuckDB lets you do math directly in SELECT.
+    hint: "Use arithmetic: `price * 1.15 AS price_with_tax`"
+    expected_columns: ["name", "price", "price_with_tax"]
+    order_matters: false
+
+  - id: 5
+    title: "Distinct Values"
+    instruction: |
+      Find all **unique** `category_id` values in the `products` table.
+
+      DISTINCT eliminates duplicate rows from your results.
+    hint: "Use `SELECT DISTINCT column_name FROM ...`"
+    expected_columns: ["category_id"]
+    order_matters: false
+
+  - id: 6
+    title: "Count the Rows"
+    instruction: |
+      Count the **total number** of products in the `products` table. Name the result `total_products`.
+    hint: "Use `COUNT(*)` with an alias"
+    expected_columns: ["total_products"]
+    expected_row_count: 1
+    order_matters: false
+
+  - id: 7
+    title: "Explore Categories"
+    instruction: |
+      Select all columns from the `categories` table.
+    hint: "Same pattern as Task 1, different table!"
+    order_matters: false
+
+  - id: 8
+    title: "String Concatenation"
+    instruction: |
+      Create a column called `label` that combines the product `name` and `price` in the format: `'Widget — $9.99'`.
+
+      Select only the `label` column.
+
+      **DuckDB tip**: Use the `||` operator or the `concat()` function for string joining, and `printf('$%.2f', price)` to format the price.
+    hint: "Try: `name || ' — ' || printf('$%.2f', price) AS label`"
+    expected_columns: ["label"]
+    order_matters: false

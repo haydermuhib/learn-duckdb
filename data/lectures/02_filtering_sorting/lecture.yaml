@@ -1,0 +1,77 @@
+title: "Filtering & Sorting"
+description: "Master WHERE clauses, comparison operators, ORDER BY, and LIMIT to slice through data."
+difficulty: beginner
+
+tables:
+  - name: employees
+    description: "Company employee records with salaries and departments"
+  - name: departments
+    description: "Department lookup table"
+
+tasks:
+  - id: 1
+    title: "Filter by Equality"
+    instruction: |
+      Select all employees from the `employees` table who work in department_id `2`.
+    hint: "Use `WHERE department_id = 2`"
+    order_matters: false
+
+  - id: 2
+    title: "Greater Than"
+    instruction: |
+      Find all employees with a `salary` greater than 70000. Select all columns.
+    hint: "Use `WHERE salary > 70000`"
+    order_matters: false
+
+  - id: 3
+    title: "Multiple Conditions"
+    instruction: |
+      Find employees who are in department_id `1` AND have a salary above 60000. Select `name` and `salary`.
+    hint: "Combine conditions with `AND`"
+    expected_columns: ["name", "salary"]
+    order_matters: false
+
+  - id: 4
+    title: "OR Conditions"
+    instruction: |
+      Find employees who are either in department_id `1` OR department_id `3`. Select `name` and `department_id`.
+    hint: "Use `OR` or `IN (1, 3)`"
+    expected_columns: ["name", "department_id"]
+    order_matters: false
+
+  - id: 5
+    title: "Pattern Matching"
+    instruction: |
+      Find all employees whose `name` starts with the letter 'A'. Select `name` and `email`.
+
+      **DuckDB tip**: LIKE and ILIKE both work. ILIKE is case-insensitive.
+    hint: "Use `WHERE name LIKE 'A%'` or `WHERE name ILIKE 'a%'`"
+    expected_columns: ["name", "email"]
+    order_matters: false
+
+  - id: 6
+    title: "Sort Ascending"
+    instruction: |
+      Select `name` and `salary` from employees, sorted by `salary` from lowest to highest.
+    hint: "Use `ORDER BY salary ASC` (ASC is the default)"
+    expected_columns: ["name", "salary"]
+    order_matters: true
+
+  - id: 7
+    title: "Sort Descending + Limit"
+    instruction: |
+      Find the **top 3 highest-paid** employees. Select `name` and `salary`, sorted by salary descending.
+    hint: "Use `ORDER BY salary DESC LIMIT 3`"
+    expected_columns: ["name", "salary"]
+    expected_row_count: 3
+    order_matters: true
+
+  - id: 8
+    title: "NULL Handling"
+    instruction: |
+      Find all employees who do NOT have an email address (email is NULL). Select `name`.
+
+      **DuckDB tip**: Use `IS NULL`, not `= NULL`. In SQL, NULL is not equal to anything, not even itself.
+    hint: "Use `WHERE email IS NULL`"
+    expected_columns: ["name"]
+    order_matters: false

@@ -295,14 +295,27 @@ class LearnDuckDBApp(App):
 
     def _prompt_new_db_name(self) -> None:
         """Ask user for a new database name via the built-in Input widget."""
-        # We'll use a simple approach: mount an input at the top of the content area
-        # and handle its submission
+        # Remove any existing input first (prevent duplicates)
+        try:
+            existing = self.query_one("#new-db-input")
+            existing.remove()
+        except Exception:
+            pass
+
         input_widget = Input(
-            placeholder="Enter database name (e.g. my_experiments)",
+            placeholder="Enter database name (e.g. my_experiments) — Esc to cancel",
             id="new-db-input",
         )
         self.query_one("#content-area").mount(input_widget, before=0)
         input_widget.focus()
+
+    def _dismiss_db_input(self) -> None:
+        """Remove the new-db input if it exists."""
+        try:
+            widget = self.query_one("#new-db-input")
+            widget.remove()
+        except Exception:
+            pass
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle new database name submission."""
@@ -321,6 +334,19 @@ class LearnDuckDBApp(App):
                 title="✅ New Database",
                 severity="information",
             )
+
+    def on_descendant_blur(self, event) -> None:
+        """Auto-dismiss the new-db input when it loses focus."""
+        try:
+            widget = event.widget
+            if hasattr(widget, "id") and widget.id == "new-db-input":
+                widget.remove()
+        except Exception:
+            pass
+
+    def key_escape(self) -> None:
+        """Dismiss the new-db input on Escape key."""
+        self._dismiss_db_input()
 
     # ─── Internal Logic ───
 

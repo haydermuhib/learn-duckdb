@@ -29,9 +29,9 @@ class LearnDuckDBApp(App):
     BINDINGS = [
         Binding("ctrl+j", "run_query", "Run Query", show=True),
         Binding("ctrl+h", "toggle_hint", "Toggle Hint", show=True),
-        Binding("ctrl+r", "reset_db", "Reset DB", show=True),
+        Binding("ctrl+r", "reset_lecture", "Reset Lecture", show=True),
         Binding("ctrl+n", "next_task", "Next Task", show=True),
-        Binding("ctrl+p", "prev_task", "Prev Task", show=True),
+        Binding("ctrl+b", "prev_task", "Prev Task", show=True),
         Binding("q", "quit", "Quit", show=True),
     ]
 
@@ -117,13 +117,41 @@ class LearnDuckDBApp(App):
         task_panel = self.query_one(TaskPanel)
         task_panel.toggle_hint()
 
-    def action_reset_db(self) -> None:
-        """Reset the current lecture database to its original state."""
-        if self._is_sandbox_mode:
+    def action_reset_lecture(self) -> None:
+        """Reset the current lecture — database tables AND progress."""
+        if self._is_sandbox_mode or not self._current_lecture:
             return
+
+        lecture = self._current_lecture
+
+        # Reset the in-memory database tables
         if self._lecture_db.is_connected:
             self._lecture_db.reset()
-            self.notify("Database reset to original state", title="Reset", severity="information")
+
+        # Clear saved progress for this lecture
+        self._progress.reset_lecture(lecture.id)
+
+        # Go back to task 1
+        self._current_task_index = 0
+        self._show_current_task()
+
+        # Update sidebar to show 0/N
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.update_completion(lecture.id, 0, len(lecture.tasks))
+
+        # Clear editor and results
+        editor = self.query_one(SQLEditor)
+        editor.clear()
+        editor.focus_editor()
+
+        results = self.query_one(ResultsPanel)
+        results.clear()
+
+        self.notify(
+            f"'{lecture.title}' reset — progress cleared, back to Task 1",
+            title="🔄 Reset",
+            severity="information",
+        )
 
     def action_next_task(self) -> None:
         """Advance to the next task in the current lecture."""

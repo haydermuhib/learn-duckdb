@@ -32,7 +32,7 @@ class SQLEditor(Vertical):
         )
         with Vertical(id="run-bar"):
             yield Static(
-                "  Ctrl+Enter → Run  │  Ctrl+H → Hint  │  Ctrl+R → Reset",
+                "  Ctrl+J → Run  │  Ctrl+H → Hint  │  Ctrl+R → Reset  │  Ctrl+B/N → Prev/Next",
                 id="run-hint",
             )
 

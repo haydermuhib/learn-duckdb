@@ -46,8 +46,8 @@ That's it. No `pip install`, no virtual environments to manage, no database to c
 | `Ctrl+J` | Run query |
 | `Ctrl+H` | Toggle hint |
 | `Ctrl+N` | Next task |
-| `Ctrl+P` | Previous task |
-| `Ctrl+R` | Reset database |
+| `Ctrl+B` | Previous task |
+| `Ctrl+R` | Reset lecture (clears progress + back to task 1) |
 | `Q` | Quit |
 
 ## How It Works

@@ -338,3 +338,17 @@ Tree > .tree--cursor {
 Tree > .tree--guides {
     color: #292e42;
 }
+
+/* ─── Input (New DB prompt) ─── */
+#new-db-input {
+    height: 3;
+    margin: 0 1;
+    background: #24283b;
+    color: #c0caf5;
+    border: tall #7aa2f7;
+}
+
+#new-db-input:focus {
+    border: tall #FEC62E;
+}
+

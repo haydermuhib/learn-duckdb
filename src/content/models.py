@@ -33,6 +33,11 @@ class ColumnInfo:
     name: str
     dtype: str
     nullable: bool = True
+    is_primary_key: bool = False
+    is_unique: bool = False
+    is_foreign_key: bool = False
+    fk_references: str = ""  # e.g. "departments(id)"
+    default_value: str | None = None
 
 
 @dataclass

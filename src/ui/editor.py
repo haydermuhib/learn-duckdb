@@ -32,7 +32,7 @@ class SQLEditor(Vertical):
         )
         with Vertical(id="run-bar"):
             yield Static(
-                "  Ctrl+J → Run  │  Ctrl+H → Hint  │  Ctrl+R → Reset  │  Ctrl+B/N → Prev/Next",
+                "  ^J Run │ ^H Hint │ ^R Reset │ ^B/N Prev/Next │ ^L Clear │ ^E Run Selection",
                 id="run-hint",
             )
 
@@ -43,6 +43,17 @@ class SQLEditor(Vertical):
     @property
     def current_sql(self) -> str:
         return self.text_area.text
+
+    @property
+    def selected_sql(self) -> str:
+        """Return selected text, or empty string if nothing is selected."""
+        return self.text_area.selected_text
+
+    @property
+    def runnable_sql(self) -> str:
+        """Return selected text if any, otherwise full editor text."""
+        sel = self.selected_sql
+        return sel if sel else self.current_sql
 
     def set_text(self, text: str) -> None:
         """Set the editor content."""

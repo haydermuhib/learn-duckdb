@@ -5,7 +5,7 @@ from __future__ import annotations
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Footer, Header
+from textual.widgets import Footer, Header, Input
 
 from src.content.loader import LectureLoader
 from src.content.models import Lecture, Task, ValidationStatus
@@ -14,7 +14,13 @@ from src.engine.progress import ProgressTracker
 from src.engine.validator import QueryValidator
 from src.ui.editor import QuerySubmitted, SQLEditor
 from src.ui.results import ResultsPanel
-from src.ui.sidebar import LectureSelected, LectureSidebar, SandboxSelected
+from src.ui.sidebar import (
+    LectureSelected,
+    LectureSidebar,
+    NewDatabaseRequested,
+    SandboxDatabaseSelected,
+    SandboxSelected,
+)
 from src.ui.task_panel import TaskPanel
 
 
@@ -27,11 +33,13 @@ class LearnDuckDBApp(App):
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
-        Binding("ctrl+j", "run_query", "Run Query", show=True),
-        Binding("ctrl+h", "toggle_hint", "Toggle Hint", show=True),
-        Binding("ctrl+r", "reset_lecture", "Reset Lecture", show=True),
-        Binding("ctrl+n", "next_task", "Next Task", show=True),
-        Binding("ctrl+b", "prev_task", "Prev Task", show=True),
+        Binding("ctrl+j", "run_query", "Run All", show=True),
+        Binding("ctrl+e", "run_selection", "Run Selection", show=True),
+        Binding("ctrl+h", "toggle_hint", "Hint", show=True),
+        Binding("ctrl+r", "reset", "Reset", show=True),
+        Binding("ctrl+n", "next_task", "Next", show=True),
+        Binding("ctrl+b", "prev_task", "Prev", show=True),
+        Binding("ctrl+l", "clear_editor", "Clear Editor", show=True),
         Binding("q", "quit", "Quit", show=True),
     ]
 
@@ -62,10 +70,8 @@ class LearnDuckDBApp(App):
     def on_mount(self) -> None:
         """Initialize the app on mount."""
         self._load_sidebar()
-        # Show welcome
         task_panel = self.query_one(TaskPanel)
         task_panel.set_welcome()
-        # Focus the editor
         editor = self.query_one(SQLEditor)
         editor.focus_editor()
 
@@ -82,76 +88,64 @@ class LearnDuckDBApp(App):
         self._current_lecture = None
         self._solutions = {}
 
-        # Connect sandbox DB
         self._sandbox_db.connect()
+        self._refresh_sandbox_ui()
 
-        # Update UI
-        task_panel = self.query_one(TaskPanel)
-        task_panel.set_sandbox_mode()
+    def on_sandbox_database_selected(self, event: SandboxDatabaseSelected) -> None:
+        """Switch to a specific sandbox database."""
+        self._is_sandbox_mode = True
+        self._current_lecture = None
+        self._solutions = {}
 
-        results = self.query_one(ResultsPanel)
-        results.clear()
+        self._sandbox_db.switch_database(event.db_path)
+        self._refresh_sandbox_ui()
+        self.notify(
+            f"Switched to '{event.db_path.stem}'",
+            title="💾 Database",
+            severity="information",
+        )
 
-        editor = self.query_one(SQLEditor)
-        editor.clear()
-        editor.focus_editor()
+    def on_new_database_requested(self, event: NewDatabaseRequested) -> None:
+        """Prompt user for a new database name."""
+        self._is_sandbox_mode = True
+        self._current_lecture = None
+        self._solutions = {}
 
-        # Show sandbox schema
-        sidebar = self.query_one(LectureSidebar)
-        sidebar.set_schema(self._sandbox_db.get_table_schemas())
+        # Use a simple input prompt via push_screen
+        self._prompt_new_db_name()
 
     # ─── Key Binding Actions ───
 
     def action_run_query(self) -> None:
-        """Execute the current SQL query."""
+        """Execute the full editor content."""
         editor = self.query_one(SQLEditor)
         sql = editor.current_sql
+        self._execute_sql(sql)
 
-        if self._is_sandbox_mode:
-            self._run_sandbox_query(sql)
-        else:
-            self._run_lecture_query(sql)
+    def action_run_selection(self) -> None:
+        """Execute only the selected text. Falls back to full text if nothing is selected."""
+        editor = self.query_one(SQLEditor)
+        sql = editor.runnable_sql
+        self._execute_sql(sql)
 
     def action_toggle_hint(self) -> None:
         """Show or hide the hint for the current task."""
         task_panel = self.query_one(TaskPanel)
         task_panel.toggle_hint()
 
-    def action_reset_lecture(self) -> None:
-        """Reset the current lecture — database tables AND progress."""
-        if self._is_sandbox_mode or not self._current_lecture:
-            return
+    def action_reset(self) -> None:
+        """Context-aware reset: lecture mode resets progress, sandbox mode drops all tables."""
+        if self._is_sandbox_mode:
+            self._reset_sandbox()
+        elif self._current_lecture:
+            self._reset_lecture()
 
-        lecture = self._current_lecture
-
-        # Reset the in-memory database tables
-        if self._lecture_db.is_connected:
-            self._lecture_db.reset()
-
-        # Clear saved progress for this lecture
-        self._progress.reset_lecture(lecture.id)
-
-        # Go back to task 1
-        self._current_task_index = 0
-        self._show_current_task()
-
-        # Update sidebar to show 0/N
-        sidebar = self.query_one(LectureSidebar)
-        sidebar.update_completion(lecture.id, 0, len(lecture.tasks))
-
-        # Clear editor and results
+    def action_clear_editor(self) -> None:
+        """Clear only the SQL editor, nothing else."""
         editor = self.query_one(SQLEditor)
         editor.clear()
         editor.focus_editor()
-
-        results = self.query_one(ResultsPanel)
-        results.clear()
-
-        self.notify(
-            f"'{lecture.title}' reset — progress cleared, back to Task 1",
-            title="🔄 Reset",
-            severity="information",
-        )
+        self.notify("Editor cleared", severity="information")
 
     def action_next_task(self) -> None:
         """Advance to the next task in the current lecture."""
@@ -180,6 +174,154 @@ class LearnDuckDBApp(App):
             results = self.query_one(ResultsPanel)
             results.clear()
 
+    # ─── Execution ───
+
+    def _execute_sql(self, sql: str) -> None:
+        """Route SQL execution based on current mode."""
+        if self._is_sandbox_mode:
+            self._run_sandbox_query(sql)
+        else:
+            self._run_lecture_query(sql)
+
+    def _run_lecture_query(self, sql: str) -> None:
+        """Execute and validate a user query against the current task."""
+        if not self._current_lecture:
+            self.notify("Select a lecture first", severity="warning")
+            return
+
+        tasks = self._current_lecture.tasks
+        if self._current_task_index >= len(tasks):
+            self.notify("All tasks complete! Select another lecture.", severity="information")
+            return
+
+        task = tasks[self._current_task_index]
+        results_panel = self.query_one(ResultsPanel)
+
+        user_result = self._lecture_db.execute_user_query(sql)
+        results_panel.show_results(user_result)
+
+        if user_result.is_error:
+            return
+
+        solution_sql = self._solutions.get(task.id)
+        if solution_sql:
+            solution_result = self._lecture_db.execute_solution(solution_sql)
+            validation = self._validator.validate(user_result, solution_result, task)
+            results_panel.show_validation(validation)
+
+            if validation.status == ValidationStatus.PASS:
+                self._on_task_passed(task)
+        else:
+            self.notify("No solution found for this task", severity="warning")
+
+    def _run_sandbox_query(self, sql: str) -> None:
+        """Execute a query in sandbox mode (no validation)."""
+        result = self._sandbox_db.execute(sql)
+        results_panel = self.query_one(ResultsPanel)
+        results_panel.show_results(result)
+        results_panel.show_sandbox_result(result)
+
+        # Refresh schema in case tables were created/dropped
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.set_schema(self._sandbox_db.get_table_schemas())
+
+    # ─── Reset Logic ───
+
+    def _reset_lecture(self) -> None:
+        """Reset the current lecture — database tables AND progress."""
+        lecture = self._current_lecture
+        if not lecture:
+            return
+
+        if self._lecture_db.is_connected:
+            self._lecture_db.reset()
+
+        self._progress.reset_lecture(lecture.id)
+        self._current_task_index = 0
+        self._show_current_task()
+
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.update_completion(lecture.id, 0, len(lecture.tasks))
+
+        editor = self.query_one(SQLEditor)
+        editor.clear()
+        editor.focus_editor()
+
+        results = self.query_one(ResultsPanel)
+        results.clear()
+
+        self.notify(
+            f"'{lecture.title}' reset — progress cleared, back to Task 1",
+            title="🔄 Reset",
+            severity="information",
+        )
+
+    def _reset_sandbox(self) -> None:
+        """Drop all tables in the current sandbox database."""
+        self._sandbox_db.reset_current()
+
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.set_schema(self._sandbox_db.get_table_schemas())
+
+        results = self.query_one(ResultsPanel)
+        results.clear()
+
+        self.notify(
+            f"Sandbox '{self._sandbox_db.db_name}' cleared — all tables dropped",
+            title="🔄 Reset",
+            severity="information",
+        )
+
+    # ─── Sandbox Database Management ───
+
+    def _refresh_sandbox_ui(self) -> None:
+        """Update all UI elements for sandbox mode."""
+        task_panel = self.query_one(TaskPanel)
+        task_panel.set_sandbox_mode(self._sandbox_db.db_name)
+
+        results = self.query_one(ResultsPanel)
+        results.clear()
+
+        editor = self.query_one(SQLEditor)
+        editor.clear()
+        editor.focus_editor()
+
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.set_schema(self._sandbox_db.get_table_schemas())
+
+        # Show available databases in sidebar
+        dbs = self._sandbox_db.list_sandbox_databases()
+        sidebar.set_sandbox_databases(dbs, active=self._sandbox_db.db_path)
+
+    def _prompt_new_db_name(self) -> None:
+        """Ask user for a new database name via the built-in Input widget."""
+        # We'll use a simple approach: mount an input at the top of the content area
+        # and handle its submission
+        input_widget = Input(
+            placeholder="Enter database name (e.g. my_experiments)",
+            id="new-db-input",
+        )
+        self.query_one("#content-area").mount(input_widget, before=0)
+        input_widget.focus()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Handle new database name submission."""
+        if event.input.id == "new-db-input":
+            name = event.value.strip()
+            event.input.remove()
+
+            if not name:
+                self.notify("Database name cannot be empty", severity="warning")
+                return
+
+            new_path = self._sandbox_db.create_new_database(name)
+            self._refresh_sandbox_ui()
+            self.notify(
+                f"Created '{new_path.stem}.duckdb'",
+                title="✅ New Database",
+                severity="information",
+            )
+
     # ─── Internal Logic ───
 
     def _load_sidebar(self) -> None:
@@ -206,7 +348,6 @@ class LearnDuckDBApp(App):
         self._current_lecture = lecture
         self._lecture_db.load_lecture(lecture, seed_sql)
 
-        # Find first uncompleted task
         completed = self._progress.get_progress(lecture_id)
         self._current_task_index = 0
         for i, task in enumerate(lecture.tasks):
@@ -214,14 +355,11 @@ class LearnDuckDBApp(App):
                 self._current_task_index = i
                 break
 
-        # Update sidebar schema
         sidebar = self.query_one(LectureSidebar)
         sidebar.set_schema(self._lecture_db.get_table_schemas())
 
-        # Show task
         self._show_current_task()
 
-        # Clear editor and results
         editor = self.query_one(SQLEditor)
         editor.clear()
         editor.focus_editor()
@@ -236,7 +374,6 @@ class LearnDuckDBApp(App):
 
         tasks = self._current_lecture.tasks
         if self._current_task_index >= len(tasks):
-            # All tasks done
             task_panel = self.query_one(TaskPanel)
             task_panel.set_completed_message(self._current_lecture.title)
             return
@@ -245,56 +382,18 @@ class LearnDuckDBApp(App):
         task_panel = self.query_one(TaskPanel)
         task_panel.set_task(task, self._current_task_index + 1, len(tasks))
 
-    def _run_lecture_query(self, sql: str) -> None:
-        """Execute and validate a user query against the current task."""
-        if not self._current_lecture:
-            self.notify("Select a lecture first", severity="warning")
-            return
-
-        tasks = self._current_lecture.tasks
-        if self._current_task_index >= len(tasks):
-            self.notify("All tasks complete! Select another lecture.", severity="information")
-            return
-
-        task = tasks[self._current_task_index]
-        results_panel = self.query_one(ResultsPanel)
-
-        # Run user query
-        user_result = self._lecture_db.execute_user_query(sql)
-        results_panel.show_results(user_result)
-
-        if user_result.is_error:
-            return
-
-        # Validate against solution
-        solution_sql = self._solutions.get(task.id)
-        if solution_sql:
-            solution_result = self._lecture_db.execute_solution(solution_sql)
-            validation = self._validator.validate(user_result, solution_result, task)
-            results_panel.show_validation(validation)
-
-            if validation.status == ValidationStatus.PASS:
-                self._on_task_passed(task)
-        else:
-            # No solution available — just show results
-            self.notify("No solution found for this task", severity="warning")
-
     def _on_task_passed(self, task: Task) -> None:
         """Handle successful task completion."""
         if not self._current_lecture:
             return
 
         lecture = self._current_lecture
-
-        # Save progress
         self._progress.mark_completed(lecture.id, task.id)
 
-        # Update sidebar
         done, total = self._progress.get_lecture_completion(lecture.id, len(lecture.tasks))
         sidebar = self.query_one(LectureSidebar)
         sidebar.update_completion(lecture.id, done, total)
 
-        # Auto-advance after a moment
         if self._current_task_index < len(lecture.tasks) - 1:
             self.notify(
                 f"Task {task.id} complete! Press Ctrl+N for next task.",
@@ -302,7 +401,6 @@ class LearnDuckDBApp(App):
                 severity="information",
             )
         else:
-            # Lecture complete!
             self.notify(
                 f"You've completed {lecture.title}!",
                 title="🏆 Lecture Complete!",
@@ -310,17 +408,6 @@ class LearnDuckDBApp(App):
             )
             task_panel = self.query_one(TaskPanel)
             task_panel.set_completed_message(lecture.title)
-
-    def _run_sandbox_query(self, sql: str) -> None:
-        """Execute a query in sandbox mode (no validation)."""
-        result = self._sandbox_db.execute(sql)
-        results_panel = self.query_one(ResultsPanel)
-        results_panel.show_results(result)
-        results_panel.show_sandbox_result(result)
-
-        # Refresh schema in case tables were created/dropped
-        sidebar = self.query_one(LectureSidebar)
-        sidebar.set_schema(self._sandbox_db.get_table_schemas())
 
     def on_unmount(self) -> None:
         """Cleanup on app exit."""

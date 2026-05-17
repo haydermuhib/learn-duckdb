@@ -43,11 +43,13 @@ That's it. No `pip install`, no virtual environments to manage, no database to c
 
 | Key | Action |
 |-----|--------|
-| `Ctrl+J` | Run query |
+| `Ctrl+J` | Run full query |
+| `Ctrl+E` | Run selected text only |
 | `Ctrl+H` | Toggle hint |
 | `Ctrl+N` | Next task |
 | `Ctrl+B` | Previous task |
-| `Ctrl+R` | Reset lecture (clears progress + back to task 1) |
+| `Ctrl+R` | Reset (lecture: clears progress / playground: drops tables) |
+| `Ctrl+L` | Clear SQL editor |
 | `Q` | Quit |
 
 ## How It Works

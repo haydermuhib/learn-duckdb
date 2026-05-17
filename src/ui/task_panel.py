@@ -62,20 +62,20 @@ class TaskPanel(Vertical):
         hint.update("")
         hint.display = False
 
-    def set_sandbox_mode(self) -> None:
+    def set_sandbox_mode(self, db_name: str = "sandbox") -> None:
         """Show sandbox mode instructions."""
         title = self.query_one("#task-title", Static)
         progress = self.query_one("#task-progress", Static)
         instruction = self.query_one("#task-instruction", Static)
         hint = self.query_one("#task-hint", Static)
 
-        title.update("🏗️  Playground Mode")
+        title.update(f"🏗️  Playground — {db_name}.duckdb")
         progress.update("")
         instruction.update(
             "Free SQL sandbox — full access. "
             "Create tables, load data, experiment. "
             "Your work is saved to a .duckdb file.\n"
-            "Try: CREATE TABLE test (id INT, name VARCHAR);"
+            "Ctrl+R resets this database. Use the sidebar to create/switch databases."
         )
         hint.update("💡 DuckDB tip: Use read_csv_auto('file.csv') to load CSV files directly!")
         hint.display = True

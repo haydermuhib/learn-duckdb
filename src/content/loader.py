@@ -112,11 +112,13 @@ class LectureLoader:
                 # Save previous task
                 if current_task_id is not None and current_lines:
                     solutions[current_task_id] = "\n".join(current_lines).strip()
-                # Parse new task ID: "-- TASK 3" or "-- TASK 3 --"
+                # Parse new task ID: "-- TASK 3", "-- TASK 3 --", "-- TASK 3: Title"
                 parts = stripped.replace("--", "").strip().split()
                 if len(parts) >= 2:
                     try:
-                        current_task_id = int(parts[1])
+                        # Handle "TASK 3:" (colon after number)
+                        num_str = parts[1].rstrip(":")
+                        current_task_id = int(num_str)
                     except ValueError:
                         current_task_id = None
                 current_lines = []

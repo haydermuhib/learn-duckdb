@@ -1,34 +1,48 @@
 -- Seed data for Lecture 1: SELECT Basics
--- Creates a small e-commerce dataset to practice fundamental SELECT queries.
+-- Three tables to teach fundamental SELECT operations.
 
-CREATE TABLE categories (
-    id INTEGER PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    description VARCHAR
+CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY,
+    seniority VARCHAR NOT NULL
 );
 
-INSERT INTO categories VALUES
-    (1, 'Electronics', 'Gadgets, devices, and accessories'),
-    (2, 'Books', 'Physical and digital reading material'),
-    (3, 'Clothing', 'Apparel and fashion accessories'),
-    (4, 'Home & Garden', 'Furniture, decor, and outdoor items');
+INSERT INTO users VALUES
+    (652,  'senior'),
+    (9731, 'junior'),
+    (1462, 'junior'),
+    (7823, 'senior'),
+    (15243, 'senior');
 
-CREATE TABLE products (
+CREATE TABLE workers (
     id INTEGER PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    category_id INTEGER REFERENCES categories(id),
-    in_stock BOOLEAN DEFAULT true
+    firstname VARCHAR NOT NULL,
+    lastname VARCHAR NOT NULL,
+    age INTEGER NOT NULL,
+    exp_years DECIMAL(4,1) NOT NULL,
+    gender VARCHAR NOT NULL
 );
 
-INSERT INTO products VALUES
-    (1, 'Wireless Mouse', 29.99, 1, true),
-    (2, 'Mechanical Keyboard', 89.99, 1, true),
-    (3, 'USB-C Hub', 45.50, 1, false),
-    (4, 'Python Crash Course', 35.00, 2, true),
-    (5, 'SQL Pocket Guide', 19.99, 2, true),
-    (6, 'Data Science Handbook', 42.00, 2, false),
-    (7, 'Cotton T-Shirt', 15.99, 3, true),
-    (8, 'Denim Jacket', 79.99, 3, true),
-    (9, 'Desk Lamp', 34.50, 4, true),
-    (10, 'Plant Pot Set', 22.00, 4, true);
+INSERT INTO workers VALUES
+    (1, 'Ghully',  'Thuas',    29, 2.3, 'Female'),
+    (2, 'Bostal',  'Shkolky',  32, 0.2, 'Male'),
+    (3, 'Qaostu',  'Malop',    21, 4.0, 'Female'),
+    (4, 'Denton',  'Korash',   45, 12.5, 'Male'),
+    (5, 'Plivna',  'Jeqort',   27, 3.1, 'Female');
+
+CREATE TABLE objects (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    color VARCHAR,
+    weight DECIMAL(6,2),
+    category VARCHAR NOT NULL
+);
+
+INSERT INTO objects VALUES
+    (1, 'Hammer',     'red',    1.20, 'tool'),
+    (2, 'Notebook',   'blue',   0.35, 'stationery'),
+    (3, 'Lamp',       'white',  2.10, 'furniture'),
+    (4, 'Pencil',     'yellow', 0.05, 'stationery'),
+    (5, 'Wrench',     'silver', 0.80, 'tool'),
+    (6, 'Chair',      NULL,     8.50, 'furniture'),
+    (7, 'Tape',       'gray',   0.15, 'tool'),
+    (8, 'Eraser',     'pink',   0.03, 'stationery');

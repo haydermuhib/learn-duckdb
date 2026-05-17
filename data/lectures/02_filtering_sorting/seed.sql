@@ -1,34 +1,98 @@
--- Seed data for Lecture 2: Filtering & Sorting
--- Company employee dataset with varied salaries, departments, and some NULLs.
+-- Seed data for Lecture 2: Filtering & Conditions
 
-CREATE TABLE departments (
+CREATE TABLE sales (
+    id INTEGER PRIMARY KEY,
+    coin VARCHAR NOT NULL,
+    amount DECIMAL(10,2) NOT NULL
+);
+
+INSERT INTO sales VALUES
+    (1, 'AGK', 13.00),
+    (2, 'GOL', 21.00),
+    (3, 'KLA', 15.00),
+    (4, 'AGK', 18.00),
+    (5, 'GOL', 7.50),
+    (6, 'BTC', 42.00),
+    (7, 'AGK', 9.25);
+
+CREATE TABLE people (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    age INTEGER NOT NULL,
+    gender VARCHAR NOT NULL,
+    employed BOOLEAN NOT NULL
+);
+
+INSERT INTO people VALUES
+    (1, 'Joas',   13, 'male',   true),
+    (2, 'Holwa',  17, 'male',   false),
+    (3, 'Nohlas', 24, 'female', true),
+    (4, 'Polar',  23, 'male',   true),
+    (5, 'Loopa',  18, 'female', true),
+    (6, 'Mekra',  22, 'male',   false),
+    (7, 'Tinda',  26, 'female', false),
+    (8, 'Jorik',  20, 'male',   true),
+    (9, 'Dalla',  28, 'female', true);
+
+CREATE TABLE objects (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    color VARCHAR,
+    weight DECIMAL(6,2),
+    category VARCHAR NOT NULL,
+    colorful BOOLEAN NOT NULL DEFAULT false
+);
+
+INSERT INTO objects VALUES
+    (1, 'Hammer',     'red',    1.20, 'tool',       true),
+    (2, 'Notebook',   'blue',   0.35, 'stationery', true),
+    (3, 'Lamp',       'white',  2.10, 'furniture',  false),
+    (4, 'Pencil',     'yellow', 0.05, 'stationery', true),
+    (5, 'Wrench',     'silver', 0.80, 'tool',       false),
+    (6, 'Chair',      NULL,     8.50, 'furniture',  false),
+    (7, 'Tape',       'gray',   0.15, 'tool',       false),
+    (8, 'Eraser',     'pink',   0.03, 'stationery', true);
+
+CREATE TABLE countries (
+    id INTEGER PRIMARY KEY,
+    country VARCHAR NOT NULL,
+    population_m DECIMAL(8,2) NOT NULL,
+    continent VARCHAR NOT NULL
+);
+
+INSERT INTO countries VALUES
+    (1,  'Poland',     37.97, 'Europe'),
+    (2,  'Oman',       5.11,  'Asia'),
+    (3,  'Nicaragua',  6.85,  'North America'),
+    (4,  'Brazil',     215.3, 'South America'),
+    (5,  'Bhutan',     0.78,  'Asia'),
+    (6,  'Senegal',    17.2,  'Africa'),
+    (7,  'Belarus',    9.40,  'Europe'),
+    (8,  'Japan',      125.7, 'Asia'),
+    (9,  'Mexico',     128.9, 'North America'),
+    (10, 'Kenya',      54.0,  'Africa');
+
+CREATE TABLE numbers (
+    id INTEGER PRIMARY KEY,
+    value INTEGER NOT NULL
+);
+
+INSERT INTO numbers VALUES
+    (1, 2), (2, 4), (3, 5), (4, 7), (5, 8),
+    (6, 10), (7, 12), (8, 15), (9, 3), (10, 6);
+
+CREATE TABLE names (
     id INTEGER PRIMARY KEY,
     name VARCHAR NOT NULL
 );
 
-INSERT INTO departments VALUES
-    (1, 'Engineering'),
-    (2, 'Marketing'),
-    (3, 'Sales'),
-    (4, 'HR');
-
-CREATE TABLE employees (
-    id INTEGER PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    email VARCHAR,
-    salary DECIMAL(10, 2) NOT NULL,
-    department_id INTEGER REFERENCES departments(id),
-    hire_date DATE NOT NULL
-);
-
-INSERT INTO employees VALUES
-    (1, 'Alice Chen', 'alice@company.com', 95000.00, 1, '2020-03-15'),
-    (2, 'Bob Martinez', 'bob@company.com', 72000.00, 2, '2019-07-01'),
-    (3, 'Carol White', 'carol@company.com', 68000.00, 1, '2021-01-10'),
-    (4, 'David Kim', NULL, 55000.00, 3, '2022-06-20'),
-    (5, 'Emma Johnson', 'emma@company.com', 82000.00, 1, '2018-11-05'),
-    (6, 'Frank Brown', 'frank@company.com', 61000.00, 2, '2023-02-14'),
-    (7, 'Grace Lee', NULL, 77000.00, 3, '2020-09-30'),
-    (8, 'Henry Wilson', 'henry@company.com', 90000.00, 4, '2017-04-22'),
-    (9, 'Aria Patel', 'aria@company.com', 58000.00, 1, '2023-08-01'),
-    (10, 'Jack Taylor', 'jack@company.com', 64000.00, 3, '2021-12-15');
+INSERT INTO names VALUES
+    (1, 'kara'),
+    (2, 'kevin'),
+    (3, 'kafka'),
+    (4, 'kosta'),
+    (5, 'kiara'),
+    (6, 'kamila'),
+    (7, 'boris'),
+    (8, 'anna'),
+    (9, 'katya');

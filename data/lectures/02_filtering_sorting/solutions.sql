@@ -1,23 +1,23 @@
--- TASK 1
-SELECT * FROM employees WHERE department_id = 2;
+-- TASK 1: WHERE — Your First Filter
+SELECT * FROM sales WHERE coin = 'AGK';
 
--- TASK 2
-SELECT * FROM employees WHERE salary > 70000;
+-- TASK 2: AND — Multiple Conditions
+SELECT * FROM people WHERE age >= 20 AND age <= 28;
 
--- TASK 3
-SELECT name, salary FROM employees WHERE department_id = 1 AND salary > 60000;
+-- TASK 3: OR and NOT — Flexible Filters
+SELECT * FROM people WHERE (employed IS NOT TRUE OR (age >= 20 AND age <= 28)) AND age != 22;
 
--- TASK 4
-SELECT name, department_id FROM employees WHERE department_id IN (1, 3);
+-- TASK 4: Booleans — TRUE and FALSE
+SELECT * FROM objects WHERE colorful IS TRUE;
 
--- TASK 5
-SELECT name, email FROM employees WHERE name LIKE 'A%';
+-- TASK 5: IN — Match a List
+SELECT * FROM countries WHERE country IN ('Oman', 'Nicaragua', 'Bhutan', 'Senegal', 'Belarus');
 
--- TASK 6
-SELECT name, salary FROM employees ORDER BY salary ASC;
+-- TASK 6: BETWEEN — Range Queries
+SELECT * FROM numbers WHERE value BETWEEN 5 AND 10;
 
--- TASK 7
-SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 3;
+-- TASK 7: LIKE — Pattern Matching
+SELECT * FROM names WHERE name LIKE 'k%a' ORDER BY name DESC;
 
--- TASK 8
-SELECT name FROM employees WHERE email IS NULL;
+-- TASK 8: Combining Everything
+SELECT id, name FROM objects WHERE category IN ('tool', 'stationery') AND weight > 0.1 AND name LIKE '%e%' ORDER BY weight ASC;

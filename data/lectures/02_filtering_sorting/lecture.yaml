@@ -1,77 +1,209 @@
-title: "Filtering & Sorting"
-description: "Master WHERE clauses, comparison operators, ORDER BY, and LIMIT to slice through data."
+title: "Filtering & Conditions"
+description: "Use WHERE, AND, OR, NOT, IN, BETWEEN, and LIKE to filter exactly the data you need."
 difficulty: beginner
 
 tables:
-  - name: employees
-    description: "Company employee records with salaries and departments"
-  - name: departments
-    description: "Department lookup table"
+  - name: sales
+    description: "Coin trading records with amounts"
+  - name: people
+    description: "Person records with name, age, gender, and employment"
+  - name: objects
+    description: "Objects with color, weight, and boolean properties"
+  - name: countries
+    description: "Country records for IN keyword practice"
+  - name: numbers
+    description: "Simple number table for BETWEEN practice"
+  - name: names
+    description: "Names table for LIKE pattern matching"
 
 tasks:
   - id: 1
-    title: "Filter by Equality"
+    title: "WHERE — Your First Filter"
     instruction: |
-      Select all employees from the `employees` table who work in department_id `2`.
-    hint: "Use `WHERE department_id = 2`"
+      Often you don't want ALL rows — you want specific ones.
+      The WHERE clause lets you filter rows by a condition:
+
+        SELECT * FROM table_name
+        WHERE column = 'value'
+
+      Comparison operators you can use:
+        =    equals
+        !=   not equals (DuckDB also supports <>)
+        >    greater than
+        <    less than
+        >=   greater than or equal
+        <=   less than or equal
+
+      Example:
+        SELECT * FROM sales WHERE coin = 'AGK'
+        --> Returns only rows where coin is 'AGK'
+
+        SELECT * FROM sales WHERE amount <= 20
+        --> Returns rows where amount is 20 or less
+
+      YOUR TASK: Select all rows from 'sales' where the coin
+      is 'AGK'.
+    hint: "Write: SELECT * FROM sales WHERE coin = 'AGK'"
     order_matters: false
 
   - id: 2
-    title: "Greater Than"
+    title: "AND — Multiple Conditions"
     instruction: |
-      Find all employees with a `salary` greater than 70000. Select all columns.
-    hint: "Use `WHERE salary > 70000`"
+      You can combine conditions using AND. Both conditions
+      must be true for the row to be included:
+
+        SELECT * FROM people
+        WHERE gender = 'female' AND age < 20
+
+      This returns only people who are BOTH female AND under 20.
+
+      Think of AND as "I want ALL of these to be true."
+
+      Example result from our people table:
+        name   | age | gender
+        Loopa  | 18  | female
+      (Nohlas is female but age 24, so she's excluded)
+
+      YOUR TASK: Fetch all people between ages 20 and 28
+      (including 20 and 28). You need two conditions with AND.
+    hint: "Write: SELECT * FROM people WHERE age >= 20 AND age <= 28"
     order_matters: false
 
   - id: 3
-    title: "Multiple Conditions"
+    title: "OR and NOT — Flexible Filters"
     instruction: |
-      Find employees who are in department_id `1` AND have a salary above 60000. Select `name` and `salary`.
-    hint: "Combine conditions with `AND`"
-    expected_columns: ["name", "salary"]
+      OR means "at least one condition must be true":
+        SELECT * FROM people WHERE gender = 'female' OR age < 20
+        --> Returns anyone who is female, OR anyone under 20
+
+      NOT negates a condition:
+        SELECT * FROM people WHERE NOT gender = 'male'
+        --> Returns everyone who is NOT male
+
+      IMPORTANT — parentheses matter!
+        WHERE age > 20 AND age < 30 OR gender = 'female'
+        vs
+        WHERE age > 20 AND (age < 30 OR gender = 'female')
+      These return DIFFERENT results! The first applies AND
+      first (higher precedence), then OR. Use parentheses to
+      be explicit about what you mean.
+
+      YOUR TASK: Fetch all people who are either unemployed
+      (employed = false) OR between ages 20 and 28 (inclusive),
+      but exclude anyone who is exactly age 22.
+    hint: "Use OR to combine the unemployed condition with the age range, then AND NOT for age 22: WHERE (employed IS NOT TRUE OR (age >= 20 AND age <= 28)) AND age != 22"
     order_matters: false
 
   - id: 4
-    title: "OR Conditions"
+    title: "Booleans — TRUE and FALSE"
     instruction: |
-      Find employees who are either in department_id `1` OR department_id `3`. Select `name` and `department_id`.
-    hint: "Use `OR` or `IN (1, 3)`"
-    expected_columns: ["name", "department_id"]
+      Boolean columns store true/false values. In DuckDB, you
+      can filter them elegantly:
+
+        SELECT * FROM objects WHERE colorful IS TRUE
+        SELECT * FROM objects WHERE colorful IS NOT TRUE
+        SELECT * FROM objects WHERE colorful  -- same as IS TRUE
+
+      DuckDB has native BOOLEAN type (true/false), unlike some
+      databases that use 1/0. But both work:
+        WHERE colorful = true   -- works
+        WHERE colorful IS TRUE  -- also works (preferred)
+        WHERE colorful          -- shorthand, also works
+
+      YOUR TASK: Fetch all objects where 'colorful' is TRUE.
+      Use the IS TRUE syntax.
+    hint: "Write: SELECT * FROM objects WHERE colorful IS TRUE"
     order_matters: false
 
   - id: 5
-    title: "Pattern Matching"
+    title: "IN — Match a List"
     instruction: |
-      Find all employees whose `name` starts with the letter 'A'. Select `name` and `email`.
+      When you need to check if a value matches one of several
+      options, IN is much cleaner than chaining OR:
 
-      **DuckDB tip**: LIKE and ILIKE both work. ILIKE is case-insensitive.
-    hint: "Use `WHERE name LIKE 'A%'` or `WHERE name ILIKE 'a%'`"
-    expected_columns: ["name", "email"]
+      Instead of:
+        WHERE col = 'a' OR col = 'b' OR col = 'c'
+
+      Write:
+        WHERE col IN ('a', 'b', 'c')
+
+      IN works with numbers too:
+        WHERE id IN (1, 5, 10, 15)
+
+      YOUR TASK: Return all records from 'countries' where the
+      country is one of: Oman, Nicaragua, Bhutan, Senegal, Belarus.
+    hint: "Write: SELECT * FROM countries WHERE country IN ('Oman', 'Nicaragua', 'Bhutan', 'Senegal', 'Belarus')"
     order_matters: false
 
   - id: 6
-    title: "Sort Ascending"
+    title: "BETWEEN — Range Queries"
     instruction: |
-      Select `name` and `salary` from employees, sorted by `salary` from lowest to highest.
-    hint: "Use `ORDER BY salary ASC` (ASC is the default)"
-    expected_columns: ["name", "salary"]
-    order_matters: true
+      BETWEEN is a shorthand for range conditions (inclusive on
+      both ends):
+
+      Instead of:
+        WHERE col >= 5 AND col <= 10
+
+      Write:
+        WHERE col BETWEEN 5 AND 10
+
+      BETWEEN works with numbers, dates, and even strings!
+        WHERE order_date BETWEEN '2024-01-01' AND '2024-12-31'
+
+      YOUR TASK: Fetch all records from 'numbers' where the
+      value is between 5 and 10 (inclusive).
+    hint: "Write: SELECT * FROM numbers WHERE value BETWEEN 5 AND 10"
+    order_matters: false
 
   - id: 7
-    title: "Sort Descending + Limit"
+    title: "LIKE — Pattern Matching"
     instruction: |
-      Find the **top 3 highest-paid** employees. Select `name` and `salary`, sorted by salary descending.
-    hint: "Use `ORDER BY salary DESC LIMIT 3`"
-    expected_columns: ["name", "salary"]
-    expected_row_count: 3
+      LIKE lets you search for patterns in text using wildcards:
+
+        %  matches any number of characters (including zero)
+        _  matches exactly one character
+
+      Examples:
+        'k%'     starts with k
+        '%a'     ends with a
+        '%ing%'  contains 'ing'
+        '_a%'    second character is 'a'
+        'A___'   exactly 4 chars starting with A
+
+      DuckDB also supports ILIKE for case-insensitive matching:
+        WHERE name ILIKE 'k%a'  -- matches Kara, kendra, etc.
+
+      Use LIKE in a WHERE clause:
+        SELECT * FROM names WHERE name LIKE 'k%a'
+
+      YOUR TASK: Fetch all people from 'names' whose name starts
+      with 'k' and ends with 'a'. Order results by name DESC.
+    hint: "Write: SELECT * FROM names WHERE name LIKE 'k%a' ORDER BY name DESC"
+    expected_columns: ["id", "name"]
     order_matters: true
 
   - id: 8
-    title: "NULL Handling"
+    title: "Combining Everything"
     instruction: |
-      Find all employees who do NOT have an email address (email is NULL). Select `name`.
+      Let's put it all together! Real queries often combine
+      multiple filtering techniques:
 
-      **DuckDB tip**: Use `IS NULL`, not `= NULL`. In SQL, NULL is not equal to anything, not even itself.
-    hint: "Use `WHERE email IS NULL`"
-    expected_columns: ["name"]
-    order_matters: false
+        SELECT name, weight
+        FROM objects
+        WHERE category IN ('tool', 'stationery')
+          AND weight BETWEEN 0.1 AND 1.5
+          AND name LIKE '%e%'
+        ORDER BY weight DESC
+
+      This finds tools/stationery, weighing 0.1-1.5, with 'e'
+      in the name, sorted heaviest first.
+
+      YOUR TASK: From the 'objects' table, fetch the 'id' and
+      'name' of all objects that:
+        - Are in category 'tool' or 'stationery'
+        - Have weight greater than 0.1
+        - Have a name that contains the letter 'e'
+      Order by weight in ascending order.
+    hint: "Combine IN, >, and LIKE with AND, then ORDER BY weight ASC"
+    expected_columns: ["id", "name"]
+    order_matters: true

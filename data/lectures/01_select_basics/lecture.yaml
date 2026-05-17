@@ -3,86 +3,198 @@ description: "Learn to retrieve data from tables using SELECT — the foundation
 difficulty: beginner
 
 tables:
-  - name: products
-    description: "E-commerce product catalog with names, prices, and stock levels"
-  - name: categories
-    description: "Product categories for organizing the catalog"
+  - name: users
+    description: "User accounts with IDs and seniority levels"
+  - name: workers
+    description: "Employee records with names, ages, experience, and gender"
+  - name: objects
+    description: "A collection of everyday objects with properties"
 
 tasks:
   - id: 1
-    title: "Select Everything"
+    title: "Run Your First Query"
     instruction: |
-      Select **all columns** from the `products` table.
+      Welcome to DuckDB! Let's run your very first SQL query.
 
-      This is the simplest query you can write — it retrieves every row and every column.
-    hint: "Use `SELECT * FROM table_name`"
-    expected_row_count: 10
+      SQL (Structured Query Language) is the standard language for
+      talking to databases. DuckDB is a modern, fast, in-process
+      database engine — think of it like SQLite's analytical cousin.
+
+      The most basic SQL statement is SELECT. It tells the database
+      what data you want to retrieve.
+
+      To get everything from a table, you write:
+
+        SELECT * FROM table_name
+
+      The * means "all columns". FROM tells the database which table
+      to look in.
+
+      YOUR TASK: Select all columns from the 'users' table.
+    hint: "Write: SELECT * FROM users"
+    expected_row_count: 5
     order_matters: false
 
   - id: 2
-    title: "Pick Your Columns"
+    title: "Understanding Tables"
     instruction: |
-      Select only the `name` and `price` columns from the `products` table.
+      A database stores data in TABLES. Each table has:
+        - COLUMNS (also called fields) — the categories of data
+        - ROWS (also called records) — the actual data entries
 
-      In practice, you rarely need every column — selecting only what you need is faster and cleaner.
-    hint: "List column names after SELECT, separated by commas"
-    expected_columns: ["name", "price"]
+      For example, a 'workers' table might have columns like
+      firstname, lastname, age, exp_years, and gender.
+
+      When you write SELECT, you can pick specific columns instead
+      of using *. Just list them separated by commas:
+
+        SELECT firstname, lastname FROM workers
+
+      This is better practice than SELECT * because you only fetch
+      what you need — which is faster and clearer.
+
+      YOUR TASK: Select only the 'firstname' and 'age' columns
+      from the 'workers' table.
+    hint: "Write: SELECT firstname, age FROM workers"
+    expected_columns: ["firstname", "age"]
     order_matters: false
 
   - id: 3
-    title: "Alias Magic"
+    title: "Select All Columns"
     instruction: |
-      Select the `name` column as `product_name` and the `price` column as `cost` from `products`.
+      Sometimes you DO want every column. The asterisk * is a
+      shortcut that means "give me everything":
 
-      Column aliases let you rename output columns for clarity.
-    hint: "Use `AS` to rename: `SELECT col AS new_name`"
-    expected_columns: ["product_name", "cost"]
+        SELECT * FROM table_name
+
+      This fetches every column in the specified table. It's useful
+      when exploring a new table to see what data is available.
+
+      In DuckDB, you can also use DESCRIBE to see a table's
+      structure (column names and types) without fetching data:
+
+        DESCRIBE workers
+
+      But for this task, let's use SELECT *.
+
+      YOUR TASK: Retrieve ALL data from the 'objects' table.
+    hint: "Write: SELECT * FROM objects"
     order_matters: false
 
   - id: 4
-    title: "Calculated Columns"
+    title: "DISTINCT — Unique Values"
     instruction: |
-      Select `name`, `price`, and a new column called `price_with_tax` that is the price multiplied by 1.15 (15% tax).
+      Tables often contain duplicate values. If you want to see
+      only the unique values in a column, use DISTINCT:
 
-      DuckDB lets you do math directly in SELECT.
-    hint: "Use arithmetic: `price * 1.15 AS price_with_tax`"
-    expected_columns: ["name", "price", "price_with_tax"]
+        SELECT DISTINCT column_name FROM table_name
+
+      Example with a sales table:
+        country | city      | amount
+        Poland  | Warsaw    | 13
+        Germany | Berlin    | 24
+        Poland  | Katowice  | 56
+
+        SELECT DISTINCT country FROM sales
+        --> Returns: Poland, Germany (no duplicates!)
+
+      Without DISTINCT, you'd get Poland twice.
+
+      YOUR TASK: Fetch all unique 'seniority' values from the
+      'users' table.
+    hint: "Write: SELECT DISTINCT seniority FROM users"
+    expected_columns: ["seniority"]
     order_matters: false
 
   - id: 5
-    title: "Distinct Values"
+    title: "Column Aliases with AS"
     instruction: |
-      Find all **unique** `category_id` values in the `products` table.
+      Column names in your output can be renamed using AS. This
+      is called an "alias" — it changes how the column appears
+      in your results without changing the actual table.
 
-      DISTINCT eliminates duplicate rows from your results.
-    hint: "Use `SELECT DISTINCT column_name FROM ...`"
-    expected_columns: ["category_id"]
+        SELECT column1 AS new_name FROM table_name
+
+      Example:
+        SELECT firstname AS name, exp_years AS experience
+        FROM workers
+
+      This makes your results more readable, especially when
+      sharing data with others who may not know the original
+      column names.
+
+      YOUR TASK: Select 'firstname' as 'name' and 'exp_years'
+      as 'experience' from the 'workers' table.
+    hint: "Write: SELECT firstname AS name, exp_years AS experience FROM workers"
+    expected_columns: ["name", "experience"]
     order_matters: false
 
   - id: 6
-    title: "Count the Rows"
+    title: "Calculated Columns"
     instruction: |
-      Count the **total number** of products in the `products` table. Name the result `total_products`.
-    hint: "Use `COUNT(*)` with an alias"
-    expected_columns: ["total_products"]
-    expected_row_count: 1
+      SQL lets you do math directly in your SELECT statement.
+      You can add, subtract, multiply, or divide columns:
+
+        SELECT name, price, price * 1.15 AS price_with_tax
+        FROM products
+
+      DuckDB supports all standard math operators:
+        +  addition
+        -  subtraction
+        *  multiplication
+        /  division (integer division for integers)
+        %  modulo (remainder)
+
+      You can also combine calculations with aliases to give
+      the result a meaningful name.
+
+      YOUR TASK: Select 'firstname', 'age', and a new column
+      called 'age_in_months' that multiplies 'age' by 12 from
+      the 'workers' table.
+    hint: "Write: SELECT firstname, age, age * 12 AS age_in_months FROM workers"
+    expected_columns: ["firstname", "age", "age_in_months"]
     order_matters: false
 
   - id: 7
-    title: "Explore Categories"
+    title: "COUNT — How Many Rows?"
     instruction: |
-      Select all columns from the `categories` table.
-    hint: "Same pattern as Task 1, different table!"
+      To count how many rows are in a table (or match a condition),
+      use the COUNT() function:
+
+        SELECT COUNT(*) FROM table_name
+
+      COUNT(*) counts all rows. You can also count specific columns:
+        SELECT COUNT(column_name) FROM table_name
+      This counts only non-NULL values in that column.
+
+      Always give your count a meaningful alias:
+        SELECT COUNT(*) AS total_workers FROM workers
+
+      YOUR TASK: Count the total number of rows in the 'workers'
+      table. Name the result 'total_workers'.
+    hint: "Write: SELECT COUNT(*) AS total_workers FROM workers"
+    expected_columns: ["total_workers"]
+    expected_row_count: 1
     order_matters: false
 
   - id: 8
     title: "String Concatenation"
     instruction: |
-      Create a column called `label` that combines the product `name` and `price` in the format: `'Widget — $9.99'`.
+      DuckDB lets you combine text values using the || operator
+      or the concat() function:
 
-      Select only the `label` column.
+        SELECT firstname || ' ' || lastname AS full_name
+        FROM workers
 
-      **DuckDB tip**: Use the `||` operator or the `concat()` function for string joining, and `printf('$%.2f', price)` to format the price.
-    hint: "Try: `name || ' — ' || printf('$%.2f', price) AS label`"
-    expected_columns: ["label"]
+      This joins firstname, a space, and lastname into one string.
+
+      You can also format numbers nicely with printf():
+        printf('%.1f years', exp_years)
+        --> "2.3 years"
+
+      YOUR TASK: Create a column called 'profile' that combines
+      firstname, a dash, and gender in the format 'Alice - Female'.
+      Select only the 'profile' column from the 'workers' table.
+    hint: "Write: SELECT firstname || ' - ' || gender AS profile FROM workers"
+    expected_columns: ["profile"]
     order_matters: false

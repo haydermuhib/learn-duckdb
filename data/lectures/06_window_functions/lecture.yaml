@@ -1,0 +1,219 @@
+title: "Window Functions"
+description: "Master ROW_NUMBER, running totals, and OVER() — DuckDB's most powerful analytical tools."
+difficulty: advanced
+
+tables:
+  - name: factory
+    description: "Chocolate brands and available sugar (grams)"
+  - name: book
+    description: "History book — daily chocolate production per brand"
+  - name: tools
+    description: "Castle building tools with difficulty ratings"
+  - name: strength
+    description: "Builder strength points per hour"
+
+tasks:
+  - id: 1
+    title: "Window Functions — The Big Idea"
+    instruction: |
+      Window functions perform calculations ACROSS a set of rows
+      related to the current row — without collapsing rows like
+      GROUP BY does.
+
+      The key syntax is: function() OVER (...)
+
+      Think of it as "calculate something while keeping every row."
+
+      A running total example:
+        SELECT name, amount,
+               SUM(amount) OVER (ORDER BY name) AS running_total
+        FROM sales
+
+      This adds a running sum — every row shows the total of
+      all amounts up to and including that row.
+
+      YOUR TASK: From the 'tools' table, select name, difficulty,
+      and a running sum of difficulty ordered by difficulty ASC.
+      Call this column 'tot_until_now'.
+
+      Use:
+        SUM(difficulty) OVER (
+          ORDER BY difficulty ASC
+          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        )
+    hint: "Write: SELECT name, difficulty, SUM(difficulty) OVER (ORDER BY difficulty ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS tot_until_now FROM tools ORDER BY difficulty ASC"
+    expected_columns: ["name", "difficulty", "tot_until_now"]
+    order_matters: true
+
+  - id: 2
+    title: "ROW_NUMBER"
+    instruction: |
+      ROW_NUMBER() assigns a sequential number to each row based
+      on the ORDER BY inside OVER():
+
+        SELECT name,
+               ROW_NUMBER() OVER (ORDER BY name DESC) AS row_num
+        FROM factory
+
+      This numbers rows 1, 2, 3... when sorted by name descending.
+
+      KEY DIFFERENCE from regular ORDER BY:
+        - Regular ORDER BY just sorts the output
+        - ROW_NUMBER() OVER (...) ASSIGNS a number to each row
+          based on a sort order, but the output can be sorted
+          differently!
+
+      YOUR TASK: From the 'factory' table, select brand and
+      assign a row number sorted by brand name in DESCENDING order.
+      Call it 'row_num'. Keep the output sorted by brand DESC too.
+    hint: "Write: SELECT brand, ROW_NUMBER() OVER (ORDER BY brand DESC) AS row_num FROM factory ORDER BY brand DESC"
+    expected_columns: ["brand", "row_num"]
+    order_matters: true
+
+  - id: 3
+    title: "Filter by Row Number"
+    instruction: |
+      You can't use window functions directly in WHERE because
+      WHERE runs BEFORE window functions in SQL's execution order.
+
+      To filter by row number, you need a SUBQUERY or CTE:
+
+        SELECT * FROM (
+          SELECT name,
+                 ROW_NUMBER() OVER (ORDER BY name) AS rn
+          FROM table1
+        ) sub
+        WHERE rn % 2 = 0  -- even rows only
+
+      A subquery is a query inside parentheses that acts as a
+      temporary table. You give it an alias (sub) and can filter
+      its results.
+
+      DuckDB also supports QUALIFY — a special clause that filters
+      window function results directly (no subquery needed!):
+
+        SELECT name, ROW_NUMBER() OVER (ORDER BY name) AS rn
+        FROM table1
+        QUALIFY rn % 2 = 0
+
+      YOUR TASK: From the factory table, select only the EVEN-
+      numbered rows when brands are sorted by name DESC. Include
+      brand and row_num columns. Use whichever method you prefer.
+    hint: "Subquery method: SELECT brand, row_num FROM (SELECT brand, ROW_NUMBER() OVER (ORDER BY brand DESC) AS row_num FROM factory) WHERE row_num % 2 = 0"
+    expected_columns: ["brand", "row_num"]
+    order_matters: false
+
+  - id: 4
+    title: "PARTITION BY"
+    instruction: |
+      PARTITION BY divides rows into groups (partitions) and
+      applies the window function WITHIN each group separately.
+
+      Without PARTITION BY:
+        ROW_NUMBER() OVER (ORDER BY date) -- numbers ALL rows
+
+      With PARTITION BY:
+        ROW_NUMBER() OVER (
+          PARTITION BY brand ORDER BY date
+        ) -- numbers rows 1,2,3... separately for EACH brand
+
+      Think of PARTITION BY as "GROUP BY for window functions."
+
+      YOUR TASK: From the 'book' table, select brand,
+      production_date, chocolates, and a row number that counts
+      within each brand (partitioned by brand, ordered by
+      production_date). Call it 'production_num'.
+    hint: "Write: SELECT brand, production_date, chocolates, ROW_NUMBER() OVER (PARTITION BY brand ORDER BY production_date) AS production_num FROM book"
+    expected_columns: ["brand", "production_date", "chocolates", "production_num"]
+    order_matters: false
+
+  - id: 5
+    title: "Running Average"
+    instruction: |
+      Besides SUM, you can use AVG, MIN, MAX, COUNT as window
+      functions too:
+
+        SELECT name, amount,
+               AVG(amount) OVER (ORDER BY name) AS running_avg
+        FROM sales
+
+      The ROWS BETWEEN clause controls the window frame:
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+          --> All rows from the start up to now
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+          --> Last 3 rows (sliding window!)
+        ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+          --> Previous row + current + next row
+
+      YOUR TASK: From the 'tools' table, select name, difficulty,
+      and a running average of difficulty ordered by difficulty ASC.
+      Round to 1 decimal place. Call it 'avg_until_now'.
+    hint: "Write: SELECT name, difficulty, ROUND(AVG(difficulty) OVER (ORDER BY difficulty ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 1) AS avg_until_now FROM tools ORDER BY difficulty ASC"
+    expected_columns: ["name", "difficulty", "avg_until_now"]
+    order_matters: true
+
+  - id: 6
+    title: "Combining JOINs and Windows"
+    instruction: |
+      The real power comes from combining JOINs, aggregation, and
+      window functions. Let's bring together everything you've
+      learned.
+
+      Approach for complex queries:
+        1. JOIN tables to get the data you need
+        2. GROUP BY + aggregate to summarize
+        3. Add ROW_NUMBER() OVER (...) for ordering
+
+      YOUR TASK: For each brand, calculate:
+        - choc_num: FLOOR(sugar / 243)
+        - choc_avg: ROUND(AVG(chocolates), 2)
+        - row_num: ROW_NUMBER ordered by brand DESC
+
+      Join factory and book. Group by brand and sugar.
+      Sort the FINAL output by choc_avg DESC.
+      Columns: brand, choc_num, choc_avg, row_num
+    hint: "SELECT f.brand, FLOOR(f.sugar/243) AS choc_num, ROUND(AVG(b.chocolates),2) AS choc_avg, ROW_NUMBER() OVER (ORDER BY f.brand DESC) AS row_num FROM factory f JOIN book b ON f.brand=b.brand GROUP BY f.brand, f.sugar ORDER BY choc_avg DESC"
+    expected_columns: ["brand", "choc_num", "choc_avg", "row_num"]
+    order_matters: true
+
+  - id: 7
+    title: "Window + Subquery Filter"
+    instruction: |
+      Now let's combine EVERYTHING: JOINs, aggregation, window
+      functions, AND subquery filtering.
+
+      The analyst only wants EVEN-numbered rows (when sorted by
+      brand DESC). This requires a subquery because you can't
+      filter ROW_NUMBER() in WHERE directly.
+
+      YOUR TASK: Same as the previous task, but return ONLY the
+      even-numbered rows (row_num % 2 = 0).
+      Sort the final output by choc_avg DESC.
+      Columns: brand, choc_num, choc_avg, row_num
+    hint: "Wrap the previous query in a subquery: SELECT * FROM (...) WHERE row_num % 2 = 0 ORDER BY choc_avg DESC"
+    expected_columns: ["brand", "choc_num", "choc_avg", "row_num"]
+    order_matters: true
+
+  - id: 8
+    title: "Castle Tools — Cumulative Strength"
+    instruction: |
+      The builder has a 'tools' table (difficulty per tool) and
+      a 'strength' table (points available per hour).
+
+      Each hour, the builder uses as many tools as he can,
+      starting from the easiest. A tool's difficulty is how many
+      strength points it costs.
+
+      To solve this, think about it as: for each hour, the builder
+      uses tools in order of difficulty until his points run out.
+      The cumulative difficulty (tot_until_now from Task 1) tells
+      us which tools fit within the budget.
+
+      YOUR TASK: For each hour in the 'strength' table, return
+      the hour, points, and total difficulty of all tools that
+      the builder CAN use (where tot_until_now <= points).
+      Call this column 'used'.
+      Order by hour ASC.
+    hint: "Join strength with a subquery that calculates cumulative difficulty, then find the MAX cumulative difficulty that fits: SELECT s.hour, s.points, MAX(t.tot_until_now) AS used FROM strength s JOIN (SELECT name, difficulty, SUM(difficulty) OVER (ORDER BY difficulty ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS tot_until_now FROM tools) t ON t.tot_until_now <= s.points GROUP BY s.hour, s.points ORDER BY s.hour"
+    expected_columns: ["hour", "points", "used"]
+    order_matters: true

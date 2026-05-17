@@ -1,0 +1,199 @@
+title: "Sorting, Limits & NULLs"
+description: "Master ORDER BY, LIMIT, and NULL handling — essential tools for controlling your result sets."
+difficulty: beginner
+
+tables:
+  - name: competition
+    description: "Race competitors with age and speed data"
+  - name: temperature
+    description: "Temperature readings from various locations"
+  - name: inventory
+    description: "Items with potential NULL values in some fields"
+  - name: employees
+    description: "Factory employees with salary and marital status"
+  - name: items
+    description: "Weighted items for sorting practice"
+
+tasks:
+  - id: 1
+    title: "ORDER BY — Sort Your Results"
+    instruction: |
+      Results come back in no particular order by default. To sort
+      them, add ORDER BY at the end of your query:
+
+        SELECT * FROM competition
+        ORDER BY avg_speed
+
+      By default, ORDER BY sorts in ASCENDING order (smallest first).
+
+      You can specify the direction explicitly:
+        ORDER BY avg_speed ASC   -- smallest first (default)
+        ORDER BY avg_speed DESC  -- largest first
+
+      Example with a filter:
+        SELECT * FROM competition
+        WHERE age > 50
+        ORDER BY avg_speed
+        --> Returns: runners over 50, slowest to fastest
+
+      YOUR TASK: Select all columns from the 'items' table and
+      order them by 'weight' in descending order (heaviest first).
+    hint: "Write: SELECT * FROM items ORDER BY weight DESC"
+    order_matters: true
+
+  - id: 2
+    title: "Multi-Column Sorting"
+    instruction: |
+      You can sort by multiple columns! The second column breaks
+      ties in the first:
+
+        SELECT * FROM competition
+        ORDER BY age DESC, avg_speed DESC
+
+      This sorts by age (oldest first). When two runners have the
+      same age, it sorts those by speed (fastest first).
+
+      Example result:
+        runner_id | age | avg_speed
+        1         | 47  | 3.65
+        6         | 40  | 3.94    -- same age=40, higher speed first
+        8         | 40  | 3.43    -- same age=40, lower speed second
+
+      YOUR TASK: Select all from 'competition' where age is under
+      50. Order by age DESC first, then avg_speed DESC.
+    hint: "Write: SELECT * FROM competition WHERE age < 50 ORDER BY age DESC, avg_speed DESC"
+    order_matters: true
+
+  - id: 3
+    title: "LIMIT — Take Only What You Need"
+    instruction: |
+      When you have millions of rows, you often want just the
+      first few. LIMIT restricts how many rows are returned:
+
+        SELECT * FROM table_name LIMIT 10
+
+      LIMIT is always the LAST clause in your query:
+        SELECT ... FROM ... WHERE ... ORDER BY ... LIMIT n
+
+      Combined with ORDER BY, LIMIT is powerful:
+        SELECT * FROM competition
+        ORDER BY avg_speed DESC
+        LIMIT 3
+        --> Returns the 3 fastest runners
+
+      YOUR TASK: Fetch the 5 coldest places from the 'temperature'
+      table. You'll need to order by temperature ascending and
+      limit to 5.
+    hint: "Write: SELECT * FROM temperature ORDER BY temp ASC LIMIT 5"
+    order_matters: true
+
+  - id: 4
+    title: "NULL — The Unknown Value"
+    instruction: |
+      In the real world, data is often incomplete. A field with no
+      value is NULL. NULL is NOT the same as 0, '' (empty string),
+      or 'null' — it means "unknown" or "missing."
+
+      You CANNOT compare NULL with = or !=. These DON'T work:
+        WHERE color = NULL     -- WRONG! Always returns nothing
+        WHERE color != NULL    -- WRONG!
+
+      Instead, use IS NULL and IS NOT NULL:
+        SELECT * FROM inventory WHERE color IS NULL
+        --> Returns items with no color specified
+
+        SELECT * FROM inventory WHERE color IS NOT NULL
+        --> Returns items that DO have a color
+
+      DuckDB tip: Use COALESCE() to provide a default for NULLs:
+        SELECT COALESCE(color, 'unknown') AS color FROM inventory
+
+      YOUR TASK: Fetch all unique names from the 'inventory' table
+      that are NOT null. Select only the 'name' column and use
+      DISTINCT to remove duplicates.
+    hint: "Write: SELECT DISTINCT name FROM inventory WHERE name IS NOT NULL"
+    expected_columns: ["name"]
+    order_matters: false
+
+  - id: 5
+    title: "Sorting with NULLs"
+    instruction: |
+      When you sort data containing NULLs, DuckDB puts NULLs at
+      the end by default for ASC, and at the start for DESC.
+
+      You can control this with NULLS FIRST or NULLS LAST:
+        ORDER BY color ASC NULLS FIRST
+        ORDER BY color DESC NULLS LAST
+
+      This is a DuckDB/PostgreSQL feature not available in MySQL.
+
+      YOUR TASK: Select 'name' and 'color' from 'inventory'.
+      Order by color ascending, but put NULLs first.
+    hint: "Write: SELECT name, color FROM inventory ORDER BY color ASC NULLS FIRST"
+    expected_columns: ["name", "color"]
+    order_matters: true
+
+  - id: 6
+    title: "Modulo — The % Operator"
+    instruction: |
+      The modulo operator % returns the remainder of division:
+        10 % 3 = 1   (10 / 3 = 3 remainder 1)
+        8 % 2 = 0    (8 / 2 = 4 remainder 0 -- even number!)
+        7 % 2 = 1    (7 / 2 = 3 remainder 1 -- odd number!)
+
+      This is incredibly useful for filtering even/odd rows:
+        WHERE id % 2 = 0  -- even IDs only
+        WHERE id % 2 = 1  -- odd IDs only
+
+      You can also use it in calculated columns:
+        SELECT id, id % 3 AS remainder FROM items
+
+      YOUR TASK: Select all items from the 'items' table where the
+      id is an even number. Order by id ascending.
+    hint: "Write: SELECT * FROM items WHERE id % 2 = 0 ORDER BY id ASC"
+    order_matters: true
+
+  - id: 7
+    title: "Integer Division with FLOOR"
+    instruction: |
+      DuckDB performs integer division when both operands are
+      integers: 7 / 2 = 3 (not 3.5).
+
+      If you need to explicitly round down, use FLOOR():
+        FLOOR(7.8)  --> 7
+        FLOOR(3.2)  --> 3
+
+      This is useful when you need to calculate "how many complete
+      units can we make":
+        SELECT FLOOR(total_sugar / 243) AS chocolates
+
+      You can also use CEIL() to round up, and ROUND() to round
+      to a specific number of decimal places:
+        ROUND(3.14159, 2) --> 3.14
+
+      YOUR TASK: Each item in the 'items' table has a weight.
+      If we can carry 3.0 kg per bag, how many full bags does
+      each item need? Select 'name' and the number of full bags
+      as 'bags_needed' (use FLOOR(weight / 3.0)).
+      Order by bags_needed DESC.
+    hint: "Write: SELECT name, FLOOR(weight / 3.0) AS bags_needed FROM items ORDER BY bags_needed DESC"
+    expected_columns: ["name", "bags_needed"]
+    order_matters: true
+
+  - id: 8
+    title: "Recap Challenge — Salary Raise"
+    instruction: |
+      Time to combine everything you've learned!
+
+      You own a vehicle factory. You want to give a salary raise
+      to the 4 employees with the LOWEST salaries who are also
+      married (married = true), because they're struggling to
+      finance their families.
+
+      YOUR TASK: Return only the 'id' column of the 4 married
+      employees with the lowest salaries. Sort by salary ascending.
+
+      This requires: WHERE + ORDER BY + LIMIT
+    hint: "Write: SELECT id FROM employees WHERE married IS TRUE ORDER BY salary ASC LIMIT 4"
+    expected_columns: ["id"]
+    order_matters: true

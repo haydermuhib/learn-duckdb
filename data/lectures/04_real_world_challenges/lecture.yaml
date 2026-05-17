@@ -1,0 +1,194 @@
+title: "Real-World Challenges"
+description: "Apply your SQL skills to realistic scenarios — police reports, elections, factories, and date math."
+difficulty: intermediate
+
+tables:
+  - name: cellphones
+    description: "Cellphone catalog with model, price, and features"
+  - name: criminals
+    description: "Criminal records with severity scores and reports"
+  - name: ministers
+    description: "Government ministers with seats, status, and remarks"
+  - name: juices
+    description: "Bar inventory of juices with expiration years"
+  - name: factory
+    description: "Chocolate factory — brands and available sugar (grams)"
+  - name: kitchen
+    description: "Kitchen items with cutlery counts"
+
+tasks:
+  - id: 1
+    title: "Cellphone Search"
+    instruction: |
+      Let's practice combining LIKE, BETWEEN, and boolean filters
+      in one real query.
+
+      Remember the tools:
+        LIKE 'm_o%'  -- starts with m, 3rd char is o
+        BETWEEN 1000 AND 1500  -- price range (inclusive)
+        supports_5g IS TRUE  -- boolean check
+
+      You're searching a cellphone catalog for a specific model.
+
+      YOUR TASK: Fetch all cellphone models that:
+        - Model starts with 'm' and the 3rd letter is 'o'
+        - Price is between 1000 and 1500 (inclusive)
+        - Supports 5G
+
+      Return only the 'model' column, renamed to 'id'.
+    hint: "Write: SELECT model AS id FROM cellphones WHERE model LIKE 'm_o%' AND price BETWEEN 1000 AND 1500 AND supports_5g IS TRUE"
+    expected_columns: ["id"]
+    order_matters: false
+
+  - id: 2
+    title: "Criminal Arrest Report"
+    instruction: |
+      This challenge combines LIKE, IN, IS NULL, ORDER BY, and LIMIT.
+
+      New concept — combining LIKE with OR:
+        WHERE report LIKE '%g%' OR report LIKE '%b%'
+      This finds reports containing specific letters.
+
+      DuckDB also supports SIMILAR TO with regex-like patterns:
+        WHERE report SIMILAR TO '%[gGbB]%'
+      This checks for any of g, b, G, or B in one expression.
+
+      YOUR TASK: Fetch the top 5 severe criminal names (by
+      severe_score DESC) that are NOT in the police report.
+      A severe criminal matches ALL of:
+        - report is NULL, OR report contains g, b, G, or B
+        - map is one of: Caerleon, Dewsbury, Kirkwall, Findochty
+
+      Rename the name column to 'worst_criminals'.
+    hint: "Use: WHERE (report IS NULL OR report SIMILAR TO '%[gGbB]%') AND map IN ('Caerleon', 'Dewsbury', 'Kirkwall', 'Findochty') ORDER BY severe_score DESC LIMIT 5"
+    expected_columns: ["worst_criminals"]
+    order_matters: true
+
+  - id: 3
+    title: "Parliamentary Elections"
+    instruction: |
+      Every second minister (even-numbered seat) is considered
+      "safe." We need to find safe ministers who want to continue.
+
+      New concepts used here:
+        - Modulo: sit % 2 = 0 checks for even seats
+        - TRIM(): removes leading/trailing spaces from strings
+          TRIM(status) = 'continue' handles messy data
+        - String comparison with spaces: real data is often dirty!
+
+      DuckDB tip: TRIM() removes whitespace by default:
+        TRIM('  hello  ') --> 'hello'
+        LTRIM/RTRIM for left/right only.
+
+      YOUR TASK: Return the 'sit' column for ministers who:
+        - Have an even-numbered seat (sit % 2 = 0)
+        - Want to continue (TRIM(status) = 'continue')
+        - Did NOT speak a bad word (bad_word IS NOT TRUE)
+    hint: "Write: SELECT sit FROM ministers WHERE sit % 2 = 0 AND TRIM(status) = 'continue' AND bad_word IS NOT TRUE"
+    expected_columns: ["sit"]
+    order_matters: false
+
+  - id: 4
+    title: "Expired Juices"
+    instruction: |
+      Your bar has juices with expiration years. You need to find
+      ones that need processing.
+
+      New concepts:
+        - EXTRACT(YEAR FROM CURRENT_DATE) gets the current year
+        - DuckDB shorthand: YEAR(CURRENT_DATE) also works
+        - ABS() returns absolute value: ABS(-5) = 5
+
+      Categories:
+        - Old Expired: expiration year is more than 6 years before
+          the current year (needs recycling)
+        - Almost Expired: expiring this year or next year
+          (can be renewed)
+
+      YOUR TASK: Extract the IDs of juices that are either
+      old expired OR almost expired. Rename the id column to
+      'to_renew'. Sort by urgency (greatest year difference first).
+
+      DuckDB tip: Use YEAR(CURRENT_DATE) to get the current year
+      dynamically, but for this exercise use 2026 as current year.
+    hint: "WHERE (2026 - exp_year > 6) OR (exp_year BETWEEN 2026 AND 2027) -- then ORDER BY ABS(2026 - exp_year) DESC"
+    expected_columns: ["to_renew"]
+    order_matters: true
+
+  - id: 5
+    title: "Chocolate Factory"
+    instruction: |
+      A chocolate factory needs 243 grams of sugar per chocolate.
+      Each brand has a limited supply of sugar.
+
+      To calculate how many COMPLETE chocolates a brand can make,
+      use integer division:
+        sugar / 243     -- integer division in DuckDB
+      Or for clarity:
+        FLOOR(sugar / 243)
+
+      Both give the same result when both values are integers.
+
+      YOUR TASK: For each brand in the 'factory' table, calculate
+      how many chocolates they can produce.
+      Name the columns 'brand' and 'choc_num'.
+    hint: "Write: SELECT brand, sugar / 243 AS choc_num FROM factory"
+    expected_columns: ["brand", "choc_num"]
+    order_matters: false
+
+  - id: 6
+    title: "Kitchen Silverware"
+    instruction: |
+      Aliases are critical when presenting data. Renaming columns
+      with AS makes output meaningful to non-technical audiences.
+
+      Remember: AS works for both columns and expressions:
+        SELECT column1 AS new_name,
+               column2 * 10 AS calculated_field
+        FROM table_name
+
+      YOUR TASK: From the 'kitchen' table, fetch all items where
+      the cutlery count is less than 3. Rename 'cutlery' column
+      to 'silverware'.
+    hint: "Write: SELECT item, cutlery AS silverware FROM kitchen WHERE cutlery < 3"
+    expected_columns: ["item", "silverware"]
+    order_matters: false
+
+  - id: 7
+    title: "Date Arithmetic"
+    instruction: |
+      DuckDB has powerful date functions:
+        CURRENT_DATE          -- today's date
+        YEAR(date_column)     -- extract the year
+        date1 - date2         -- difference in days
+        date + INTERVAL '30 days'  -- add days
+
+      You can use these in WHERE clauses:
+        WHERE YEAR(created_at) > 2020
+
+      And in calculations:
+        SELECT YEAR(CURRENT_DATE) - YEAR(exp_date) AS years_old
+
+      YOUR TASK: From the 'juices' table, select the 'name',
+      'exp_year', and calculate how many years until expiration
+      (using 2026 as current year). Call it 'years_left'.
+      Order by years_left ascending (most urgent first).
+    hint: "Write: SELECT name, exp_year, exp_year - 2026 AS years_left FROM juices ORDER BY years_left ASC"
+    expected_columns: ["name", "exp_year", "years_left"]
+    order_matters: true
+
+  - id: 8
+    title: "Factory Floor Division"
+    instruction: |
+      Let's combine FLOOR with filtering to solve a practical
+      problem.
+
+      A brand is considered "viable" if it can produce at least
+      5 chocolates (needs at least 5 * 243 = 1215 grams of sugar).
+
+      YOUR TASK: From the 'factory' table, select 'brand' and
+      the number of chocolates (as 'choc_num') for brands that
+      can produce 5 or more chocolates. Order by choc_num DESC.
+    hint: "Write: SELECT brand, sugar / 243 AS choc_num FROM factory WHERE sugar / 243 >= 5 ORDER BY choc_num DESC"
+    expected_columns: ["brand", "choc_num"]
+    order_matters: true

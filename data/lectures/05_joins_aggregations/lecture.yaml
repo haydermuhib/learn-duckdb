@@ -1,0 +1,212 @@
+title: "JOINs & Aggregations"
+description: "Connect tables with JOIN and summarize data with GROUP BY, AVG, SUM, ROUND — the bridge to advanced SQL."
+difficulty: intermediate
+
+tables:
+  - name: factory
+    description: "Chocolate brands and available sugar (grams)"
+  - name: book
+    description: "History book — daily chocolate production per brand"
+  - name: customers
+    description: "Customer profiles with city data"
+  - name: orders
+    description: "Customer orders with amounts and dates"
+  - name: products
+    description: "Product catalog"
+  - name: order_items
+    description: "Line items linking orders to products"
+
+tasks:
+  - id: 1
+    title: "Your First JOIN"
+    instruction: |
+      Until now, all queries used a single table. But real databases
+      have MULTIPLE related tables. JOIN connects them.
+
+      INNER JOIN returns only rows that have matching values in
+      BOTH tables:
+
+        SELECT a.col1, b.col2
+        FROM table_a a
+        JOIN table_b b ON a.id = b.a_id
+
+      The ON clause specifies HOW the tables are related.
+
+      We use aliases (a, b) to shorten table references:
+        FROM orders o JOIN customers c ON o.customer_id = c.id
+
+      YOUR TASK: Join 'orders' and 'customers' to show each
+      order with its customer's name. Select customers.name,
+      orders.id (as order_id), and orders.total_amount.
+    hint: "Write: SELECT c.name, o.id AS order_id, o.total_amount FROM orders o JOIN customers c ON o.customer_id = c.id"
+    expected_columns: ["name", "order_id", "total_amount"]
+    order_matters: false
+
+  - id: 2
+    title: "LEFT JOIN — Keep Everyone"
+    instruction: |
+      INNER JOIN drops rows with no match. But sometimes you want
+      to keep ALL rows from one table, even if there's no match.
+
+      LEFT JOIN keeps all rows from the LEFT table. Unmatched rows
+      get NULL values for the right table's columns:
+
+        SELECT c.name, o.id AS order_id
+        FROM customers c
+        LEFT JOIN orders o ON c.id = o.customer_id
+
+      If a customer has no orders, they still appear but with
+      order_id = NULL.
+
+      YOUR TASK: Use LEFT JOIN to list ALL customers with their
+      orders. Customers without orders should show NULL for order_id.
+      Select customers.name and orders.id as order_id.
+    hint: "Write: SELECT c.name, o.id AS order_id FROM customers c LEFT JOIN orders o ON c.id = o.customer_id"
+    expected_columns: ["name", "order_id"]
+    order_matters: false
+
+  - id: 3
+    title: "GROUP BY & SUM"
+    instruction: |
+      GROUP BY groups rows that share a common value, then lets you
+      apply aggregate functions to each group:
+
+        SELECT category, SUM(price) AS total
+        FROM products
+        GROUP BY category
+
+      Common aggregate functions:
+        SUM()    total of all values
+        AVG()    average (mean)
+        COUNT()  number of rows
+        MIN()    smallest value
+        MAX()    largest value
+
+      IMPORTANT: Every column in SELECT must either be in GROUP BY
+      or inside an aggregate function.
+
+      YOUR TASK: For each customer, calculate total spending.
+      Join customers and orders, then GROUP BY customer name.
+      Select name and SUM(total_amount) as total_spent.
+      Order by total_spent DESC.
+    hint: "Write: SELECT c.name, SUM(o.total_amount) AS total_spent FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_spent DESC"
+    expected_columns: ["name", "total_spent"]
+    order_matters: true
+
+  - id: 4
+    title: "Three-Table JOIN"
+    instruction: |
+      You can chain multiple JOINs to connect 3+ tables:
+
+        SELECT o.id, p.name, oi.quantity
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
+
+      This connects: orders → order_items → products
+
+      Think of it like following relationships:
+        "Which order? → What items? → What product?"
+
+      YOUR TASK: Join orders, order_items, and products.
+      Select orders.id as order_id, products.name as
+      product_name, and order_items.quantity.
+    hint: "Chain two JOINs: orders → order_items (on order_id) → products (on product_id)"
+    expected_columns: ["order_id", "product_name", "quantity"]
+    order_matters: false
+
+  - id: 5
+    title: "AVG and ROUND"
+    instruction: |
+      AVG() calculates the average (mean) of a set of values.
+      It often returns many decimal places, so use ROUND() to
+      clean it up:
+
+        ROUND(AVG(column), 2)  -- rounds to 2 decimal places
+
+      Example:
+        SELECT brand, ROUND(AVG(chocolates), 2) AS choc_avg
+        FROM book
+        GROUP BY brand
+
+      ROUND(value, digits):
+        ROUND(3.14159, 2) → 3.14
+        ROUND(3.14159, 0) → 3
+        ROUND(3145, -2)   → 3100  (rounds to nearest 100!)
+
+      YOUR TASK: For each brand in the 'book' table, calculate
+      the average chocolates produced, rounded to 2 decimal places.
+      Name it 'choc_avg'. Also include FLOOR(sugar / 243) as
+      'choc_num' from the factory table. You'll need to JOIN
+      factory and book on brand.
+      Sort by choc_avg DESC.
+    hint: "Write: SELECT f.brand, FLOOR(f.sugar / 243) AS choc_num, ROUND(AVG(b.chocolates), 2) AS choc_avg FROM factory f JOIN book b ON f.brand = b.brand GROUP BY f.brand, f.sugar ORDER BY choc_avg DESC"
+    expected_columns: ["brand", "choc_num", "choc_avg"]
+    order_matters: true
+
+  - id: 6
+    title: "Customers Without Orders"
+    instruction: |
+      A powerful pattern: LEFT JOIN + WHERE NULL to find rows
+      with NO match in the other table.
+
+        SELECT c.name
+        FROM customers c
+        LEFT JOIN orders o ON c.id = o.customer_id
+        WHERE o.id IS NULL
+
+      This finds all customers who have NEVER placed an order.
+      The LEFT JOIN keeps them, and WHERE o.id IS NULL filters
+      to only those with no matching order.
+
+      YOUR TASK: Find customers who have never placed an order.
+      Select only 'name'.
+    hint: "LEFT JOIN orders, then WHERE o.id IS NULL"
+    expected_columns: ["name"]
+    order_matters: false
+
+  - id: 7
+    title: "Self JOIN"
+    instruction: |
+      You can join a table to ITSELF! This is called a self-join.
+      It's useful for comparing rows within the same table.
+
+        SELECT c1.name AS person_1, c2.name AS person_2, c1.city
+        FROM customers c1
+        JOIN customers c2
+          ON c1.city = c2.city AND c1.id < c2.id
+
+      The c1.id < c2.id prevents:
+        - Pairing someone with themselves
+        - Duplicate pairs (Alice-Bob AND Bob-Alice)
+
+      YOUR TASK: Find all pairs of customers who live in the
+      same city. Select customer_1, customer_2, and city.
+    hint: "JOIN customers to itself on city, with c1.id < c2.id"
+    expected_columns: ["customer_1", "customer_2", "city"]
+    order_matters: false
+
+  - id: 8
+    title: "HAVING — Filter Groups"
+    instruction: |
+      WHERE filters rows BEFORE grouping. But what if you want
+      to filter AFTER grouping? Use HAVING:
+
+        SELECT category, COUNT(*) AS cnt
+        FROM products
+        GROUP BY category
+        HAVING COUNT(*) > 1
+
+      This keeps only categories with more than 1 product.
+
+      Query execution order:
+        FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY
+
+      YOUR TASK: Find customers who have placed more than 1 order.
+      Join customers and orders. Group by customer name. Use
+      HAVING to keep only those with COUNT(*) > 1.
+      Select name and COUNT(*) as order_count.
+      Order by order_count DESC.
+    hint: "GROUP BY c.name HAVING COUNT(*) > 1 ORDER BY order_count DESC"
+    expected_columns: ["name", "order_count"]
+    order_matters: true

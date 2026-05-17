@@ -91,6 +91,106 @@ def _introspect_schemas(
     return tables
 
 
+def generate_erd(tables: list[TableInfo]) -> str:
+    """Generate an ASCII Entity-Relationship Diagram from table schemas.
+
+    Output looks like:
+        ┌─────────────────────────┐
+        │ customers               │
+        ├─────────────────────────┤
+        │ 🔑 id        INTEGER    │
+        │    name      VARCHAR    │
+        │    email     VARCHAR    │
+        │    city      VARCHAR    │
+        └─────────────────────────┘
+                │
+                │ customer_id
+                ▼
+        ┌─────────────────────────┐
+        │ orders                  │
+        ...
+    """
+    if not tables:
+        return "  (no tables in database)"
+
+    lines: list[str] = []
+
+    # Build table boxes
+    for table in tables:
+        box_lines = _render_table_box(table)
+        lines.extend(box_lines)
+        lines.append("")
+
+    # Build relationships section
+    relationships = []
+    for table in tables:
+        for col in table.columns:
+            if col.is_foreign_key and col.fk_references:
+                relationships.append(
+                    f"  {table.name}.{col.name}  ──▶  {col.fk_references}"
+                )
+
+    if relationships:
+        lines.append("╌╌╌ Relationships ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌")
+        lines.append("")
+        lines.extend(relationships)
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def _render_table_box(table: TableInfo) -> list[str]:
+    """Render a single table as an ASCII box with columns."""
+    # Calculate widths
+    if not table.columns:
+        name_w = len(table.name) + 2
+        return [
+            f"┌{'─' * name_w}┐",
+            f"│ {table.name} │",
+            f"└{'─' * name_w}┘",
+        ]
+
+    # Icon + name, type, badges
+    col_entries = []
+    for col in table.columns:
+        icon = "🔑" if col.is_primary_key else "📎" if col.is_foreign_key else "  "
+        badges = []
+        if col.is_primary_key:
+            badges.append("PK")
+        if not col.nullable:
+            badges.append("NN")
+        if col.is_unique:
+            badges.append("UQ")
+        if col.is_foreign_key:
+            badges.append(f"FK")
+        badge_str = " ".join(badges)
+        col_entries.append((icon, col.name, col.dtype, badge_str))
+
+    # Compute column widths for alignment
+    max_name = max(len(e[1]) for e in col_entries)
+    max_type = max(len(e[2]) for e in col_entries)
+    max_badge = max(len(e[3]) for e in col_entries)
+
+    # Total inner width: icon(2) + space + name + gap + type + gap + badge
+    inner_w = max(
+        len(table.name) + 2,
+        2 + 1 + max_name + 2 + max_type + (2 + max_badge if max_badge else 0),
+    )
+
+    lines = []
+    lines.append(f"  ┌{'─' * (inner_w + 2)}┐")
+    lines.append(f"  │ {table.name:<{inner_w}} │")
+    lines.append(f"  ├{'─' * (inner_w + 2)}┤")
+
+    for icon, name, dtype, badge in col_entries:
+        badge_part = f"  {badge}" if badge else ""
+        content = f"{icon} {name:<{max_name}}  {dtype:<{max_type}}{badge_part}"
+        lines.append(f"  │ {content:<{inner_w}} │")
+
+    lines.append(f"  └{'─' * (inner_w + 2)}┘")
+    return lines
+
+
 class LectureDatabase:
     """Manages an in-memory DuckDB instance seeded from a lecture's SQL file.
 

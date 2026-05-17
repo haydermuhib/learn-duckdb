@@ -5,11 +5,11 @@ from __future__ import annotations
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Footer, Header, Input
+from textual.widgets import Footer, Header, Input, Static, TabbedContent, TabPane
 
 from src.content.loader import LectureLoader
 from src.content.models import Lecture, Task, ValidationStatus
-from src.engine.database import LectureDatabase, SandboxDatabase
+from src.engine.database import LectureDatabase, SandboxDatabase, generate_erd
 from src.engine.progress import ProgressTracker
 from src.engine.validator import QueryValidator
 from src.ui.editor import QuerySubmitted, SQLEditor
@@ -20,6 +20,7 @@ from src.ui.sidebar import (
     NewDatabaseRequested,
     SandboxDatabaseSelected,
     SandboxSelected,
+    TablePreviewRequested,
 )
 from src.ui.task_panel import TaskPanel
 
@@ -40,6 +41,7 @@ class LearnDuckDBApp(App):
         Binding("ctrl+n", "next_task", "Next", show=True),
         Binding("ctrl+b", "prev_task", "Prev", show=True),
         Binding("ctrl+l", "clear_editor", "Clear Editor", show=True),
+        Binding("ctrl+t", "show_erd", "ERD", show=True),
         Binding("q", "quit", "Quit", show=True),
     ]
 
@@ -63,8 +65,22 @@ class LearnDuckDBApp(App):
             yield LectureSidebar()
             with Vertical(id="content-area"):
                 yield TaskPanel()
-                yield SQLEditor()
-                yield ResultsPanel()
+                with TabbedContent(id="editor-tabs"):
+                    with TabPane("✏️  SQL Editor", id="tab-editor"):
+                        yield SQLEditor()
+                    with TabPane("📊 ERD", id="tab-erd"):
+                        yield Static(
+                            "Press Ctrl+T to generate the ERD diagram.",
+                            id="erd-display",
+                        )
+                with TabbedContent(id="results-tabs"):
+                    with TabPane("📋 Results", id="tab-results"):
+                        yield ResultsPanel()
+                    with TabPane("📄 Table Preview", id="tab-preview"):
+                        yield Static(
+                            "Click a table in the schema explorer to preview its data.",
+                            id="preview-display",
+                        )
         yield Footer()
 
     def on_mount(self) -> None:
@@ -348,6 +364,56 @@ class LearnDuckDBApp(App):
         """Dismiss the new-db input on Escape key."""
         self._dismiss_db_input()
 
+    # ─── Table Preview & ERD ───
+
+    def on_table_preview_requested(self, event: TablePreviewRequested) -> None:
+        """Preview a table's data when clicked in the schema explorer."""
+        table_name = event.table_name
+        sql = f'SELECT * FROM "{table_name}" LIMIT 50'
+
+        if self._is_sandbox_mode:
+            result = self._sandbox_db.execute(sql)
+        elif self._lecture_db.is_connected:
+            result = self._lecture_db.execute_user_query(sql)
+        else:
+            self.notify("No database loaded", severity="warning")
+            return
+
+        # Render as formatted text in the preview tab
+        preview_text = _format_result_as_text(result, table_name)
+        self.query_one("#preview-display", Static).update(preview_text)
+
+        # Switch to the preview tab
+        self.query_one("#results-tabs", TabbedContent).active = "tab-preview"
+
+    def action_show_erd(self) -> None:
+        """Show an ASCII Entity-Relationship Diagram in the ERD tab."""
+        if self._is_sandbox_mode:
+            schemas = self._sandbox_db.get_table_schemas()
+            db_name = self._sandbox_db.db_name
+        elif self._lecture_db.is_connected:
+            schemas = self._lecture_db.get_table_schemas()
+            db_name = self._current_lecture.title if self._current_lecture else "Lecture"
+        else:
+            self.notify("No database loaded", severity="warning")
+            return
+
+        erd_text = generate_erd(schemas)
+        header = f"ERD: {db_name}\n{'─' * 44}\n\n"
+        self.query_one("#erd-display", Static).update(header + erd_text)
+
+        # Switch to the ERD tab
+        self.query_one("#editor-tabs", TabbedContent).active = "tab-erd"
+
+        table_count = len(schemas)
+        fk_count = sum(1 for t in schemas for c in t.columns if c.is_foreign_key)
+        self.notify(
+            f"{table_count} tables, {fk_count} FK relationships",
+            title="📊 ERD Generated",
+            severity="information",
+        )
+
+
     # ─── Internal Logic ───
 
     def _load_sidebar(self) -> None:
@@ -440,3 +506,51 @@ class LearnDuckDBApp(App):
         self._lecture_db.close()
         self._sandbox_db.close()
         self._progress.close()
+
+
+def _format_result_as_text(result, table_name: str) -> str:
+    """Render a QueryResult as an aligned ASCII table for the preview tab."""
+    from src.content.models import QueryResult
+
+    if result.is_error:
+        return f"[red]Error: {result.error}[/red]"
+
+    if not result.columns:
+        return f"📄 {table_name} — (empty table)"
+
+    # Format each cell
+    def fmt(v) -> str:
+        if v is None:
+            return "NULL"
+        if isinstance(v, bool):
+            return "true" if v else "false"
+        return str(v)
+
+    rows_str = [[fmt(v) for v in row] for row in result.rows]
+    headers = list(result.columns)
+
+    # Compute column widths
+    col_widths = [len(h) for h in headers]
+    for row in rows_str:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(cell))
+
+    sep = "─┼─".join("─" * w for w in col_widths)
+    sep = f"─{sep}─"
+
+    def fmt_row(cells):
+        return " │ ".join(f"{c:<{col_widths[i]}}" for i, c in enumerate(cells))
+
+    header_line = fmt_row(headers)
+    divider = "─" * len(header_line)
+
+    lines = [
+        f"📄 {table_name}  ({result.row_count} rows)",
+        divider,
+        header_line,
+        divider,
+    ]
+    for row in rows_str:
+        lines.append(fmt_row(row))
+
+    return "\n".join(lines)

@@ -32,7 +32,7 @@ class SQLEditor(Vertical):
         )
         with Vertical(id="run-bar"):
             yield Static(
-                "  ^J Run │ ^H Hint │ ^R Reset │ ^B/N Prev/Next │ ^L Clear │ ^G Run Selection",
+                "  ^J Run │ ^G Selection │ ^H Hint │ ^R Reset │ ^B/N Prev/Next │ ^L Clear │ ^T ERD",
                 id="run-hint",
             )
 

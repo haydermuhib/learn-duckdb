@@ -56,6 +56,9 @@ FooterKey {
     max-height: 50%;
     padding: 0;
     scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+    scrollbar-color-active: #565f89;
 }
 
 #lecture-tree > .tree--cursor {
@@ -82,6 +85,9 @@ FooterKey {
 #schema-tree {
     height: 1fr;
     scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+    scrollbar-color-active: #565f89;
 }
 
 /* ─── Content Area ─── */
@@ -127,7 +133,44 @@ FooterKey {
     display: none;
 }
 
-/* ─── Editor Section ─── */
+/* ─── Editor Tabs ─── */
+#editor-tabs {
+    height: 1fr;
+    min-height: 8;
+}
+
+#editor-tabs > Tabs {
+    background: #1e2030;
+    border-bottom: solid #292e42;
+    height: 2;
+    padding: 0 1;
+}
+
+#editor-tabs Tab {
+    color: #565f89;
+    padding: 0 2;
+}
+
+#editor-tabs Tab.-active {
+    color: #FEC62E;
+    text-style: bold;
+}
+
+#editor-tabs Tab:hover {
+    color: #c0caf5;
+}
+
+#editor-tabs ContentSwitcher {
+    height: 1fr;
+    padding: 0;
+}
+
+#editor-tabs TabPane {
+    padding: 0;
+    height: 1fr;
+}
+
+/* ─── Editor Section (inside tab) ─── */
 #editor-section {
     height: 1fr;
     min-height: 6;
@@ -165,12 +208,60 @@ FooterKey {
     color: #73daca;
 }
 
-/* ─── Results Panel ─── */
+/* ─── ERD Display (inside ERD tab) ─── */
+#erd-display {
+    height: 1fr;
+    padding: 1 2;
+    color: #c0caf5;
+    overflow-y: auto;
+    scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+}
+
+/* ─── Results Tabs ─── */
+#results-tabs {
+    height: 1fr;
+    min-height: 5;
+    border-top: solid #292e42;
+}
+
+#results-tabs > Tabs {
+    background: #1e2030;
+    border-bottom: solid #292e42;
+    height: 2;
+    padding: 0 1;
+}
+
+#results-tabs Tab {
+    color: #565f89;
+    padding: 0 2;
+}
+
+#results-tabs Tab.-active {
+    color: #7aa2f7;
+    text-style: bold;
+}
+
+#results-tabs Tab:hover {
+    color: #c0caf5;
+}
+
+#results-tabs ContentSwitcher {
+    height: 1fr;
+    padding: 0;
+}
+
+#results-tabs TabPane {
+    padding: 0;
+    height: 1fr;
+}
+
+/* ─── Results Panel (inside Results tab) ─── */
 #results-section {
     height: 1fr;
     min-height: 5;
     layout: vertical;
-    border-top: solid #292e42;
 }
 
 #results-header {
@@ -194,11 +285,16 @@ FooterKey {
 #results-table {
     height: 1fr;
     scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
 }
 
 DataTable {
     height: 1fr;
     scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+    scrollbar-color-active: #565f89;
 }
 
 DataTable > .datatable--cursor {
@@ -234,6 +330,17 @@ DataTable > .datatable--header {
 
 .feedback-idle {
     color: #565f89;
+}
+
+/* ─── Preview Display (inside Table Preview tab) ─── */
+#preview-display {
+    height: 1fr;
+    padding: 1 2;
+    color: #c0caf5;
+    overflow-y: auto;
+    scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
 }
 
 /* ─── Welcome / Splash ─── */
@@ -318,16 +425,26 @@ Tab:hover {
     color: #c0caf5;
 }
 
-/* ─── Scrollbar Customization ─── */
+/* ─── Scrollbar — global slim style ─── */
 Scrollbar {
     background: #16161e;
     color: #292e42;
+}
+
+ScrollbarThumb {
+    background: #414868;
+}
+
+ScrollbarThumb:hover {
+    background: #565f89;
 }
 
 /* ─── Tree Widget ─── */
 Tree {
     background: transparent;
     scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
 }
 
 Tree > .tree--cursor {

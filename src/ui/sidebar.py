@@ -38,6 +38,14 @@ class NewDatabaseRequested(Message):
     pass
 
 
+class TablePreviewRequested(Message):
+    """Posted when a table name is clicked in the schema explorer."""
+
+    def __init__(self, table_name: str) -> None:
+        self.table_name = table_name
+        super().__init__()
+
+
 class LectureSidebar(Vertical):
     """Left sidebar with lecture list and schema viewer (DBCode-style)."""
 
@@ -137,10 +145,11 @@ class LectureSidebar(Vertical):
             return
 
         for table in tables:
-            # Table node with description
+            # Table node with description — store table name as data for click-to-preview
             desc_part = f"  — {table.description}" if table.description else ""
             table_node = schema_tree.root.add(
                 f"📄 {table.name}{desc_part}",
+                data=f"__table__{table.name}",
                 expand=True,
             )
 
@@ -165,7 +174,7 @@ class LectureSidebar(Vertical):
                     constraints_node.add_leaf(f"📎 FK {c.name} → {c.fk_references}")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
-        """Handle lecture/sandbox/database selection from the tree."""
+        """Handle lecture/sandbox/database/table selection from the tree."""
         if event.node.data is None:
             return
 
@@ -178,6 +187,9 @@ class LectureSidebar(Vertical):
         elif isinstance(node_id, str) and node_id.startswith("__sandbox_db__"):
             db_path = Path(node_id.replace("__sandbox_db__", ""))
             self.post_message(SandboxDatabaseSelected(db_path=db_path))
+        elif isinstance(node_id, str) and node_id.startswith("__table__"):
+            table_name = node_id.replace("__table__", "")
+            self.post_message(TablePreviewRequested(table_name=table_name))
         elif isinstance(node_id, str) and not node_id.startswith("__"):
             self.post_message(LectureSelected(lecture_id=node_id))
 

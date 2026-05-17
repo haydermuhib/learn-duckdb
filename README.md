@@ -26,18 +26,42 @@ That's it. No `pip install`, no virtual environments to manage, no database to c
 | Lecture | Topic | Tasks | Difficulty |
 |---------|-------|-------|------------|
 | 01 | SELECT Basics | 8 | ⭐ Beginner |
-| 02 | Filtering & Sorting | 8 | ⭐ Beginner |
-| 03 | JOINs | 8 | ⭐⭐ Intermediate |
+| 02 | Filtering & Conditions | 8 | ⭐ Beginner |
+| 03 | Sorting, Limits & NULLs | 8 | ⭐ Beginner |
+| 04 | Real-World Challenges | 8 | ⭐⭐ Intermediate |
+| 05 | JOINs & Aggregations | 8 | ⭐⭐ Intermediate |
+| 06 | Window Functions | 8 | ⭐⭐⭐ Advanced |
+
+48 tasks total, all DuckDB-native SQL.
 
 ## Features
 
 - **📝 Guided Lessons** — Step-by-step SQL tasks with instant validation
 - **🏗️ Playground Mode** — Free-access sandbox with persistent `.duckdb` files
-- **💡 Smart Hints** — DuckDB-specific tips (EXCLUDE, QUALIFY, read_csv_auto)
-- **📊 Live Results** — See query output immediately in a beautiful table
-- **📋 Schema Viewer** — Always know what tables and columns are available
-- **💾 Progress Tracking** — Your progress persists across sessions
-- **🎨 Premium TUI** — Tokyo Night dark theme, syntax highlighting, keyboard shortcuts
+- **💡 Smart Hints** — DuckDB-specific tips (EXCLUDE, QUALIFY, ILIKE, BOOLEAN)
+- **📊 Live Results** — See query output immediately in a data table
+- **📋 Schema Viewer** — Always know what tables and columns are available (with PK/FK/UNIQUE badges)
+- **📄 Table Preview** — Click any table in the schema explorer to preview its rows instantly
+- **📊 ERD Viewer** — Visualize the full entity-relationship diagram for any database
+- **💾 Progress Tracking** — Your progress persists across sessions (stored outside the repo)
+- **🎨 Premium TUI** — Tokyo Night dark theme, SQL syntax highlighting, slim scrollbars
+
+## Layout
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Header: learn-duckdb 🦆                             │
+├────────────┬─────────────────────────────────────────┤
+│  Sidebar   │  Task Panel (title, instruction, hint)  │
+│            ├──────────────────┬──────────────────────┤
+│  Lectures  │  ✏️ SQL Editor   │  📊 ERD              │
+│  Playground├──────────────────┴──────────────────────┤
+│  Schema    │  📋 Results      │  📄 Table Preview    │
+│  Explorer  │                                         │
+├────────────┴─────────────────────────────────────────┤
+│  Footer: keybinding hints                            │
+└──────────────────────────────────────────────────────┘
+```
 
 ## Keyboard Shortcuts
 
@@ -48,29 +72,41 @@ That's it. No `pip install`, no virtual environments to manage, no database to c
 | `Ctrl+H` | Toggle hint |
 | `Ctrl+N` | Next task |
 | `Ctrl+B` | Previous task |
-| `Ctrl+R` | Reset (lecture: clears progress / playground: drops tables) |
-| `Ctrl+L` | Clear SQL editor |
+| `Ctrl+R` | Reset (lecture: re-seeds DB + clears progress / playground: drops all tables) |
+| `Ctrl+L` | Clear SQL editor only |
+| `Ctrl+T` | Generate ERD diagram (opens ERD tab) |
 | `Q` | Quit |
+
+**Tips:**
+- Click any **📄 table** in the schema explorer → instantly previews its data in the Table Preview tab
+- `Ctrl+T` generates the ERD in its own tab — your SQL editor is never touched
+- Results and previews are in separate tabs — switch freely without losing anything
 
 ## How It Works
 
 ```
-You write SQL → DuckDB executes it in-memory → We compare your output
-to the expected answer → You get instant feedback with diffs
+You write SQL → DuckDB executes it → We compare your output
+to the expected answer → Instant feedback (PASS / FAIL / ERROR)
 ```
 
-Lecture data is seeded from plain SQL files into an **in-memory** DuckDB instance. Your original data is never modified. The playground writes to a persistent `.duckdb` file so your experiments survive restarts.
+Validation is **output-based, not syntax-based**: any SQL that produces the correct result set passes. Ten different approaches to the same answer — all valid.
+
+Lecture data is seeded into an **in-memory** DuckDB instance. Your original data is never modified. The playground writes to persistent `.duckdb` files so your experiments survive restarts.
+
+## Progress
+
+Progress is stored at `~/.local/share/learn-duckdb/progress.duckdb` — outside the repo, never committed. `git pull` never overwrites your progress.
 
 ## Contributing a Lecture
 
 Adding a new lecture is simple:
 
-1. Create a folder under `data/lectures/` (e.g., `04_aggregations/`)
+1. Create a folder under `data/lectures/` (e.g., `07_json_handling/`)
 2. Write three files:
-   - `lecture.yaml` — Title, description, tasks with instructions
-   - `seed.sql` — CREATE TABLE + INSERT statements
-   - `solutions.sql` — One solution query per task
-3. That's it! The app auto-discovers new lectures.
+   - `lecture.yaml` — Title, description, tasks with instructions and hints
+   - `seed.sql` — `CREATE TABLE` + `INSERT` statements
+   - `solutions.sql` — One solution query per task (`-- TASK N: Title`)
+3. That's it. The app auto-discovers new lectures on startup.
 
 See `data/lectures/01_select_basics/` for a complete example.
 
@@ -81,7 +117,7 @@ See `data/lectures/01_select_basics/` for a complete example.
 | Package Manager | [uv](https://github.com/astral-sh/uv) |
 | Database Engine | [DuckDB](https://duckdb.org/) |
 | UI Framework | [Textual](https://textual.textualize.io/) |
-| Syntax Highlighting | tree-sitter |
+| Syntax Highlighting | tree-sitter (via Textual) |
 
 ## License
 

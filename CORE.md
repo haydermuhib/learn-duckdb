@@ -48,7 +48,7 @@
 | Key | Action | Context |
 |-----|--------|---------|
 | `Ctrl+J` | Run the full SQL in the editor | Both modes |
-| `Ctrl+E` | Run only the selected text (falls back to full text if nothing selected) | Both modes |
+| `Ctrl+G` | Run only the selected text (falls back to full text if nothing selected) | Both modes |
 | `Ctrl+H` | Toggle hint visibility | Lecture mode only (no-op in playground) |
 | `Ctrl+N` | Next task | Lecture mode only |
 | `Ctrl+B` | Previous task | Lecture mode only |

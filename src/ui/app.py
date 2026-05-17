@@ -34,7 +34,7 @@ class LearnDuckDBApp(App):
 
     BINDINGS = [
         Binding("ctrl+j", "run_query", "Run All", show=True),
-        Binding("ctrl+e", "run_selection", "Run Selection", show=True),
+        Binding("ctrl+g", "run_selection", "Run Selection", show=True),
         Binding("ctrl+h", "toggle_hint", "Hint", show=True),
         Binding("ctrl+r", "reset", "Reset", show=True),
         Binding("ctrl+n", "next_task", "Next", show=True),

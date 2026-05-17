@@ -44,7 +44,7 @@ That's it. No `pip install`, no virtual environments to manage, no database to c
 | Key | Action |
 |-----|--------|
 | `Ctrl+J` | Run full query |
-| `Ctrl+E` | Run selected text only |
+| `Ctrl+G` | Run selected text only |
 | `Ctrl+H` | Toggle hint |
 | `Ctrl+N` | Next task |
 | `Ctrl+B` | Previous task |

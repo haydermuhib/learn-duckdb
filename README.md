@@ -1,4 +1,4 @@
-# learn-duckdb
+# 🦆 learn-duckdb
 
 Interactive SQL learning in your terminal, powered by DuckDB.
 

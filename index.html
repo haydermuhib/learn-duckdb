@@ -182,8 +182,10 @@
 
     .nav-links {
       display: flex;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
       list-style: none;
+      align-items: center;
     }
 
     .nav-links a {
@@ -191,12 +193,15 @@
       color: var(--ink);
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 0.95rem;
-      padding: 6px 14px;
+      font-size: 0.9rem;
+      padding: 6px 12px;
       border: 2px solid var(--ink);
       background: var(--surface-alt);
       box-shadow: 2px 2px 0px var(--ink);
       transition: all 0.1s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
     }
 
     .nav-links a:hover {
@@ -551,6 +556,78 @@
         border-right: none;
         border-bottom: 1px solid #2A3141;
         padding-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .ticker-bar {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+        font-size: 0.75rem;
+      }
+      header {
+        padding: 18px 0;
+      }
+      .nav-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .nav-links {
+        width: 100%;
+        gap: 6px;
+      }
+      .nav-links a {
+        font-size: 0.78rem;
+        padding: 5px 9px;
+      }
+      .brand-name {
+        font-size: 1.8rem;
+      }
+      .duck-badge {
+        font-size: 1.3rem;
+        padding: 2px 8px;
+      }
+      .hero-title {
+        font-size: 2.7rem;
+      }
+      .section-title {
+        font-size: 2.2rem;
+      }
+      .install-card {
+        padding: 16px;
+      }
+      .tab-buttons {
+        gap: 6px;
+      }
+      .tab-btn {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+      }
+      .code-box {
+        padding: 12px;
+      }
+      .code-box pre {
+        font-size: 0.8rem;
+      }
+      .curriculum-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .curr-title {
+        margin-left: 0;
+        font-size: 1.5rem;
+      }
+      .footer-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      .footer-links a {
+        margin-left: 0;
+        margin-right: 14px;
       }
     }
   </style>

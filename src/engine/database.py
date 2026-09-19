@@ -286,7 +286,7 @@ class SandboxDatabase:
     The database is persisted to a .duckdb file so work survives restarts.
     """
 
-    DEFAULT_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "sandbox"
+    DEFAULT_DIR = Path.home() / ".local" / "share" / "learn-duckdb" / "sandbox"
 
     def __init__(self, db_path: Path | None = None):
         self._db_path = db_path or (self.DEFAULT_DIR / "sandbox.duckdb")
@@ -346,7 +346,10 @@ class SandboxDatabase:
         """Create a new empty .duckdb file in the sandbox directory."""
         self.close()
         # Sanitize name
-        safe_name = "".join(c for c in name if c.isalnum() or c in "_-").strip()
+        clean_name = name.strip()
+        if clean_name.lower().endswith(".duckdb"):
+            clean_name = clean_name[:-7]
+        safe_name = "".join(c for c in clean_name if c.isalnum() or c in "_-").strip()
         if not safe_name:
             safe_name = "new_db"
         new_path = self.DEFAULT_DIR / f"{safe_name}.duckdb"

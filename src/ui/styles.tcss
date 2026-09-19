@@ -473,3 +473,40 @@ Tree > .tree--guides {
     border: tall #FEC62E;
 }
 
+/* ─── Confirmation Modal ─── */
+ResetConfirmationModal {
+    align: center middle;
+    background: rgba(0, 0, 0, 0.65);
+}
+
+#confirm-dialog {
+    width: 62;
+    height: auto;
+    background: #1e2030;
+    border: tall #f7768e;
+    padding: 1 2;
+}
+
+#confirm-title {
+    text-style: bold;
+    color: #f7768e;
+    text-align: center;
+    padding-bottom: 1;
+}
+
+#confirm-message {
+    color: #c0caf5;
+    text-align: center;
+    padding-bottom: 1;
+}
+
+#confirm-buttons {
+    align: center middle;
+    height: auto;
+}
+
+#confirm-buttons Button {
+    margin: 0 1;
+}
+
+

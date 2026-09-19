@@ -5,7 +5,8 @@ from __future__ import annotations
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Footer, Header, Input, Static, TabbedContent, TabPane
+from textual.screen import ModalScreen
+from textual.widgets import Button, Footer, Header, Input, Static, TabbedContent, TabPane
 
 from src.content.loader import LectureLoader
 from src.content.models import Lecture, Task, ValidationStatus
@@ -23,6 +24,32 @@ from src.ui.sidebar import (
     TablePreviewRequested,
 )
 from src.ui.task_panel import TaskPanel
+
+
+class ResetConfirmationModal(ModalScreen[bool]):
+    """Modal dialog asking user to confirm reset action."""
+
+    def __init__(self, title: str, message: str, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._dialog_title = title
+        self._dialog_message = message
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="confirm-dialog"):
+            yield Static(self._dialog_title, id="confirm-title")
+            yield Static(self._dialog_message, id="confirm-message")
+            with Horizontal(id="confirm-buttons"):
+                yield Button("Cancel", variant="default", id="btn-cancel")
+                yield Button("Reset", variant="error", id="btn-confirm")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn-confirm":
+            self.dismiss(True)
+        else:
+            self.dismiss(False)
+
+    def key_escape(self) -> None:
+        self.dismiss(False)
 
 
 class LearnDuckDBApp(App):
@@ -150,11 +177,24 @@ class LearnDuckDBApp(App):
         task_panel.toggle_hint()
 
     def action_reset(self) -> None:
-        """Context-aware reset: lecture mode resets progress, sandbox mode drops all tables."""
+        """Context-aware reset with confirmation dialog."""
         if self._is_sandbox_mode:
-            self._reset_sandbox()
+            title = "⚠️ Reset Sandbox Database"
+            msg = f"Are you sure you want to drop all tables in sandbox '{self._sandbox_db.db_name}'?"
         elif self._current_lecture:
-            self._reset_lecture()
+            title = "⚠️ Reset Lecture Progress"
+            msg = f"Reset all progress and database state for '{self._current_lecture.title}'?"
+        else:
+            return
+
+        def handle_confirm(confirmed: bool | None) -> None:
+            if confirmed:
+                if self._is_sandbox_mode:
+                    self._reset_sandbox()
+                elif self._current_lecture:
+                    self._reset_lecture()
+
+        self.push_screen(ResetConfirmationModal(title, msg), handle_confirm)
 
     def action_clear_editor(self) -> None:
         """Clear only the SQL editor, nothing else."""

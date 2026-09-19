@@ -113,7 +113,8 @@ uv run app.py
 | <kbd>Ctrl+B</kbd> | Toggle sidebar visibility |
 | <kbd>Alt+Left</kbd> / <kbd>Alt+Right</kbd> | Shrink or expand sidebar width |
 | <kbd>Ctrl+N</kbd> / <kbd>Ctrl+P</kbd> | Next or previous task |
-| <kbd>Ctrl+H</kbd> | Toggle hint |
+| <kbd>Ctrl+H</kbd> | Toggle task hint |
+| <kbd>Ctrl+I</kbd> | Import CSV / Parquet file into Sandbox |
 | <kbd>Ctrl+R</kbd> | Reset database (with confirmation prompt) |
 | <kbd>Ctrl+L</kbd> | Clear editor text |
 | <kbd>Ctrl+T</kbd> | Generate ASCII ERD diagram |

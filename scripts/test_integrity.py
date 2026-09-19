@@ -79,7 +79,7 @@ def test_progress_and_sandbox():
         pt.close()
         del pt
 
-        # Sandbox test
+        # Sandbox test & CSV/Parquet loading test
         sb = SandboxDatabase(tmp_path / "test_sb.duckdb")
         sb.connect()
         res = sb.execute("CREATE TABLE test_table (id INT, val VARCHAR); INSERT INTO test_table VALUES (1, 'hello');")
@@ -87,13 +87,23 @@ def test_progress_and_sandbox():
         res2 = sb.execute("SELECT * FROM test_table;")
         assert not res2.is_error
         assert len(res2.rows) == 1
+
+        # Test CSV export and read_csv_auto in sandbox
+        csv_file = tmp_path / "sample.csv"
+        csv_file.write_text("item,qty,price\napple,10,1.5\nbanana,20,0.8\n", encoding="utf-8")
+        clean_csv = str(csv_file).replace("\\", "/")
+        res_csv = sb.execute(f"CREATE TABLE sample_csv AS SELECT * FROM read_csv_auto('{clean_csv}');")
+        assert not res_csv.is_error
+        res_check = sb.execute("SELECT COUNT(*) FROM sample_csv;")
+        assert res_check.rows[0][0] == 2
+
         sb.close()
         del sb
 
         import gc
         gc.collect()
 
-    print("[OK] Verified ProgressTracker and SandboxDatabase auto-creation.")
+    print("[OK] Verified ProgressTracker, SandboxDatabase, and CSV/Parquet engine loading.")
 
 def test_updater():
     """Verify UpdateManager can be initialized without error."""

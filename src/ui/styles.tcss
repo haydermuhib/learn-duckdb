@@ -158,8 +158,11 @@ FooterKey {
 }
 
 #task-hint {
-    padding: 1 0 0 0;
+    margin: 1 0 0 0;
+    padding: 0 1;
     color: #e0af68;
+    background: #1f2335;
+    border-left: solid #e0af68;
     display: none;
 }
 
@@ -397,19 +400,39 @@ DataTable > .datatable--header {
 }
 
 /* ─── Confirmation Modal Dialog ─── */
-ResetConfirmationModal, UpdatePromptModal {
+ResetConfirmationModal, UpdatePromptModal, ImportFileDialog {
     align: center middle;
     background: rgba(0, 0, 0, 0.75);
     layer: modal;
 }
 
-#confirm-dialog, #update-dialog {
+#confirm-dialog, #update-dialog, #import-dialog {
     width: 62;
     max-width: 90%;
     height: auto;
     background: #1e2030;
     border: tall #f7768e;
     padding: 1 2;
+}
+
+#import-dialog {
+    border: tall #e0af68;
+}
+
+#import-title {
+    text-style: bold;
+    color: #e0af68;
+    text-align: center;
+    padding-bottom: 1;
+}
+
+#import-hint-text {
+    color: #565f89;
+    padding-bottom: 1;
+}
+
+#import-path, #import-name {
+    margin-bottom: 1;
 }
 
 #update-dialog {
@@ -450,12 +473,12 @@ ResetConfirmationModal, UpdatePromptModal {
     padding-bottom: 1;
 }
 
-#confirm-buttons, #update-buttons {
+#confirm-buttons, #update-buttons, #import-buttons {
     align: center middle;
     height: auto;
 }
 
-#confirm-buttons Button, #update-buttons Button {
+#confirm-buttons Button, #update-buttons Button, #import-buttons Button {
     margin: 0 1;
 }
 

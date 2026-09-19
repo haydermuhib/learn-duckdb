@@ -1,6 +1,4 @@
-"""Main Textual application — wires sidebar, editor, results, and engine together."""
-
-from __future__ import annotations
+from pathlib import Path
 
 from textual import work
 from textual.app import App, ComposeResult
@@ -56,6 +54,34 @@ class ResetConfirmationModal(ModalScreen[bool]):
         self.dismiss(False)
 
 
+class ImportFileDialog(ModalScreen[tuple[str, str] | None]):
+    """Modal dialog prompting user for a CSV or Parquet file path to import into Sandbox."""
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="import-dialog"):
+            yield Static("📥 Import CSV / Parquet File", id="import-title")
+            yield Static("Enter path to a local .csv, .parquet, or .tsv file:", id="import-hint-text")
+            yield Input(placeholder="e.g. data/sales.parquet or ./my_data.csv", id="import-path")
+            yield Input(placeholder="Target table name (optional, defaults to filename)", id="import-name")
+            with Horizontal(id="import-buttons"):
+                yield Button("Cancel", variant="default", id="btn-import-cancel")
+                yield Button("Import Table", variant="primary", id="btn-import-confirm")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn-import-confirm":
+            path_input = self.query_one("#import-path", Input).value.strip()
+            name_input = self.query_one("#import-name", Input).value.strip()
+            if path_input:
+                self.dismiss((path_input, name_input))
+            else:
+                self.dismiss(None)
+        else:
+            self.dismiss(None)
+
+    def key_escape(self) -> None:
+        self.dismiss(None)
+
+
 class LearnDuckDBApp(App):
     """Interactive SQL learning TUI powered by DuckDB."""
 
@@ -71,6 +97,7 @@ class LearnDuckDBApp(App):
         Binding("ctrl+n", "next_task", "Next", show=True),
         Binding("ctrl+p", "prev_task", "Prev", show=True),
         Binding("ctrl+h", "toggle_hint", "Hint", show=True),
+        Binding("ctrl+i", "import_data", "Import", show=True),
         Binding("ctrl+r", "reset", "Reset", show=True),
         Binding("ctrl+l", "clear_editor", "Clear", show=True),
         Binding("ctrl+t", "show_erd", "ERD", show=True),
@@ -93,6 +120,7 @@ class LearnDuckDBApp(App):
         self._current_task_index: int = 0
         self._solutions: dict[int, str] = {}
         self._is_sandbox_mode: bool = False
+        self._task_failures: dict[int, int] = {}
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -252,6 +280,58 @@ class LearnDuckDBApp(App):
         task_panel = self.query_one(TaskPanel)
         task_panel.toggle_hint()
 
+    def action_import_data(self) -> None:
+        """Prompt to import a CSV or Parquet file into the sandbox database."""
+        if not self._is_sandbox_mode:
+            self.notify(
+                "Switch to Playground mode from the sidebar to import custom CSV/Parquet files.",
+                title="Sandbox Required",
+                severity="warning",
+            )
+            return
+
+        def handle_import(result: tuple[str, str] | None) -> None:
+            if not result:
+                return
+            file_path, table_name = result
+            self._import_file_to_sandbox(file_path, table_name)
+
+        self.push_screen(ImportFileDialog(), handle_import)
+
+    def _import_file_to_sandbox(self, file_path_str: str, table_name: str) -> None:
+        """Execute DuckDB import query for CSV or Parquet into the sandbox."""
+        p = Path(file_path_str).expanduser()
+        clean_path = str(p).replace("\\", "/")
+
+        if not table_name:
+            table_name = p.stem
+        # Sanitize table name to alphanumeric/underscore
+        clean_name = "".join(c if c.isalnum() or c == "_" else "_" for c in table_name).strip("_")
+        if not clean_name or clean_name[0].isdigit():
+            clean_name = f"tbl_{clean_name}"
+
+        is_parquet = p.suffix.lower() == ".parquet"
+        if is_parquet:
+            sql = f"CREATE OR REPLACE TABLE {clean_name} AS SELECT * FROM read_parquet('{clean_path}');"
+        else:
+            sql = f"CREATE OR REPLACE TABLE {clean_name} AS SELECT * FROM read_csv_auto('{clean_path}');"
+
+        result = self._sandbox_db.execute(sql)
+        results_panel = self.query_one(ResultsPanel)
+        results_panel.show_results(result)
+
+        if result.is_error:
+            self.notify(f"Import failed: {result.error}", title="❌ Import Error", severity="error")
+        else:
+            # Refresh schema in sidebar
+            sidebar = self.query_one(LectureSidebar)
+            sidebar.set_schema(self._sandbox_db.get_table_schemas())
+            self.notify(
+                f"Table '{clean_name}' created from {p.name} ({result.row_count} rows)",
+                title="🎉 Import Successful",
+                severity="information",
+            )
+
     def action_reset(self) -> None:
         """Context-aware reset with confirmation dialog."""
         if self._is_sandbox_mode:
@@ -342,7 +422,16 @@ class LearnDuckDBApp(App):
             results_panel.show_validation(validation)
 
             if validation.status == ValidationStatus.PASS:
+                self._task_failures[task.id] = 0
                 self._on_task_passed(task)
+            else:
+                self._task_failures[task.id] = self._task_failures.get(task.id, 0) + 1
+                if self._task_failures[task.id] >= 2 and task.hint:
+                    self.notify(
+                        "Stuck? Press Ctrl+H to reveal the task hint!",
+                        title="💡 Hint Available",
+                        severity="information",
+                    )
         else:
             self.notify("No solution found for this task", severity="warning")
 

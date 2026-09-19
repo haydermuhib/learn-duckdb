@@ -1,0 +1,75 @@
+# learn-duckdb
+
+> An interactive, keyboard-driven SQL learning environment in your terminal powered by DuckDB and Textual.
+
+learn-duckdb is a standalone, open-source terminal application designed for learning analytical SQL locally. It runs on top of DuckDB's in-memory engine, providing real-time query validation, sub-millisecond execution, syntax-highlighted editor with IntelliSense autocompletion, progress tracking, and an interactive data exploration sandbox.
+
+## Quick Installation & Run
+
+- Instant execution (zero install):
+  ```bash
+  uvx --from git+https://github.com/haydermuhib/learn-duckdb.git learn-duckdb
+  ```
+- macOS & Linux installer:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.sh | bash
+  ```
+- Windows PowerShell installer:
+  ```powershell
+  irm https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.ps1 | iex
+  ```
+- Clone & run locally:
+  ```bash
+  git clone https://github.com/haydermuhib/learn-duckdb.git
+  cd learn-duckdb && uv run app.py
+  ```
+
+## Key Capabilities
+
+- In-Memory DuckDB Engine: Every lecture executes in an isolated `:memory:` database with zero risk of corrupting source data.
+- Result-Based Evaluation: Graded on actual output schema and returned records rather than rigid string matching, supporting all valid SQL dialects and aliases.
+- SQL IntelliSense: Built-in autocompletion for SQL keywords, aggregation functions, window clauses, and live column names on `<Tab>`.
+- Statement-Under-Cursor Execution: Press `<Ctrl+G>` to execute only the query under the cursor or selection, or `<Ctrl+J>` to execute the entire editor.
+- Interactive Hint System: Accessible with `<Ctrl+H>`, with automatic proactive suggestions after repeated failed attempts.
+- Sandbox & Data Playground: Freeform analytical playground where users can import local `.csv`, `.tsv`, or `.parquet` files directly into tables using `<Ctrl+I>`.
+- ASCII Schema & ERD Generation: Press `<Ctrl+T>` to introspect tables, primary keys, foreign keys, and generate live ASCII Entity-Relationship diagrams.
+- Progress Persistence: Automatically records completed tasks in `~/.local/share/learn-duckdb/progress.duckdb`.
+
+## Curriculum
+
+1. 01 SELECT Basics (8 exercises): Column projections, aliases (`AS`), arithmetic expressions, `COUNT(*)`, string concatenation (`||`).
+2. 02 Filtering & Conditions (8 exercises): `WHERE`, `AND`, `OR`, `NOT`, boolean columns, `IN`, `BETWEEN`, `LIKE` pattern matching.
+3. 03 Sorting & Limits (8 exercises): `ORDER BY`, `ASC`/`DESC`, multi-column sorts, `LIMIT`, `OFFSET`, `NULLS FIRST`/`NULLS LAST`, `IS NULL`/`IS NOT NULL`.
+4. 04 Real-World Challenges (8 exercises): Business analytics scenarios, transaction processing, conditional updates, multi-condition filtering.
+5. 05 JOINs & Aggregations (8 exercises): `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`, `GROUP BY`, `HAVING`, aggregate functions (`SUM`, `AVG`, `MIN`, `MAX`).
+6. 06 CTEs & Window Functions (8 exercises): Common Table Expressions (`WITH`), subqueries, `OVER (PARTITION BY ... ORDER BY ...)`, `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()`, `LAG()`, `LEAD()`.
+
+## Keyboard Reference
+
+- `Ctrl+J`: Execute entire editor SQL buffer
+- `Ctrl+G`: Execute query or statement under cursor / selection
+- `Tab`: Accept autocomplete IntelliSense suggestion
+- `Ctrl+H`: Toggle task instruction hint
+- `Ctrl+I`: Import custom CSV or Parquet file into Sandbox
+- `Ctrl+B`: Toggle sidebar collapse / expand
+- `Alt+Left` / `Alt+Right`: Resize sidebar width
+- `Ctrl+N` / `Ctrl+P`: Advance to next / previous task
+- `Ctrl+R`: Reset database state and task progress (with confirmation modal)
+- `Ctrl+L`: Clear SQL editor buffer
+- `Ctrl+T`: View ASCII Entity-Relationship Diagram (ERD)
+- `Ctrl+Q`: Quit application
+
+## Tech Stack & Architecture
+
+- Language: Python 3.11+
+- TUI Framework: Textual 3.0+
+- Database: DuckDB 1.2+
+- Formatting: Rich 13.0+
+- Packaging: Hatchling / pyproject.toml
+- Package Management: uv / uvx
+
+## Repository Links
+
+- GitHub Repository: https://github.com/haydermuhib/learn-duckdb
+- Documentation & Landing Page: https://haydermuhib.github.io/learn-duckdb/
+- License: MIT

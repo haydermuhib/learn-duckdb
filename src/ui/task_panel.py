@@ -37,8 +37,10 @@ class TaskPanel(Vertical):
         title.update(f"📝 Task {task.id}: {task.title}")
         progress.update(f"[{current}/{total}]")
 
-        # Render instruction as plain text (strip markdown bold for TUI)
+        # Render instruction with highlighted task callout
         text = task.instruction.replace("**", "").replace("`", "'").strip()
+        if "YOUR TASK:" in text:
+            text = text.replace("YOUR TASK:", "[bold #FEC62E]🎯 YOUR TASK:[/]")
         instruction.update(text)
 
         # Prepare hint but keep it hidden

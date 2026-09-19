@@ -100,7 +100,11 @@ FooterKey {
 #task-panel {
     height: auto;
     min-height: 5;
-    max-height: 12;
+    max-height: 18;
+    overflow-y: auto;
+    scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
     background: #1e2030;
     border-bottom: solid #292e42;
     padding: 1 2;

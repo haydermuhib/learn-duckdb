@@ -33,6 +33,23 @@ DEFAULT_SQL_KEYWORDS = [
 ]
 
 
+class SQLTextArea(TextArea):
+    """Custom TextArea that intercepts Tab key to trigger IntelliSense autocomplete."""
+
+    async def _on_key(self, event: events.Key) -> None:
+        if event.key == "tab":
+            parent = self.parent
+            while parent and not isinstance(parent, SQLEditor):
+                parent = parent.parent
+            if parent and isinstance(parent, SQLEditor):
+                if parent.apply_current_completion():
+                    event.stop()
+                    event.prevent_default()
+                    return
+
+        await super()._on_key(event)
+
+
 class QuerySubmitted(Message):
     """Posted when the user submits a query."""
 
@@ -56,7 +73,7 @@ class SQLEditor(Vertical):
             yield Static(" 💻 SQL Editor", id="editor-label")
             yield Static("Press Tab to autocomplete", id="editor-status-indicator")
 
-        yield TextArea.code_editor(
+        yield SQLTextArea.code_editor(
             "",
             language="sql",
             id="sql-editor",

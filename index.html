@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>learn-duckdb — Terminal SQL Learning Environment</title>
+  <meta name="description" content="Master analytical SQL right inside your terminal with an interactive, keyboard-driven DuckDB TUI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F3EFE6;
+      --surface: #FFFFFF;
+      --surface-alt: #EAE5D9;
+      --ink: #111827;
+      --primary: #DD614C;
+      --secondary: #DAA144;
+      --accent-green: #16A34A;
+      --accent-cyan: #0284C7;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --border-width: 3px;
+      --shadow-offset: 5px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+      background-image: radial-gradient(rgba(17, 24, 39, 0.12) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* TYPOGRAPHY */
+    h1, h2, h3, h4, .brand-title {
+      font-family: 'Darker Grotesque', sans-serif;
+      font-weight: 900;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    code, pre, .mono, .key-tag, .badge {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* BRUTALIST HELPERS */
+    .b-box {
+      background: var(--surface);
+      border: var(--border-width) solid var(--ink);
+      box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--ink);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .b-box-alt {
+      background: var(--surface-alt);
+      border: var(--border-width) solid var(--ink);
+      box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--ink);
+    }
+
+    .b-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-family: 'Darker Grotesque', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      background: var(--primary);
+      color: #FFF;
+      border: var(--border-width) solid var(--ink);
+      box-shadow: 4px 4px 0px var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.1s ease;
+    }
+
+    .b-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px var(--ink);
+    }
+
+    .b-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .b-btn-secondary {
+      background: var(--secondary);
+      color: var(--ink);
+    }
+
+    .b-btn-outline {
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    /* TOP TICKER BAR */
+    .ticker-bar {
+      background: var(--ink);
+      color: #FFF;
+      padding: 8px 16px;
+      border-bottom: var(--border-width) solid var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .ticker-pulse {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #22C55E;
+      border: 2px solid #FFF;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* CONTAINER */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* HEADER */
+    header {
+      padding: 32px 0;
+      border-bottom: var(--border-width) solid var(--ink);
+      background: var(--surface);
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .duck-badge {
+      background: var(--secondary);
+      border: 3px solid var(--ink);
+      padding: 4px 10px;
+      font-size: 1.6rem;
+      font-weight: 900;
+      box-shadow: 3px 3px 0px var(--ink);
+    }
+
+    .brand-name {
+      font-size: 2.2rem;
+      margin: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 6px 14px;
+      border: 2px solid var(--ink);
+      background: var(--surface-alt);
+      box-shadow: 2px 2px 0px var(--ink);
+      transition: all 0.1s;
+    }
+
+    .nav-links a:hover {
+      background: var(--primary);
+      color: #FFF;
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--ink);
+    }
+
+    /* HERO */
+    .hero-section {
+      padding: 60px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .hero-title {
+      font-size: clamp(3.2rem, 7vw, 5.2rem);
+      margin-bottom: 20px;
+    }
+
+    .hero-title span {
+      background: var(--secondary);
+      padding: 0 8px;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0px var(--ink);
+      display: inline-block;
+      transform: rotate(-1deg);
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      color: #374151;
+      border-left: 4px solid var(--primary);
+      padding-left: 14px;
+    }
+
+    /* INSTALL TABS */
+    .install-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .install-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 12px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 2px solid var(--ink);
+      background: var(--surface-alt);
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--ink);
+      transition: all 0.1s;
+    }
+
+    .tab-btn.active {
+      background: var(--ink);
+      color: #FFF;
+      box-shadow: none;
+      transform: translate(2px, 2px);
+    }
+
+    .code-box {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 3px solid var(--ink);
+      padding: 16px;
+      margin: 16px 0;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .code-box pre {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: var(--secondary);
+      border: 2px solid var(--ink);
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .copy-btn:hover {
+      background: var(--primary);
+      color: #FFF;
+    }
+
+    .copy-btn.copied {
+      background: var(--accent-green);
+      color: #FFF;
+    }
+
+    /* TUI PREVIEW CONTAINER */
+    .tui-preview {
+      background: #0B0E14;
+      border: 3px solid var(--ink);
+      box-shadow: 6px 6px 0px var(--ink);
+      border-radius: 0;
+      overflow: hidden;
+      margin: 40px 0;
+    }
+
+    .tui-header {
+      background: #1F2430;
+      border-bottom: 2px solid var(--ink);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .tui-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tui-dot {
+      width: 10px;
+      height: 10px;
+      border: 1px solid #000;
+    }
+
+    .tui-body {
+      padding: 20px;
+      color: #A6ACCD;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .tui-split {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      border: 1px solid #2A3141;
+      padding: 12px;
+      background: #131721;
+    }
+
+    .tui-side {
+      border-right: 1px solid #2A3141;
+      padding-right: 12px;
+    }
+
+    .tui-main {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tui-editor {
+      background: #1B2130;
+      border: 1px solid #3E475C;
+      padding: 10px;
+      color: #F8F8F2;
+    }
+
+    .tui-success-bar {
+      background: rgba(22, 163, 74, 0.2);
+      border: 1px solid #16A34A;
+      color: #4ADE80;
+      padding: 6px 12px;
+      font-weight: 700;
+    }
+
+    /* MATRIX & FEATURES */
+    .section-title {
+      font-size: 3rem;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 4px;
+      background: var(--ink);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .feature-card {
+      padding: 24px;
+    }
+
+    .feature-num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      font-family: 'Darker Grotesque', sans-serif;
+      line-height: 0.9;
+    }
+
+    .feature-title {
+      font-size: 1.6rem;
+      margin: 8px 0 12px;
+    }
+
+    /* KEYBOARD MATRIX */
+    .keys-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .key-card {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .key-tag {
+      align-self: flex-start;
+      background: var(--ink);
+      color: #FFF;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border: 2px solid var(--ink);
+      box-shadow: 2px 2px 0px var(--secondary);
+    }
+
+    .key-desc {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* CURRICULUM TABLE */
+    .curriculum-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 60px;
+    }
+
+    .curriculum-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .curr-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      background: var(--secondary);
+      border: 2px solid var(--ink);
+      padding: 4px 8px;
+      font-size: 0.85rem;
+    }
+
+    .curr-title {
+      font-family: 'Darker Grotesque', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      flex: 1;
+      margin-left: 12px;
+    }
+
+    .curr-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: var(--surface-alt);
+      border: 2px solid var(--ink);
+      padding: 4px 10px;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--ink);
+      color: #FFF;
+      padding: 40px 0;
+      border-top: var(--border-width) solid var(--ink);
+      margin-top: 60px;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: #FFF;
+      text-decoration: underline;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 16px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 840px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .tui-split {
+        grid-template-columns: 1fr;
+      }
+      .tui-side {
+        border-right: none;
+        border-bottom: 1px solid #2A3141;
+        padding-bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP TICKER -->
+  <div class="ticker-bar">
+    <div><span class="ticker-pulse"></span> LEARN-DUCKDB v0.1.0 // STANDALONE TERMINAL TUTORIAL</div>
+    <div class="mono">STATUS: PRODUCTION READY</div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header>
+    <div class="container">
+      <div class="nav-row">
+        <a href="#" class="brand-logo">
+          <span class="duck-badge">🦆 SQL</span>
+          <h1 class="brand-name">learn-duckdb</h1>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#install">INSTALL</a></li>
+          <li><a href="#matrix">KEYBINDINGS</a></li>
+          <li><a href="#curriculum">CURRICULUM</a></li>
+          <li><a href="https://github.com/haydermuhib/learn-duckdb" target="_blank" rel="noopener">GITHUB ↗</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN HERO -->
+  <main class="container">
+    <section class="hero-section">
+      <div class="hero-grid">
+        <div>
+          <h2 class="hero-title">
+            MASTER <span>DUCKDB</span> IN YOUR TERMINAL.
+          </h2>
+          <p class="hero-subtitle">
+            An interactive, keyboard-driven SQL curriculum powered by DuckDB's in-memory engine and Textual TUI. Write real analytical SQL, get millisecond feedback, and level up without leaving your terminal.
+          </p>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+            <a href="#install" class="b-btn">GET STARTED NOW</a>
+            <a href="https://github.com/haydermuhib/learn-duckdb" target="_blank" class="b-btn b-btn-outline" rel="noopener">VIEW REPO ↗</a>
+          </div>
+        </div>
+
+        <!-- QUICK INSTALL TABS -->
+        <div id="install" class="b-box install-card">
+          <div class="install-header">
+            <h3 style="font-size: 1.8rem;">ONE-LINE INSTALL</h3>
+            <span class="mono" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">ZERO CONFIG</span>
+          </div>
+
+          <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('sh')">macOS / Linux</button>
+            <button class="tab-btn" onclick="switchTab('ps1')">Windows PS</button>
+            <button class="tab-btn" onclick="switchTab('uvx')">Instant (uvx)</button>
+            <button class="tab-btn" onclick="switchTab('git')">Clone & Run</button>
+          </div>
+
+          <!-- SH TAB -->
+          <div id="tab-sh" class="code-box">
+            <button class="copy-btn" onclick="copyCode('sh-code', this)">COPY</button>
+            <pre id="sh-code">curl -fsSL https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.sh | bash</pre>
+          </div>
+
+          <!-- PS1 TAB -->
+          <div id="tab-ps1" class="code-box" style="display: none;">
+            <button class="copy-btn" onclick="copyCode('ps1-code', this)">COPY</button>
+            <pre id="ps1-code">irm https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.ps1 | iex</pre>
+          </div>
+
+          <!-- UVX TAB -->
+          <div id="tab-uvx" class="code-box" style="display: none;">
+            <button class="copy-btn" onclick="copyCode('uvx-code', this)">COPY</button>
+            <pre id="uvx-code">uvx --from git+https://github.com/haydermuhib/learn-duckdb.git learn-duckdb</pre>
+          </div>
+
+          <!-- GIT TAB -->
+          <div id="tab-git" class="code-box" style="display: none;">
+            <button class="copy-btn" onclick="copyCode('git-code', this)">COPY</button>
+            <pre id="git-code">git clone https://github.com/haydermuhib/learn-duckdb.git
+cd learn-duckdb && uv run app.py</pre>
+          </div>
+
+          <p class="mono" style="font-size: 0.85rem; margin-top: auto; color: #4B5563;">
+            Requires Python 3.11+. The installer automatically manages <code>uv</code> environments without polluting system packages.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TUI INTERACTIVE SIMULATION -->
+    <section>
+      <div class="tui-preview">
+        <div class="tui-header">
+          <div class="tui-dots">
+            <div class="tui-dot" style="background: #FF5F56;"></div>
+            <div class="tui-dot" style="background: #FFBD2E;"></div>
+            <div class="tui-dot" style="background: #27C93F;"></div>
+          </div>
+          <div>learn-duckdb — Terminal SQL Environment</div>
+          <div>⚡ 0.4ms</div>
+        </div>
+        <div class="tui-body">
+          <div class="tui-split">
+            <div class="tui-side">
+              <div style="color: #E2E8F0; font-weight: 800; margin-bottom: 8px;">📚 01_SELECT_BASICS</div>
+              <div style="color: #4ADE80; margin-bottom: 4px;">✔ Task 1: Basic Projection</div>
+              <div style="color: #FBBF24; margin-bottom: 4px;">▶ Task 2: Filtering with WHERE</div>
+              <div style="color: #64748B; margin-bottom: 4px;">○ Task 3: Aggregations</div>
+              <div style="color: #64748B;">○ Task 4: Aliases & Arithmetic</div>
+              <hr style="border-color: #2A3141; margin: 12px 0;">
+              <div style="color: #94A3B8; font-size: 0.75rem;">
+                🎯 <b>TASK:</b> Retrieve the name, department, and salary of employees earning over $75,000.
+              </div>
+            </div>
+            <div class="tui-main">
+              <div class="tui-editor">
+                <span style="color: #F472B6;">SELECT</span> name, department, salary<br>
+                <span style="color: #F472B6;">FROM</span> employees<br>
+                <span style="color: #F472B6;">WHERE</span> salary > <span style="color: #60A5FA;">75000</span><br>
+                <span style="color: #F472B6;">ORDER BY</span> salary <span style="color: #F472B6;">DESC</span>;
+              </div>
+              <div class="tui-success-bar">
+                🎉 TASK PASSED! Expected 4 rows returned in 0.4ms. Auto-advancing...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES & ARCHITECTURE -->
+    <section>
+      <h2 class="section-title">CORE ARCHITECTURE</h2>
+      <div class="feature-grid">
+        <div class="b-box feature-card">
+          <div class="feature-num">01</div>
+          <h3 class="feature-title">IN-MEMORY ISOLATION</h3>
+          <p>Every lecture runs on an isolated in-memory DuckDB database (<code>:memory:</code>). Experiment, insert, and query without fear of corrupting source data.</p>
+        </div>
+
+        <div class="b-box feature-card">
+          <div class="feature-num">02</div>
+          <h3 class="feature-title">RESULT-BASED GRADING</h3>
+          <p>The engine tests your query's output schema and row contents rather than matching strict SQL strings. Write idiomatic SQL your way.</p>
+        </div>
+
+        <div class="b-box feature-card">
+          <div class="feature-num">03</div>
+          <h3 class="feature-title">INTELLISENSE AUTOCOMPLETE</h3>
+          <p>Native keyboard-friendly autocompletion for SQL keywords, aggregations, window functions, and active table column names with <kbd>Tab</kbd>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEYBOARD MATRIX -->
+    <section id="matrix">
+      <h2 class="section-title">KEYBOARD CONTROLS</h2>
+      <div class="keys-grid">
+        <div class="b-box key-card">
+          <span class="key-tag">Ctrl + J</span>
+          <div class="key-desc">Execute Current SQL Query</div>
+        </div>
+
+        <div class="b-box key-card">
+          <span class="key-tag">Ctrl + G</span>
+          <div class="key-desc">Run Statement Under Cursor</div>
+        </div>
+
+        <div class="b-box key-card">
+          <span class="key-tag">Ctrl + N / Ctrl + P</span>
+          <div class="key-desc">Next / Previous Exercise</div>
+        </div>
+
+        <div class="b-box key-card">
+          <span class="key-tag">Ctrl + B</span>
+          <div class="key-desc">Toggle Sidebar Collapse</div>
+        </div>
+
+        <div class="b-box key-card">
+          <span class="key-tag">Alt + ← / Alt + →</span>
+          <div class="key-desc">Resize Sidebar Width</div>
+        </div>
+
+        <div class="b-box key-card">
+          <span class="key-tag">Tab</span>
+          <div class="key-desc">Accept SQL IntelliSense Token</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CURRICULUM OVERVIEW -->
+    <section id="curriculum">
+      <h2 class="section-title">CURRICULUM OVERVIEW</h2>
+      <div class="curriculum-list">
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 01</span>
+          <span class="curr-title">SELECT Basics & Projections</span>
+          <span class="curr-meta">8 Exercises // Beginner</span>
+        </div>
+
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 02</span>
+          <span class="curr-title">Filtering & Complex Conditions</span>
+          <span class="curr-meta">8 Exercises // Beginner</span>
+        </div>
+
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 03</span>
+          <span class="curr-title">Sorting, Limits & NULL Semantics</span>
+          <span class="curr-meta">8 Exercises // Beginner</span>
+        </div>
+
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 04</span>
+          <span class="curr-title">Aggregations, GROUP BY & HAVING</span>
+          <span class="curr-meta">8 Exercises // Intermediate</span>
+        </div>
+
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 05</span>
+          <span class="curr-title">Multi-Table JOINs & Relationships</span>
+          <span class="curr-meta">8 Exercises // Intermediate</span>
+        </div>
+
+        <div class="b-box curriculum-row">
+          <span class="curr-num">MODULE 06</span>
+          <span class="curr-title">CTEs, Subqueries & Window Functions</span>
+          <span class="curr-meta">8 Exercises // Advanced</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-row">
+      <div class="mono" style="font-size: 0.9rem;">
+        🦆 <b>learn-duckdb</b> — Open Source Terminal SQL Learning Environment.
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/haydermuhib/learn-duckdb" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://duckdb.org" target="_blank" rel="noopener">DuckDB</a>
+        <a href="https://textual.textualize.io" target="_blank" rel="noopener">Textual</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(type) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.install-card .code-box').forEach(box => box.style.display = 'none');
+      
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(type));
+      if (targetBtn) targetBtn.classList.add('active');
+      
+      const targetBox = document.getElementById('tab-' + type);
+      if (targetBox) targetBox.style.display = 'block';
+    }
+
+    function copyCode(elementId, btn) {
+      const code = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = 'COPIED!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

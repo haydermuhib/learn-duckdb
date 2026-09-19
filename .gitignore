@@ -26,8 +26,12 @@ uv.lock
 *.swp
 *.swo
 
+
 # OS
 .DS_Store
 Thumbs.db
 
 learning.txt
+
+# Antigravity / Agents
+.agents/

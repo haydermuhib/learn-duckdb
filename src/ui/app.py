@@ -62,13 +62,15 @@ class LearnDuckDBApp(App):
 
     BINDINGS = [
         Binding("ctrl+j", "run_query", "Run All", show=True),
-        Binding("ctrl+g", "run_selection", "Run Selection", show=True),
+        Binding("ctrl+g", "run_selection_or_stmt", "Run Stmt", show=True),
+        Binding("ctrl+b", "toggle_sidebar", "Sidebar", show=True),
+        Binding("ctrl+n", "next_task", "Next", show=True),
+        Binding("ctrl+p", "prev_task", "Prev", show=True),
         Binding("ctrl+h", "toggle_hint", "Hint", show=True),
         Binding("ctrl+r", "reset", "Reset", show=True),
-        Binding("ctrl+n", "next_task", "Next", show=True),
-        Binding("ctrl+b", "prev_task", "Prev", show=True),
-        Binding("ctrl+l", "clear_editor", "Clear Editor", show=True),
+        Binding("ctrl+l", "clear_editor", "Clear", show=True),
         Binding("ctrl+t", "show_erd", "ERD", show=True),
+        Binding("tab", "autocomplete", "Complete", show=False),
         Binding("q", "quit", "Quit", show=True),
     ]
 
@@ -118,6 +120,15 @@ class LearnDuckDBApp(App):
         editor = self.query_one(SQLEditor)
         editor.focus_editor()
 
+    def on_resize(self, event) -> None:
+        """Gracefully adapt to terminal zoom and small dimensions."""
+        try:
+            sidebar = self.query_one(LectureSidebar)
+            if event.size.width < 80 and not sidebar.has_class("-hidden"):
+                sidebar.add_class("-hidden")
+        except Exception:
+            pass
+
     # ─── Sidebar Event Handlers ───
 
     def on_lecture_selected(self, event: LectureSelected) -> None:
@@ -159,17 +170,46 @@ class LearnDuckDBApp(App):
 
     # ─── Key Binding Actions ───
 
+    def action_toggle_sidebar(self) -> None:
+        """Toggle sidebar visibility with Ctrl+B."""
+        sidebar = self.query_one(LectureSidebar)
+        sidebar.toggle_class("-hidden")
+        is_hidden = sidebar.has_class("-hidden")
+        self.notify(
+            "Sidebar hidden (Ctrl+B to restore)" if is_hidden else "Sidebar visible",
+            title="📂 Sidebar",
+            severity="information",
+            timeout=1.5,
+        )
+
+    def action_autocomplete(self) -> None:
+        """Apply top IntelliSense completion if active, otherwise standard tab navigation."""
+        try:
+            editor = self.query_one(SQLEditor)
+            if editor.apply_current_completion():
+                return
+        except Exception:
+            pass
+        self.screen.focus_next()
+
     def action_run_query(self) -> None:
-        """Execute the full editor content."""
+        """Execute the full editor content (Run All)."""
         editor = self.query_one(SQLEditor)
         sql = editor.current_sql
         self._execute_sql(sql)
 
-    def action_run_selection(self) -> None:
-        """Execute only the selected text. Falls back to full text if nothing is selected."""
+    def action_run_selection_or_stmt(self) -> None:
+        """Execute selected SQL or statement under cursor."""
         editor = self.query_one(SQLEditor)
-        sql = editor.runnable_sql
+        sql = editor.current_statement_or_selection
+        if not sql.strip():
+            self.notify("No query found at cursor", severity="warning")
+            return
         self._execute_sql(sql)
+
+    def action_run_selection(self) -> None:
+        """Legacy alias for action_run_selection_or_stmt."""
+        self.action_run_selection_or_stmt()
 
     def action_toggle_hint(self) -> None:
         """Show or hide the hint for the current task."""
@@ -342,8 +382,13 @@ class LearnDuckDBApp(App):
         editor.clear()
         editor.focus_editor()
 
+        schemas = self._sandbox_db.get_table_schemas()
         sidebar = self.query_one(LectureSidebar)
-        sidebar.set_schema(self._sandbox_db.get_table_schemas())
+        sidebar.set_schema(schemas)
+
+        tbl_names = [t.name for t in schemas]
+        col_names = [c.name for t in schemas for c in t.columns]
+        editor.set_schema_tokens(tbl_names, col_names)
 
         # Show available databases in sidebar
         dbs = self._sandbox_db.list_sandbox_databases()
@@ -487,13 +532,17 @@ class LearnDuckDBApp(App):
                 self._current_task_index = i
                 break
 
+        schemas = self._lecture_db.get_table_schemas()
         sidebar = self.query_one(LectureSidebar)
-        sidebar.set_schema(self._lecture_db.get_table_schemas())
+        sidebar.set_schema(schemas)
 
         self._show_current_task()
 
         editor = self.query_one(SQLEditor)
         editor.clear()
+        tbl_names = [t.name for t in schemas]
+        col_names = [c.name for t in schemas for c in t.columns]
+        editor.set_schema_tokens(tbl_names, col_names)
         editor.focus_editor()
 
         results = self.query_one(ResultsPanel)

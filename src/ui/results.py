@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.widgets import DataTable, Static
 
 from src.content.models import QueryResult, ValidationResult, ValidationStatus
@@ -16,10 +16,10 @@ class ResultsPanel(Vertical):
         super().__init__(id="results-section", **kwargs)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="results-header"):
-            yield Static("📊 Results", id="results-title")
+        with Horizontal(id="results-header"):
+            yield Static(" 📊 Results", id="results-title")
             yield Static("", id="results-stats")
-        yield DataTable(id="results-table")
+        yield DataTable(id="results-table", zebra_stripes=True, cursor_type="row")
         yield Static(
             "Run a query to see results here",
             id="feedback-bar",
@@ -60,9 +60,9 @@ class ResultsPanel(Vertical):
             table.add_row(*str_row)
 
         # Update stats
-        truncated = " (showing first 200)" if len(result.rows) > 200 else ""
+        truncated = " (first 200)" if len(result.rows) > 200 else ""
         stats.update(
-            f"{result.row_count} rows{truncated}  │  {result.execution_time_ms:.1f}ms"
+            f"[bold #7aa2f7]{result.row_count}[/] rows{truncated}  │  ⚡ [bold #FEC62E]{result.execution_time_ms:.1f}ms[/]"
         )
 
     def show_validation(self, validation: ValidationResult) -> None:

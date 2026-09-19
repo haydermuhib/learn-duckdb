@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════
-   learn-duckdb — Premium Dark Theme
-   Inspired by Tokyo Night + DuckDB brand yellow (#FEC62E)
+   learn-duckdb — Premium Tokyo Night + DuckDB Golden Amber
+   Crafted using tui-design-skill principles
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Global ─── */
+/* ─── Global Surface ─── */
 Screen {
     background: #1a1b26;
     color: #c0caf5;
+    layers: base modal;
 }
 
 /* ─── Header ─── */
@@ -21,6 +22,8 @@ Header {
 Footer {
     background: #16161e;
     color: #565f89;
+    dock: bottom;
+    height: 1;
 }
 
 FooterKey {
@@ -28,20 +31,26 @@ FooterKey {
     background: #16161e;
 }
 
-/* ─── Main Layout ─── */
+/* ─── Main Container (Flexible Layout) ─── */
 #main-container {
     layout: horizontal;
     height: 1fr;
+    width: 1fr;
 }
 
-/* ─── Sidebar ─── */
+/* ─── Sidebar (Responsive & Collapsible) ─── */
 #sidebar {
-    width: 32;
-    min-width: 28;
-    max-width: 40;
+    width: 28;
+    min-width: 22;
+    max-width: 34;
+    height: 1fr;
     background: #16161e;
-    border-right: thick #292e42;
+    border-right: solid #292e42;
     padding: 0 1;
+}
+
+#sidebar.-hidden {
+    display: none;
 }
 
 #sidebar-title {
@@ -52,7 +61,7 @@ FooterKey {
 }
 
 #lecture-tree {
-    height: auto;
+    height: 1fr;
     max-height: 50%;
     padding: 0;
     scrollbar-size: 1 1;
@@ -73,7 +82,7 @@ FooterKey {
 #schema-section {
     height: 1fr;
     padding: 1 0 0 0;
-    border-top: dashed #292e42;
+    border-top: solid #292e42;
 }
 
 #schema-title {
@@ -93,14 +102,15 @@ FooterKey {
 /* ─── Content Area ─── */
 #content-area {
     width: 1fr;
+    height: 1fr;
     layout: vertical;
 }
 
-/* ─── Task Panel ─── */
+/* ─── Task Panel (Adaptive Height with Scroll) ─── */
 #task-panel {
     height: auto;
-    min-height: 5;
-    max-height: 18;
+    min-height: 3;
+    max-height: 14;
     overflow-y: auto;
     scrollbar-size: 1 1;
     scrollbar-color: #292e42;
@@ -137,10 +147,10 @@ FooterKey {
     display: none;
 }
 
-/* ─── Editor Tabs ─── */
+/* ─── Editor Tabs (Flex 1fr) ─── */
 #editor-tabs {
     height: 1fr;
-    min-height: 8;
+    min-height: 4;
 }
 
 #editor-tabs > Tabs {
@@ -174,31 +184,40 @@ FooterKey {
     height: 1fr;
 }
 
-/* ─── Editor Section (inside tab) ─── */
+/* ─── Editor Section ─── */
 #editor-section {
     height: 1fr;
-    min-height: 6;
     layout: vertical;
 }
 
-#editor-label {
+#editor-header-bar {
     height: 1;
+    layout: horizontal;
+    background: #24283b;
     padding: 0 1;
-    background: #292e42;
+}
+
+#editor-label {
+    width: 1fr;
     color: #7aa2f7;
     text-style: bold;
 }
 
+#editor-status-indicator {
+    width: auto;
+    color: #565f89;
+}
+
 #sql-editor {
     height: 1fr;
-    min-height: 4;
+    min-height: 2;
     border: none;
 }
 
 #run-bar {
     height: 1;
     layout: horizontal;
-    background: #292e42;
+    background: #1f2335;
     padding: 0 1;
 }
 
@@ -207,12 +226,13 @@ FooterKey {
     color: #565f89;
 }
 
-#mode-indicator {
+#intellisense-bar {
     width: auto;
-    color: #73daca;
+    color: #FEC62E;
+    text-style: bold;
 }
 
-/* ─── ERD Display (inside ERD tab) ─── */
+/* ─── ERD Display ─── */
 #erd-display {
     height: 1fr;
     padding: 1 2;
@@ -223,10 +243,10 @@ FooterKey {
     scrollbar-color-hover: #414868;
 }
 
-/* ─── Results Tabs ─── */
+/* ─── Results Tabs (Flex 1fr) ─── */
 #results-tabs {
     height: 1fr;
-    min-height: 5;
+    min-height: 4;
     border-top: solid #292e42;
 }
 
@@ -261,17 +281,16 @@ FooterKey {
     height: 1fr;
 }
 
-/* ─── Results Panel (inside Results tab) ─── */
+/* ─── Results Section ─── */
 #results-section {
     height: 1fr;
-    min-height: 5;
     layout: vertical;
 }
 
 #results-header {
     height: 1;
     layout: horizontal;
-    background: #292e42;
+    background: #24283b;
     padding: 0 1;
 }
 
@@ -303,7 +322,7 @@ DataTable {
 
 DataTable > .datatable--cursor {
     background: #292e42;
-    color: #c0caf5;
+    color: #FEC62E;
 }
 
 DataTable > .datatable--header {
@@ -315,8 +334,9 @@ DataTable > .datatable--header {
 #feedback-bar {
     height: auto;
     min-height: 1;
-    max-height: 4;
+    max-height: 3;
     padding: 0 1;
+    background: #16161e;
 }
 
 .feedback-pass {
@@ -336,7 +356,7 @@ DataTable > .datatable--header {
     color: #565f89;
 }
 
-/* ─── Preview Display (inside Table Preview tab) ─── */
+/* ─── Preview Display ─── */
 #preview-display {
     height: 1fr;
     padding: 1 2;
@@ -347,120 +367,7 @@ DataTable > .datatable--header {
     scrollbar-color-hover: #414868;
 }
 
-/* ─── Welcome / Splash ─── */
-#welcome-container {
-    align: center middle;
-    padding: 2 4;
-}
-
-#welcome-title {
-    text-align: center;
-    color: #FEC62E;
-    text-style: bold;
-    padding: 1 0;
-}
-
-#welcome-subtitle {
-    text-align: center;
-    color: #c0caf5;
-    padding: 0 0 2 0;
-}
-
-#welcome-instructions {
-    text-align: center;
-    color: #565f89;
-}
-
-/* ─── Sandbox Mode ─── */
-#sandbox-bar {
-    height: 1;
-    layout: horizontal;
-    background: #1e2030;
-    border-bottom: solid #292e42;
-    padding: 0 1;
-}
-
-#sandbox-db-name {
-    width: 1fr;
-    color: #73daca;
-    text-style: bold;
-}
-
-#sandbox-hint {
-    width: auto;
-    color: #565f89;
-}
-
-/* ─── Mode Tabs ─── */
-#mode-tabs {
-    height: 3;
-    background: #16161e;
-    dock: top;
-}
-
-TabbedContent {
-    height: 1fr;
-}
-
-TabPane {
-    padding: 0;
-}
-
-ContentSwitcher {
-    height: 1fr;
-}
-
-Tabs {
-    background: #16161e;
-    color: #565f89;
-}
-
-Tab {
-    color: #565f89;
-    padding: 0 2;
-}
-
-Tab.-active {
-    color: #FEC62E;
-    text-style: bold;
-}
-
-Tab:hover {
-    color: #c0caf5;
-}
-
-/* ─── Scrollbar — global slim style ─── */
-Scrollbar {
-    background: #16161e;
-    color: #292e42;
-}
-
-ScrollbarThumb {
-    background: #414868;
-}
-
-ScrollbarThumb:hover {
-    background: #565f89;
-}
-
-/* ─── Tree Widget ─── */
-Tree {
-    background: transparent;
-    scrollbar-size: 1 1;
-    scrollbar-color: #292e42;
-    scrollbar-color-hover: #414868;
-}
-
-Tree > .tree--cursor {
-    background: #292e42;
-    color: #FEC62E;
-}
-
-Tree > .tree--guides {
-    color: #292e42;
-}
-
-/* ─── Input (New DB prompt) ─── */
+/* ─── Input (New DB Prompt) ─── */
 #new-db-input {
     height: 3;
     margin: 0 1;
@@ -473,14 +380,16 @@ Tree > .tree--guides {
     border: tall #FEC62E;
 }
 
-/* ─── Confirmation Modal ─── */
+/* ─── Confirmation Modal Dialog ─── */
 ResetConfirmationModal {
     align: center middle;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.7);
+    layer: modal;
 }
 
 #confirm-dialog {
     width: 62;
+    max-width: 90%;
     height: auto;
     background: #1e2030;
     border: tall #f7768e;
@@ -509,4 +418,32 @@ ResetConfirmationModal {
     margin: 0 1;
 }
 
+/* ─── Global Scrollbars ─── */
+Scrollbar {
+    background: #16161e;
+    color: #292e42;
+}
 
+ScrollbarThumb {
+    background: #414868;
+}
+
+ScrollbarThumb:hover {
+    background: #565f89;
+}
+
+Tree {
+    background: transparent;
+    scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+}
+
+Tree > .tree--cursor {
+    background: #292e42;
+    color: #FEC62E;
+}
+
+Tree > .tree--guides {
+    color: #292e42;
+}

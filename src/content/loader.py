@@ -31,7 +31,7 @@ class LectureLoader:
             if not yaml_path.exists():
                 continue
 
-            with open(yaml_path, "r") as f:
+            with open(yaml_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             lectures.append(
@@ -54,7 +54,7 @@ class LectureLoader:
         if not yaml_path.exists():
             raise FileNotFoundError(f"Lecture not found: {lecture_id}")
 
-        with open(yaml_path, "r") as f:
+        with open(yaml_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         tables = [
@@ -93,7 +93,7 @@ class LectureLoader:
         seed_path = lecture.seed_sql_path
         if not seed_path.exists():
             raise FileNotFoundError(f"Seed SQL not found: {seed_path}")
-        return seed_path.read_text()
+        return seed_path.read_text(encoding="utf-8")
 
     def load_solutions(self, lecture: Lecture) -> dict[int, str]:
         """Parse solutions.sql into a dict of {task_id: solution_sql}."""
@@ -101,7 +101,7 @@ class LectureLoader:
         if not solutions_path.exists():
             raise FileNotFoundError(f"Solutions not found: {solutions_path}")
 
-        text = solutions_path.read_text()
+        text = solutions_path.read_text(encoding="utf-8")
         solutions: dict[int, str] = {}
         current_task_id: int | None = None
         current_lines: list[str] = []

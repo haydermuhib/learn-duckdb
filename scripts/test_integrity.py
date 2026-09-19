@@ -73,6 +73,7 @@ def test_progress_and_sandbox():
         assert pt.is_completed("01_select_basics", 1)
         assert not pt.is_completed("01_select_basics", 2)
         pt.close()
+        del pt
 
         # Sandbox test
         sb = SandboxDatabase(tmp_path / "test_sb.duckdb")
@@ -83,6 +84,10 @@ def test_progress_and_sandbox():
         assert not res2.is_error
         assert len(res2.rows) == 1
         sb.close()
+        del sb
+
+        import gc
+        gc.collect()
 
     print("✓ Verified ProgressTracker and SandboxDatabase auto-creation.")
 

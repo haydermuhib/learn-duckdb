@@ -1,8 +1,12 @@
-"""Integrity test suite for learn-duckdb CI/CD pipeline."""
-
 import sys
 import tempfile
 from pathlib import Path
+
+# Ensure UTF-8 output on all platforms (including Windows cp1252 consoles)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 def test_imports():
     """Verify all project modules import cleanly."""
@@ -18,7 +22,7 @@ def test_imports():
     import src.ui.sidebar
     import src.ui.task_panel
     import src.ui.updater_dialog
-    print("✓ All module imports verified successfully.")
+    print("[OK] All module imports verified successfully.")
 
 def test_lectures_and_seeds():
     """Verify all lecture definitions and seed SQL run on DuckDB."""
@@ -57,7 +61,7 @@ def test_lectures_and_seeds():
                 assert not res.is_error, f"Solution query failed for {lec.id} task {task.id}: {res.error}"
 
     ldb.close()
-    print(f"✓ Verified all {len(lectures)} lectures, seeds, and solution queries.")
+    print(f"[OK] Verified all {len(lectures)} lectures, seeds, and solution queries.")
 
 def test_progress_and_sandbox():
     """Verify progress tracker and sandbox database in isolated environment."""
@@ -89,14 +93,14 @@ def test_progress_and_sandbox():
         import gc
         gc.collect()
 
-    print("✓ Verified ProgressTracker and SandboxDatabase auto-creation.")
+    print("[OK] Verified ProgressTracker and SandboxDatabase auto-creation.")
 
 def test_updater():
     """Verify UpdateManager can be initialized without error."""
     from src.engine.updater import UpdateManager
     um = UpdateManager("0.1.0")
     assert um.current_version == "0.1.0"
-    print("✓ Verified UpdateManager.")
+    print("[OK] Verified UpdateManager.")
 
 if __name__ == "__main__":
     print("Running learn-duckdb test suite...")
@@ -104,4 +108,4 @@ if __name__ == "__main__":
     test_lectures_and_seeds()
     test_progress_and_sandbox()
     test_updater()
-    print("\n🎉 All integrity tests passed successfully!")
+    print("\n[SUCCESS] All integrity tests passed successfully!")

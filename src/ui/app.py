@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -12,9 +13,11 @@ from src.content.loader import LectureLoader
 from src.content.models import Lecture, Task, ValidationStatus
 from src.engine.database import LectureDatabase, SandboxDatabase, generate_erd
 from src.engine.progress import ProgressTracker
+from src.engine.updater import UpdateManager
 from src.engine.validator import QueryValidator
 from src.ui.editor import QuerySubmitted, SQLEditor
 from src.ui.results import ResultsPanel
+from src.ui.updater_dialog import UpdatePromptModal
 from src.ui.sidebar import (
     LectureSelected,
     LectureSidebar,
@@ -123,6 +126,18 @@ class LearnDuckDBApp(App):
         task_panel.set_welcome()
         editor = self.query_one(SQLEditor)
         editor.focus_editor()
+        self._check_for_updates_background()
+
+    @work(thread=True)
+    def _check_for_updates_background(self) -> None:
+        """Check for updates in background thread without delaying startup."""
+        try:
+            updater = UpdateManager()
+            info = updater.check_for_updates(timeout=2.0)
+            if info and info.is_newer:
+                self.call_from_thread(lambda: self.push_screen(UpdatePromptModal(info)))
+        except Exception:
+            pass
 
     def on_resize(self, event) -> None:
         """Gracefully adapt to terminal zoom and small dimensions."""

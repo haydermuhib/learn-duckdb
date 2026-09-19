@@ -397,19 +397,23 @@ DataTable > .datatable--header {
 }
 
 /* ─── Confirmation Modal Dialog ─── */
-ResetConfirmationModal {
+ResetConfirmationModal, UpdatePromptModal {
     align: center middle;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.75);
     layer: modal;
 }
 
-#confirm-dialog {
+#confirm-dialog, #update-dialog {
     width: 62;
     max-width: 90%;
     height: auto;
     background: #1e2030;
     border: tall #f7768e;
     padding: 1 2;
+}
+
+#update-dialog {
+    border: tall #73daca;
 }
 
 #confirm-title {
@@ -419,18 +423,39 @@ ResetConfirmationModal {
     padding-bottom: 1;
 }
 
+#update-title {
+    text-style: bold;
+    color: #73daca;
+    text-align: center;
+    padding-bottom: 1;
+}
+
+#update-version-info {
+    text-align: center;
+}
+
+#update-notes {
+    color: #565f89;
+    padding: 1 0;
+}
+
+#update-status {
+    text-align: center;
+    padding: 1 0;
+}
+
 #confirm-message {
     color: #c0caf5;
     text-align: center;
     padding-bottom: 1;
 }
 
-#confirm-buttons {
+#confirm-buttons, #update-buttons {
     align: center middle;
     height: auto;
 }
 
-#confirm-buttons Button {
+#confirm-buttons Button, #update-buttons Button {
     margin: 0 1;
 }
 

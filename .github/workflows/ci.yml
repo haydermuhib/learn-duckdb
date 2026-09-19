@@ -1,0 +1,62 @@
+name: CI / CD & Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Verify Module Imports & Engine Integrity
+        run: |
+          uv run python -c "
+          import src.content.loader as loader
+          import src.engine.database as db
+          import src.engine.progress as prog
+          import src.engine.validator as val
+          import src.engine.updater as upd
+          import src.ui.app as app
+          print('All learn-duckdb modules verified successfully!')
+          "
+
+      - name: Test Lecture Database & Seeds
+        run: |
+          uv run python -c "
+          from src.content.loader import LectureLoader
+          from src.engine.database import LectureDatabase
+          loader = LectureLoader()
+          lectures = loader.list_lectures()
+          assert len(lectures) > 0, 'No lectures found!'
+          ldb = LectureDatabase()
+          for lec in lectures:
+              full_lec = loader.load_lecture(lec.id)
+              seed = loader.load_seed_sql(full_lec)
+              ldb.load_lecture(full_lec, seed)
+              assert ldb.is_connected
+          ldb.close()
+          print(f'Verified {len(lectures)} lecture databases & seed SQL scripts!')
+          "

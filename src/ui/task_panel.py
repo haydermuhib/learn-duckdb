@@ -51,6 +51,8 @@ class TaskPanel(Vertical):
             hint.update("")
             hint.display = False
 
+        self.scroll_home(animate=False)
+
     def set_welcome(self) -> None:
         """Show the welcome state."""
         title = self.query_one("#task-title", Static)
@@ -63,6 +65,7 @@ class TaskPanel(Vertical):
         instruction.update("Select a lecture from the sidebar to start learning SQL with DuckDB.")
         hint.update("")
         hint.display = False
+        self.scroll_home(animate=False)
 
     def set_sandbox_mode(self, db_name: str = "sandbox") -> None:
         """Show sandbox mode instructions."""
@@ -81,6 +84,7 @@ class TaskPanel(Vertical):
         )
         hint.update("💡 DuckDB tip: Use read_csv_auto('file.csv') to load CSV files directly!")
         hint.display = True
+        self.scroll_home(animate=False)
 
     def toggle_hint(self) -> None:
         """Show or hide the hint for the current task."""
@@ -105,3 +109,4 @@ class TaskPanel(Vertical):
         )
         hint.update("")
         hint.display = False
+        self.scroll_home(animate=False)

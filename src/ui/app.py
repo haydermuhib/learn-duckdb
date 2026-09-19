@@ -488,10 +488,11 @@ class LearnDuckDBApp(App):
 
         if self._current_task_index < len(lecture.tasks) - 1:
             self.notify(
-                f"Task {task.id} complete! Press Ctrl+N for next task.",
+                f"Task {task.id} complete! Moving to next task...",
                 title="🎉 Correct!",
                 severity="information",
             )
+            self.set_timer(1.0, self._auto_advance_task)
         else:
             self.notify(
                 f"You've completed {lecture.title}!",
@@ -500,6 +501,20 @@ class LearnDuckDBApp(App):
             )
             task_panel = self.query_one(TaskPanel)
             task_panel.set_completed_message(lecture.title)
+
+    def _auto_advance_task(self) -> None:
+        """Auto-advance to next task after success."""
+        if self._is_sandbox_mode or not self._current_lecture:
+            return
+        tasks = self._current_lecture.tasks
+        if self._current_task_index < len(tasks) - 1:
+            self._current_task_index += 1
+            self._show_current_task()
+            editor = self.query_one(SQLEditor)
+            editor.clear()
+            editor.focus_editor()
+            results = self.query_one(ResultsPanel)
+            results.clear()
 
     def on_unmount(self) -> None:
         """Cleanup on app exit."""

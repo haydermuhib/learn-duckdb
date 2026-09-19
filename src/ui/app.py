@@ -21,6 +21,7 @@ from src.ui.sidebar import (
     NewDatabaseRequested,
     SandboxDatabaseSelected,
     SandboxSelected,
+    SidebarHandle,
     TablePreviewRequested,
 )
 from src.ui.task_panel import TaskPanel
@@ -70,6 +71,8 @@ class LearnDuckDBApp(App):
         Binding("ctrl+r", "reset", "Reset", show=True),
         Binding("ctrl+l", "clear_editor", "Clear", show=True),
         Binding("ctrl+t", "show_erd", "ERD", show=True),
+        Binding("alt+left", "resize_sidebar_smaller", "Shrink Sidebar", show=False),
+        Binding("alt+right", "resize_sidebar_larger", "Expand Sidebar", show=False),
         Binding("tab", "autocomplete", "Complete", show=False),
         Binding("q", "quit", "Quit", show=True),
     ]
@@ -92,6 +95,7 @@ class LearnDuckDBApp(App):
         yield Header()
         with Horizontal(id="main-container"):
             yield LectureSidebar()
+            yield SidebarHandle()
             with Vertical(id="content-area"):
                 yield TaskPanel()
                 with TabbedContent(id="editor-tabs"):
@@ -173,14 +177,31 @@ class LearnDuckDBApp(App):
     def action_toggle_sidebar(self) -> None:
         """Toggle sidebar visibility with Ctrl+B."""
         sidebar = self.query_one(LectureSidebar)
+        handle = self.query_one(SidebarHandle)
         sidebar.toggle_class("-hidden")
         is_hidden = sidebar.has_class("-hidden")
+        if is_hidden:
+            handle.add_class("-hidden")
+        else:
+            handle.remove_class("-hidden")
         self.notify(
             "Sidebar hidden (Ctrl+B to restore)" if is_hidden else "Sidebar visible",
             title="📂 Sidebar",
             severity="information",
             timeout=1.5,
         )
+
+    def action_resize_sidebar_smaller(self) -> None:
+        """Decrease sidebar width (Alt+Left)."""
+        sidebar = self.query_one(LectureSidebar)
+        curr = sidebar.size.width or 28
+        sidebar.styles.width = max(18, curr - 3)
+
+    def action_resize_sidebar_larger(self) -> None:
+        """Increase sidebar width (Alt+Right)."""
+        sidebar = self.query_one(LectureSidebar)
+        curr = sidebar.size.width or 28
+        sidebar.styles.width = min(65, curr + 3)
 
     def action_autocomplete(self) -> None:
         """Apply top IntelliSense completion if active, otherwise standard tab navigation."""

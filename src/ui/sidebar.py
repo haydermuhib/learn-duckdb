@@ -3,13 +3,41 @@
 from __future__ import annotations
 
 from pathlib import Path
-
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
 from textual.widgets import Static, Tree
 
 from src.content.models import ColumnInfo, LectureMeta, TableInfo
+
+
+class SidebarHandle(Static):
+    """Vertical drag handle to resize the sidebar with mouse."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__("│", id="sidebar-handle", **kwargs)
+        self._dragging: bool = False
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        self._dragging = True
+        self.capture_mouse()
+        self.add_class("-active")
+        event.stop()
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self._dragging:
+            sidebar = self.app.query_one(LectureSidebar)
+            target_width = max(18, min(event.screen_x, 65))
+            sidebar.styles.width = target_width
+            event.stop()
+
+    def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self._dragging:
+            self._dragging = False
+            self.release_mouse()
+            self.remove_class("-active")
+            event.stop()
 
 
 class LectureSelected(Message):

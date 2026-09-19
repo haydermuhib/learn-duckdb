@@ -38,19 +38,35 @@ FooterKey {
     width: 1fr;
 }
 
-/* ─── Sidebar (Responsive & Collapsible) ─── */
+/* ─── Sidebar (Responsive, Resizable & Collapsible) ─── */
 #sidebar {
     width: 28;
-    min-width: 22;
-    max-width: 34;
+    min-width: 18;
+    max-width: 65;
     height: 1fr;
     background: #16161e;
-    border-right: solid #292e42;
     padding: 0 1;
 }
 
 #sidebar.-hidden {
     display: none;
+}
+
+#sidebar-handle {
+    width: 1;
+    height: 1fr;
+    background: #16161e;
+    color: #292e42;
+    text-align: center;
+}
+
+#sidebar-handle.-hidden {
+    display: none;
+}
+
+#sidebar-handle:hover, #sidebar-handle.-active {
+    background: #24283b;
+    color: #FEC62E;
 }
 
 #sidebar-title {

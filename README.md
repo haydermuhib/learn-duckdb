@@ -118,7 +118,7 @@ uv run app.py
 | <kbd>Ctrl+R</kbd> | Reset database (with confirmation prompt) |
 | <kbd>Ctrl+L</kbd> | Clear editor text |
 | <kbd>Ctrl+T</kbd> | Generate ASCII ERD diagram |
-| <kbd>q</kbd> | Quit application |
+| <kbd>Ctrl+Q</kbd> | Quit application |
 
 ---
 

@@ -104,7 +104,7 @@ class LearnDuckDBApp(App):
         Binding("alt+left", "resize_sidebar_smaller", "Shrink Sidebar", show=False),
         Binding("alt+right", "resize_sidebar_larger", "Expand Sidebar", show=False),
         Binding("tab", "autocomplete", "Complete", show=False),
-        Binding("q", "quit", "Quit", show=True),
+        Binding("ctrl+q", "quit", "Quit", show=True),
     ]
 
     def __init__(self, **kwargs) -> None:

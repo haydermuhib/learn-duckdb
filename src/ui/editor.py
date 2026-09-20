@@ -12,8 +12,9 @@ from textual.widgets import Static, TextArea
 
 # Standard SQL Keywords & Functions for IntelliSense
 DEFAULT_SQL_KEYWORDS = [
-    # Core Queries
+    # Core Queries & Sorting
     "SELECT", "FROM", "WHERE", "GROUP BY", "ORDER BY", "HAVING", "LIMIT", "OFFSET",
+    "ASC", "DESC", "NULLS FIRST", "NULLS LAST",
     "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN", "INNER JOIN", "CROSS JOIN",
     "ON", "AS", "WITH", "DISTINCT", "UNION", "UNION ALL", "INTERSECT", "EXCEPT",
     # DML & DDL
@@ -21,13 +22,14 @@ DEFAULT_SQL_KEYWORDS = [
     "ALTER TABLE", "PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "NOT NULL", "DEFAULT",
     # Logical & Conditions
     "AND", "OR", "NOT", "IN", "NOT IN", "BETWEEN", "LIKE", "ILIKE", "IS NULL", "IS NOT NULL",
+    "TRUE", "FALSE", "IS TRUE", "IS NOT TRUE",
     "CASE", "WHEN", "THEN", "ELSE", "END", "EXISTS",
     # Aggregates & Math
     "COUNT(*)", "COUNT()", "SUM()", "AVG()", "MIN()", "MAX()", "ROUND()", "ABS()", "COALESCE()",
     "NULLIF()", "CAST()",
     # Window Functions
     "ROW_NUMBER() OVER ()", "RANK() OVER ()", "DENSE_RANK() OVER ()", "LAG() OVER ()",
-    "LEAD() OVER ()", "NTILE() OVER ()", "PARTITION BY",
+    "LEAD() OVER ()", "NTILE() OVER ()", "PARTITION BY", "OVER ()",
     # DuckDB Specific
     "read_csv_auto('')", "read_parquet('')", "range()", "generate_series()", "DESCRIBE",
     "SHOW TABLES", "EXPLAIN",

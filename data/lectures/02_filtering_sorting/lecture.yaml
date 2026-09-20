@@ -156,7 +156,7 @@ tasks:
     order_matters: false
 
   - id: 7
-    title: "LIKE — Pattern Matching"
+    title: "LIKE — Pattern Matching & Sorting"
     instruction: |
       LIKE lets you search for patterns in text using wildcards:
 
@@ -173,11 +173,18 @@ tasks:
       DuckDB also supports ILIKE for case-insensitive matching:
         WHERE name ILIKE 'k%a'  -- matches Kara, kendra, etc.
 
-      Use LIKE in a WHERE clause:
-        SELECT * FROM names WHERE name LIKE 'k%a'
+      Ordering results:
+        You can sort output rows using ORDER BY at the end:
+          ORDER BY column ASC   -- ascending (A-Z or smallest first, default)
+          ORDER BY column DESC  -- descending (Z-A or largest first)
+
+      Example:
+        SELECT * FROM names
+        WHERE name LIKE 'k%a'
+        ORDER BY name DESC
 
       YOUR TASK: Fetch all people from 'names' whose name starts
-      with 'k' and ends with 'a'. Order results by name DESC.
+      with 'k' and ends with 'a'. Order results by name descending (DESC).
     hint: "Write: SELECT * FROM names WHERE name LIKE 'k%a' ORDER BY name DESC"
     expected_columns: ["id", "name"]
     order_matters: true

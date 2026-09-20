@@ -196,6 +196,14 @@ CREATE TABLE completed_tasks (
     completed_at TIMESTAMP DEFAULT current_timestamp,
     PRIMARY KEY (lecture_id, task_id)
 );
+
+CREATE TABLE saved_queries (
+    lecture_id VARCHAR NOT NULL,
+    task_id    INTEGER NOT NULL,
+    query_text TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT current_timestamp,
+    PRIMARY KEY (lecture_id, task_id)
+);
 ```
 
 ### 5.3 Sidebar Icons
@@ -206,13 +214,10 @@ CREATE TABLE completed_tasks (
 | 🔵 | Some tasks completed |
 | ✅ | All tasks completed |
 
-### 5.4 Auto-Advance
+### 5.4 Auto-Advance & Query Persistence
 
-When a task passes, the student gets a notification:
-- `🎉 Correct! Press Ctrl+N for next task.` (if more tasks remain)
-- `🏆 Lecture Complete!` (if all tasks done)
-
-The app does NOT auto-advance. The student presses `Ctrl+N` manually.
+- **Auto-Advance**: When completing a task for the first time, a success notification appears and the app auto-advances after 1.2s. When revisiting already completed tasks, queries can be re-run and outputs inspected without auto-advancing.
+- **Query Autosave**: Running a query (`Ctrl+J` / `Ctrl+G`) automatically saves the latest user attempt to `progress.duckdb` and the in-memory draft cache for that task (pass or fail). Navigating back to any task restores its latest query and outputs.
 
 ---
 

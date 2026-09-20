@@ -13,7 +13,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-CURRENT_VERSION = "0.1.0"
+CURRENT_VERSION = "0.1.1"
 GITHUB_REPO = "haydermuhib/learn-duckdb"
 GITHUB_RAW_PYPROJECT = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/pyproject.toml"
 GITHUB_RELEASES_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"

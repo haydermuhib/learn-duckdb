@@ -1,6 +1,6 @@
 [project]
 name = "learn-duckdb"
-version = "0.1.0"
+version = "0.1.1"
 description = "🦆 Interactive SQL learning in your terminal — powered by DuckDB"
 readme = "README.md"
 license = "MIT"

@@ -434,6 +434,12 @@ class LearnDuckDBApp(App):
         task = tasks[self._current_task_index]
         results_panel = self.query_one(ResultsPanel)
 
+        # Save user's query immediately upon execution (pass or fail)
+        clean_sql = sql.strip()
+        if clean_sql:
+            self._task_drafts[(self._current_lecture.id, task.id)] = clean_sql
+            self._progress.save_query(self._current_lecture.id, task.id, clean_sql)
+
         user_result = self._lecture_db.execute_user_query(sql)
         results_panel.show_results(user_result)
 
@@ -655,7 +661,7 @@ class LearnDuckDBApp(App):
     # ─── Internal Logic ───
 
     def _load_sidebar(self) -> None:
-        """Populate the sidebar with available lectures and progress."""
+        """Populate the sidebar with available lectures, progress, and playground databases."""
         lectures = self._loader.list_lectures()
         completed = {}
         for lec in lectures:
@@ -664,6 +670,8 @@ class LearnDuckDBApp(App):
 
         sidebar = self.query_one(LectureSidebar)
         sidebar.set_lectures(lectures, completed)
+        dbs = self._sandbox_db.list_sandbox_databases()
+        sidebar.set_sandbox_databases(dbs, active=self._sandbox_db.db_path if self._is_sandbox_mode else None)
 
     def _load_lecture(self, lecture_id: str) -> None:
         """Load a lecture and display its first uncompleted task."""

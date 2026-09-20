@@ -84,12 +84,22 @@ class LectureSidebar(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Static("🦆 learn-duckdb", id="sidebar-title")
-        yield Tree("📚 Lectures", id="lecture-tree")
+        yield Static("📚 Lectures", classes="sidebar-section-title")
+        yield Tree("Lectures", id="lecture-tree")
+        yield Static("🏗️ Playground", classes="sidebar-section-title")
+        yield Tree("Playground", id="sandbox-tree")
         yield Vertical(
             Static("📋 Schema Explorer", id="schema-title"),
             Tree("Tables", id="schema-tree"),
             id="schema-section",
         )
+
+    def on_mount(self) -> None:
+        """Hide root nodes so items appear cleanly at the top level."""
+        lecture_tree = self.query_one("#lecture-tree", Tree)
+        lecture_tree.show_root = False
+        sandbox_tree = self.query_one("#sandbox-tree", Tree)
+        sandbox_tree.show_root = False
 
     def set_lectures(
         self,
@@ -101,8 +111,8 @@ class LectureSidebar(Vertical):
         self._completed = completed or {}
 
         tree = self.query_one("#lecture-tree", Tree)
+        tree.show_root = False
         tree.clear()
-        tree.root.expand()
 
         for lec in lectures:
             done, total = self._completed.get(lec.id, (0, lec.task_count))
@@ -116,37 +126,22 @@ class LectureSidebar(Vertical):
             label = f"{icon} {lec.title}  ({done}/{total})"
             tree.root.add_leaf(label, data=lec.id)
 
-        # Add sandbox/playground section
-        sandbox_node = tree.root.add("🏗️  Playground", data="__sandbox__")
-        sandbox_node.expand()
-
     def set_sandbox_databases(self, databases: list[Path], active: Path | None = None) -> None:
-        """Populate sandbox database entries in the lecture tree."""
-        tree = self.query_one("#lecture-tree", Tree)
-
-        # Find or recreate the sandbox node
-        sandbox_node = None
-        for child in tree.root.children:
-            if child.data == "__sandbox__":
-                sandbox_node = child
-                break
-
-        if sandbox_node is None:
-            return
-
-        # Clear existing DB entries under sandbox
-        sandbox_node.remove_children()
+        """Populate sandbox database entries in the playground tree."""
+        tree = self.query_one("#sandbox-tree", Tree)
+        tree.show_root = False
+        tree.clear()
 
         for db_path in databases:
             is_active = active and db_path == active
             icon = "🟢" if is_active else "💾"
-            sandbox_node.add_leaf(
+            tree.root.add_leaf(
                 f"{icon} {db_path.stem}",
                 data=f"__sandbox_db__{db_path}",
             )
 
         # Add "New Database" option
-        sandbox_node.add_leaf("➕ New Database...", data="__new_db__")
+        tree.root.add_leaf("➕ New Database...", data="__new_db__")
 
     def update_completion(self, lecture_id: str, done: int, total: int) -> None:
         """Update the completion indicator for a specific lecture."""

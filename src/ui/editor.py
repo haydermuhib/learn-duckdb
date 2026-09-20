@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 import re
+from rich.style import Style
 from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
 from textual.widgets import Static, TextArea
+from textual.widgets.text_area import TextAreaTheme
 
 # Standard SQL Keywords & Functions for IntelliSense
 DEFAULT_SQL_KEYWORDS = [
     # Core Queries & Sorting
     "SELECT", "FROM", "WHERE", "GROUP BY", "ORDER BY", "HAVING", "LIMIT", "OFFSET",
-    "ASC", "DESC", "NULLS FIRST", "NULLS LAST",
+    "ASC", "DESC", "NULLS FIRST", "NULLS LAST", "NULLS", "FIRST", "LAST",
     "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN", "INNER JOIN", "CROSS JOIN",
     "ON", "AS", "WITH", "DISTINCT", "UNION", "UNION ALL", "INTERSECT", "EXCEPT",
     # DML & DDL
@@ -34,6 +36,33 @@ DEFAULT_SQL_KEYWORDS = [
     "read_csv_auto('')", "read_parquet('')", "range()", "generate_series()", "DESCRIBE",
     "SHOW TABLES", "EXPLAIN",
 ]
+
+
+def get_sql_editor_theme() -> TextAreaTheme:
+    """Create an enhanced SQL theme with proper color coding for ASC, DESC, NULLS, FIRST, LAST, and keywords."""
+    base_theme = TextAreaTheme.get_builtin_theme("monokai")
+    syntax_styles = dict(base_theme.syntax_styles) if base_theme else {}
+    syntax_styles.update({
+        "attribute": Style(color="#f92672"),
+        "storageclass": Style(color="#f92672"),
+        "type.qualifier": Style(color="#f92672"),
+        "keyword": Style(color="#f92672"),
+        "keyword.operator": Style(color="#f92672"),
+        "conditional": Style(color="#f92672"),
+        "type.builtin": Style(color="#f92672"),
+        "boolean": Style(color="#66d9ef", italic=True),
+    })
+
+    return TextAreaTheme(
+        name="duckdb_sql",
+        base_style=base_theme.base_style if base_theme else None,
+        gutter_style=base_theme.gutter_style if base_theme else None,
+        cursor_style=base_theme.cursor_style if base_theme else None,
+        cursor_line_style=base_theme.cursor_line_style if base_theme else None,
+        bracket_matching_style=base_theme.bracket_matching_style if base_theme else None,
+        selection_style=base_theme.selection_style if base_theme else None,
+        syntax_styles=syntax_styles,
+    )
 
 
 class SQLTextArea(TextArea):
@@ -184,12 +213,15 @@ class SQLEditor(Vertical):
             yield Static(" 💻 SQL Editor", id="editor-label")
             yield Static("Press Tab to autocomplete", id="editor-status-indicator")
 
-        yield SQLTextArea.code_editor(
+        editor = SQLTextArea.code_editor(
             "",
             language="sql",
             id="sql-editor",
             theme="monokai",
         )
+        editor.register_theme(get_sql_editor_theme())
+        editor.theme = "duckdb_sql"
+        yield editor
 
         with Horizontal(id="run-bar"):
             yield Static(

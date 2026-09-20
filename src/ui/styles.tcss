@@ -76,22 +76,40 @@ FooterKey {
     text-align: center;
 }
 
+.sidebar-section-title {
+    text-style: bold;
+    color: #7aa2f7;
+    padding: 0 0 0 0;
+}
+
 #lecture-tree {
-    height: 1fr;
-    max-height: 50%;
-    padding: 0;
+    height: auto;
+    max-height: 12;
+    padding: 0 0 1 0;
     scrollbar-size: 1 1;
     scrollbar-color: #292e42;
     scrollbar-color-hover: #414868;
     scrollbar-color-active: #565f89;
 }
 
-#lecture-tree > .tree--cursor {
+#sandbox-tree {
+    height: auto;
+    max-height: 8;
+    padding: 0 0 1 0;
+    scrollbar-size: 1 1;
+    scrollbar-color: #292e42;
+    scrollbar-color-hover: #414868;
+    scrollbar-color-active: #565f89;
+}
+
+#lecture-tree > .tree--cursor,
+#sandbox-tree > .tree--cursor {
     background: #292e42;
     color: #FEC62E;
 }
 
-#lecture-tree > .tree--highlight {
+#lecture-tree > .tree--highlight,
+#sandbox-tree > .tree--highlight {
     background: #292e42;
 }
 

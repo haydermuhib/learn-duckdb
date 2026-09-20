@@ -93,7 +93,7 @@ uv run app.py
 ## Features
 
 * **SQL IntelliSense**: Autocomplete suggestions for SQL keywords, functions, clauses, and live table and column names.
-* **Statement under cursor execution**: Press <kbd>Ctrl+G</kbd> to run only the query at your cursor position, or <kbd>Ctrl+J</kbd> to run all editor text.
+* **Statement under cursor execution**: Press <kbd>Ctrl+Enter</kbd> to run only the query at your cursor position, or <kbd>Shift+Enter</kbd> to run all editor text.
 * **Automatic task progression**: Solving a task validates your output and moves to the next lesson automatically.
 * **Resizable and collapsible sidebar**: Drag the divider with your mouse, adjust with <kbd>Alt+Left</kbd> / <kbd>Alt+Right</kbd>, or toggle with <kbd>Ctrl+B</kbd>.
 * **Terminal scale adaptation**: Responsive layout adjusts cleanly across varying terminal font sizes and window dimensions.
@@ -109,11 +109,13 @@ uv run app.py
 |:---|:---|
 | <kbd>Ctrl+J</kbd> | Run all queries in editor |
 | <kbd>Ctrl+G</kbd> | Run query under cursor (or selected text) |
+| <kbd>Ctrl+C</kbd> / <kbd>Ctrl+V</kbd> | Copy / paste text in SQL editor |
 | <kbd>Tab</kbd> | Accept autocomplete suggestion |
 | <kbd>Ctrl+B</kbd> | Toggle sidebar visibility |
 | <kbd>Alt+Left</kbd> / <kbd>Alt+Right</kbd> | Shrink or expand sidebar width |
 | <kbd>Ctrl+N</kbd> / <kbd>Ctrl+P</kbd> | Next or previous task |
-| <kbd>Ctrl+H</kbd> | Toggle task hint |
+| <kbd>F1</kbd> (or <kbd>Alt+H</kbd>) | Toggle task hint |
+| <kbd>Ctrl+K</kbd> (or <kbd>Ctrl+Shift+P</kbd>) | Open Command Palette |
 | <kbd>Ctrl+I</kbd> | Import CSV / Parquet file into Sandbox |
 | <kbd>Ctrl+R</kbd> | Reset database (with confirmation prompt) |
 | <kbd>Ctrl+L</kbd> | Clear editor text |

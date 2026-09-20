@@ -88,15 +88,24 @@ class LearnDuckDBApp(App):
     TITLE = "learn-duckdb 🦆"
     SUB_TITLE = "Interactive SQL Learning"
 
+    ENABLE_COMMAND_PALETTE = True
+    COMMAND_PALETTE_BINDING = "ctrl+k"
+    COMMAND_PALETTE_DISPLAY = "^K"
+
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
         Binding("ctrl+j", "run_query", "Run All", show=True),
+        Binding("shift+enter", "run_query", "Run All", show=False),
         Binding("ctrl+g", "run_selection_or_stmt", "Run Stmt", show=True),
+        Binding("ctrl+enter", "run_selection_or_stmt", "Run Stmt", show=False),
         Binding("ctrl+b", "toggle_sidebar", "Sidebar", show=True),
         Binding("ctrl+n", "next_task", "Next", show=True),
         Binding("ctrl+p", "prev_task", "Prev", show=True),
-        Binding("ctrl+h", "toggle_hint", "Hint", show=True),
+        Binding("f1", "toggle_hint", "Hint", show=True),
+        Binding("alt+h", "toggle_hint", "Hint", show=False),
+        Binding("ctrl+h", "toggle_hint", "Hint", show=False),
+        Binding("ctrl+shift+p", "command_palette", "Palette", show=False),
         Binding("ctrl+i", "import_data", "Import", show=True),
         Binding("ctrl+r", "reset", "Reset", show=True),
         Binding("ctrl+l", "clear_editor", "Clear", show=True),
@@ -121,6 +130,7 @@ class LearnDuckDBApp(App):
         self._solutions: dict[int, str] = {}
         self._is_sandbox_mode: bool = False
         self._task_failures: dict[int, int] = {}
+        self._task_drafts: dict[tuple[str, int], str] = {}
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -185,6 +195,7 @@ class LearnDuckDBApp(App):
 
     def on_sandbox_selected(self, event: SandboxSelected) -> None:
         """Switch to sandbox/playground mode."""
+        self._save_current_task_draft()
         self._is_sandbox_mode = True
         self._current_lecture = None
         self._solutions = {}
@@ -194,6 +205,7 @@ class LearnDuckDBApp(App):
 
     def on_sandbox_database_selected(self, event: SandboxDatabaseSelected) -> None:
         """Switch to a specific sandbox database."""
+        self._save_current_task_draft()
         self._is_sandbox_mode = True
         self._current_lecture = None
         self._solutions = {}
@@ -352,8 +364,29 @@ class LearnDuckDBApp(App):
 
         self.push_screen(ResetConfirmationModal(title, msg), handle_confirm)
 
+    def _save_current_task_draft(self) -> None:
+        """Save the current editor buffer as the active task draft."""
+        if self._is_sandbox_mode or not self._current_lecture:
+            return
+        tasks = self._current_lecture.tasks
+        if self._current_task_index < len(tasks):
+            task = tasks[self._current_task_index]
+            try:
+                editor = self.query_one(SQLEditor)
+                sql = editor.current_sql.strip()
+                if sql:
+                    self._task_drafts[(self._current_lecture.id, task.id)] = sql
+                    self._progress.save_query(self._current_lecture.id, task.id, sql)
+            except Exception:
+                pass
+
     def action_clear_editor(self) -> None:
-        """Clear only the SQL editor, nothing else."""
+        """Clear only the SQL editor, and clear the current task draft."""
+        if self._current_lecture and not self._is_sandbox_mode:
+            tasks = self._current_lecture.tasks
+            if self._current_task_index < len(tasks):
+                task = tasks[self._current_task_index]
+                self._task_drafts.pop((self._current_lecture.id, task.id), None)
         editor = self.query_one(SQLEditor)
         editor.clear()
         editor.focus_editor()
@@ -365,26 +398,18 @@ class LearnDuckDBApp(App):
             return
         tasks = self._current_lecture.tasks
         if self._current_task_index < len(tasks) - 1:
+            self._save_current_task_draft()
             self._current_task_index += 1
             self._show_current_task()
-            editor = self.query_one(SQLEditor)
-            editor.clear()
-            editor.focus_editor()
-            results = self.query_one(ResultsPanel)
-            results.clear()
 
     def action_prev_task(self) -> None:
         """Go back to the previous task."""
         if self._is_sandbox_mode or not self._current_lecture:
             return
         if self._current_task_index > 0:
+            self._save_current_task_draft()
             self._current_task_index -= 1
             self._show_current_task()
-            editor = self.query_one(SQLEditor)
-            editor.clear()
-            editor.focus_editor()
-            results = self.query_one(ResultsPanel)
-            results.clear()
 
     # ─── Execution ───
 
@@ -428,7 +453,7 @@ class LearnDuckDBApp(App):
                 self._task_failures[task.id] = self._task_failures.get(task.id, 0) + 1
                 if self._task_failures[task.id] >= 2 and task.hint:
                     self.notify(
-                        "Stuck? Press Ctrl+H to reveal the task hint!",
+                        "Stuck? Press F1 (or Alt+H) to reveal the task hint!",
                         title="💡 Hint Available",
                         severity="information",
                     )
@@ -458,6 +483,9 @@ class LearnDuckDBApp(App):
             self._lecture_db.reset()
 
         self._progress.reset_lecture(lecture.id)
+        self._task_drafts = {
+            k: v for k, v in self._task_drafts.items() if k[0] != lecture.id
+        }
         self._current_task_index = 0
         self._show_current_task()
 
@@ -639,6 +667,7 @@ class LearnDuckDBApp(App):
 
     def _load_lecture(self, lecture_id: str) -> None:
         """Load a lecture and display its first uncompleted task."""
+        self._save_current_task_draft()
         try:
             lecture = self._loader.load_lecture(lecture_id)
             seed_sql = self._loader.load_seed_sql(lecture)
@@ -661,20 +690,18 @@ class LearnDuckDBApp(App):
         sidebar = self.query_one(LectureSidebar)
         sidebar.set_schema(schemas)
 
-        self._show_current_task()
-
         editor = self.query_one(SQLEditor)
-        editor.clear()
         tbl_names = [t.name for t in schemas]
         col_names = [c.name for t in schemas for c in t.columns]
         editor.set_schema_tokens(tbl_names, col_names)
-        editor.focus_editor()
+
+        self._show_current_task()
 
         results = self.query_one(ResultsPanel)
         results.clear()
 
     def _show_current_task(self) -> None:
-        """Update the task panel with the current task."""
+        """Update the task panel with the current task and restore student's query."""
         if not self._current_lecture:
             return
 
@@ -688,33 +715,80 @@ class LearnDuckDBApp(App):
         task_panel = self.query_one(TaskPanel)
         task_panel.set_task(task, self._current_task_index + 1, len(tasks))
 
+        # Restore saved query or draft for this specific task
+        editor = self.query_one(SQLEditor)
+        saved_query = self._task_drafts.get((self._current_lecture.id, task.id))
+        if saved_query is None:
+            saved_query = self._progress.get_saved_query(self._current_lecture.id, task.id)
+            if saved_query:
+                self._task_drafts[(self._current_lecture.id, task.id)] = saved_query
+
+        results_panel = self.query_one(ResultsPanel)
+        if saved_query:
+            editor.set_text(saved_query)
+            # If the task was already completed, automatically show results and validation
+            if self._progress.is_completed(self._current_lecture.id, task.id):
+                user_result = self._lecture_db.execute_user_query(saved_query)
+                results_panel.show_results(user_result)
+                solution_sql = self._solutions.get(task.id)
+                if solution_sql:
+                    solution_result = self._lecture_db.execute_solution(solution_sql)
+                    validation = self._validator.validate(user_result, solution_result, task)
+                    results_panel.show_validation(validation)
+            else:
+                results_panel.clear()
+        else:
+            editor.clear()
+            results_panel.clear()
+        editor.focus_editor()
+
     def _on_task_passed(self, task: Task) -> None:
-        """Handle successful task completion."""
+        """Handle successful task completion and persist solution query."""
         if not self._current_lecture:
             return
 
         lecture = self._current_lecture
+        was_already_completed = self._progress.is_completed(lecture.id, task.id)
         self._progress.mark_completed(lecture.id, task.id)
+
+        # Save user's solution query
+        try:
+            editor = self.query_one(SQLEditor)
+            passed_sql = editor.current_sql.strip()
+            if passed_sql:
+                self._task_drafts[(lecture.id, task.id)] = passed_sql
+                self._progress.save_query(lecture.id, task.id, passed_sql)
+        except Exception:
+            pass
 
         done, total = self._progress.get_lecture_completion(lecture.id, len(lecture.tasks))
         sidebar = self.query_one(LectureSidebar)
         sidebar.update_completion(lecture.id, done, total)
 
-        if self._current_task_index < len(lecture.tasks) - 1:
-            self.notify(
-                f"Task {task.id} complete! Moving to next task...",
-                title="🎉 Correct!",
-                severity="information",
-            )
-            self.set_timer(1.0, self._auto_advance_task)
+        if not was_already_completed:
+            # First time passing this task -> auto-advance to maintain learning flow
+            if self._current_task_index < len(lecture.tasks) - 1:
+                self.notify(
+                    f"Task {task.id} complete! Moving to next task...",
+                    title="🎉 Correct!",
+                    severity="information",
+                )
+                self.set_timer(1.2, self._auto_advance_task)
+            else:
+                self.notify(
+                    f"You've completed {lecture.title}!",
+                    title="🏆 Lecture Complete!",
+                    severity="information",
+                )
+                task_panel = self.query_one(TaskPanel)
+                task_panel.set_completed_message(lecture.title)
         else:
+            # Re-running an already completed task -> do NOT auto-advance so student can inspect results
             self.notify(
-                f"You've completed {lecture.title}!",
-                title="🏆 Lecture Complete!",
+                "Query correct! Press Ctrl+N when ready to move forward.",
+                title="✅ Verified",
                 severity="information",
             )
-            task_panel = self.query_one(TaskPanel)
-            task_panel.set_completed_message(lecture.title)
 
     def _auto_advance_task(self) -> None:
         """Auto-advance to next task after success."""
@@ -722,13 +796,9 @@ class LearnDuckDBApp(App):
             return
         tasks = self._current_lecture.tasks
         if self._current_task_index < len(tasks) - 1:
+            self._save_current_task_draft()
             self._current_task_index += 1
             self._show_current_task()
-            editor = self.query_one(SQLEditor)
-            editor.clear()
-            editor.focus_editor()
-            results = self.query_one(ResultsPanel)
-            results.clear()
 
     def on_unmount(self) -> None:
         """Cleanup on app exit."""

@@ -29,8 +29,8 @@ learn-duckdb is a standalone, open-source terminal application designed for lear
 - In-Memory DuckDB Engine: Every lecture executes in an isolated `:memory:` database with zero risk of corrupting source data.
 - Result-Based Evaluation: Graded on actual output schema and returned records rather than rigid string matching, supporting all valid SQL dialects and aliases.
 - SQL IntelliSense: Built-in autocompletion for SQL keywords, aggregation functions, window clauses, and live column names on `<Tab>`.
-- Statement-Under-Cursor Execution: Press `<Ctrl+G>` to execute only the query under the cursor or selection, or `<Ctrl+J>` to execute the entire editor.
-- Interactive Hint System: Accessible with `<Ctrl+H>`, with automatic proactive suggestions after repeated failed attempts.
+- Statement-Under-Cursor Execution: Press `<Ctrl+Enter>` to execute only the query under the cursor or selection, or `<Shift+Enter>` to execute the entire editor.
+- Interactive Hint System: Accessible with `<F1>` (or `<Alt+H>`), with automatic proactive suggestions after repeated failed attempts.
 - Sandbox & Data Playground: Freeform analytical playground where users can import local `.csv`, `.tsv`, or `.parquet` files directly into tables using `<Ctrl+I>`.
 - ASCII Schema & ERD Generation: Press `<Ctrl+T>` to introspect tables, primary keys, foreign keys, and generate live ASCII Entity-Relationship diagrams.
 - Progress Persistence: Automatically records completed tasks in `~/.local/share/learn-duckdb/progress.duckdb`.
@@ -48,8 +48,10 @@ learn-duckdb is a standalone, open-source terminal application designed for lear
 
 - `Ctrl+J`: Execute entire editor SQL buffer
 - `Ctrl+G`: Execute query or statement under cursor / selection
+- `Ctrl+C` / `Ctrl+V`: Copy / paste text in SQL editor
 - `Tab`: Accept autocomplete IntelliSense suggestion
-- `Ctrl+H`: Toggle task instruction hint
+- `F1` (or `Alt+H`): Toggle task instruction hint
+- `Ctrl+K` (or `Ctrl+Shift+P`): Open Command Palette
 - `Ctrl+I`: Import custom CSV or Parquet file into Sandbox
 - `Ctrl+B`: Toggle sidebar collapse / expand
 - `Alt+Left` / `Alt+Right`: Resize sidebar width

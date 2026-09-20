@@ -49,20 +49,23 @@
 
 | Key | Action | Context |
 |-----|--------|---------| 
-| `Ctrl+J` | Run the full SQL in the editor | Both modes |
-| `Ctrl+G` | Run only the selected text (falls back to full text if nothing selected) | Both modes |
-| `Ctrl+H` | Toggle hint visibility | Lecture mode only (no-op in playground) |
+| `Ctrl+J` (or `Shift+Enter`) | Run the full SQL in the editor | Both modes |
+| `Ctrl+G` (or `Ctrl+Enter`) | Run query under cursor / selected text | Both modes |
+| `Ctrl+C` / `Ctrl+V` | Copy / paste text in SQL editor | Editor |
+| `F1` (or `Alt+H`) | Toggle hint visibility | Lecture mode only (no-op in playground) |
+| `Ctrl+K` (or `Ctrl+Shift+P`) | Open Command Palette | Global |
 | `Ctrl+N` | Next task | Lecture mode only |
-| `Ctrl+B` | Previous task | Lecture mode only |
+| `Ctrl+P` | Previous task | Lecture mode only |
+| `Ctrl+B` | Toggle sidebar | Both modes |
 | `Ctrl+R` | **Reset** — context-aware (see §2.1) | Both modes |
 | `Ctrl+L` | Clear the SQL editor only (does NOT touch DB or progress) | Both modes |
 | `Ctrl+T` | Generate ERD → opens ERD tab (does NOT touch SQL editor) | Both modes |
-| `Escape` | Dismiss the "New Database" input box if visible | Global |
-| `Q` | Quit the app | Global |
+| `Escape` | Dismiss input modal / dialog if visible | Global |
+| `Ctrl+Q` | Quit the app | Global |
 
 **Shortcut bar** (shown below the editor-tabs, always visible):
 ```
-^J Run │ ^G Selection │ ^H Hint │ ^R Reset │ ^B/N Prev/Next │ ^L Clear │ ^T ERD
+^J Run All │ ^G Run Stmt │ F1 Hint │ ^R Reset │ ^B Sidebar │ ^N/^P Tasks │ ^L Clear
 ```
 
 ### 2.1 Ctrl+R Reset Behavior

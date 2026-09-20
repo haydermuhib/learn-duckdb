@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -34,7 +35,75 @@ DEFAULT_SQL_KEYWORDS = [
 
 
 class SQLTextArea(TextArea):
-    """Custom TextArea that intercepts Tab key to trigger IntelliSense autocomplete."""
+    """Custom TextArea with enhanced clipboard support, shortcuts, and IntelliSense."""
+
+    BINDINGS = [
+        Binding("ctrl+c,super+c", "copy_text", "Copy", show=False),
+        Binding("ctrl+v,super+v", "paste_text", "Paste", show=False),
+        Binding("ctrl+k", "open_palette", "Palette", show=False, priority=True),
+        Binding("ctrl+shift+p", "open_palette", "Palette", show=False),
+    ]
+
+    def action_open_palette(self) -> None:
+        """Open command palette."""
+        self.app.action_command_palette()
+
+    def _copy_to_system_clipboard(self, text: str) -> None:
+        """Helper to copy text to system desktop clipboard if possible."""
+        try:
+            import tkinter as tk
+            r = tk.Tk()
+            r.withdraw()
+            r.clipboard_clear()
+            r.clipboard_append(text)
+            r.update()
+            r.destroy()
+        except Exception:
+            pass
+
+    def _get_from_system_clipboard(self) -> str:
+        """Helper to get text from system desktop clipboard if possible."""
+        try:
+            import tkinter as tk
+            r = tk.Tk()
+            r.withdraw()
+            text = r.clipboard_get()
+            r.destroy()
+            return text
+        except Exception:
+            return ""
+
+    def action_copy_text(self) -> None:
+        """Copy selected text or current line/query to clipboard."""
+        text_to_copy = self.selected_text
+        if not text_to_copy:
+            cursor_row, _ = self.cursor_location
+            lines = self.text.split("\n")
+            if 0 <= cursor_row < len(lines) and lines[cursor_row].strip():
+                text_to_copy = lines[cursor_row]
+            else:
+                text_to_copy = self.text
+
+        if text_to_copy:
+            self.app.copy_to_clipboard(text_to_copy)
+            self._copy_to_system_clipboard(text_to_copy)
+            self.app.notify("Copied to clipboard", timeout=1.5)
+
+    def action_paste_text(self) -> None:
+        """Paste text from system clipboard or app clipboard."""
+        if self.read_only:
+            return
+        text = self._get_from_system_clipboard() or self.app.clipboard
+        if text:
+            start, end = self.selection
+            if result := self._replace_via_keyboard(text, start, end):
+                self.move_cursor(result.end_location)
+
+    def action_copy(self) -> None:
+        self.action_copy_text()
+
+    def action_paste(self) -> None:
+        self.action_paste_text()
 
     async def _on_key(self, event: events.Key) -> None:
         if event.key == "tab":
@@ -46,6 +115,46 @@ class SQLTextArea(TextArea):
                     event.stop()
                     event.prevent_default()
                     return
+
+        elif event.key == "shift+enter":
+            event.stop()
+            event.prevent_default()
+            if hasattr(self.app, "action_run_query"):
+                self.app.action_run_query()
+            return
+
+        elif event.key == "ctrl+enter":
+            event.stop()
+            event.prevent_default()
+            if hasattr(self.app, "action_run_selection_or_stmt"):
+                self.app.action_run_selection_or_stmt()
+            return
+
+        elif event.key in ("ctrl+c", "super+c"):
+            self.action_copy_text()
+            event.stop()
+            event.prevent_default()
+            return
+
+        elif event.key in ("ctrl+v", "super+v"):
+            self.action_paste_text()
+            event.stop()
+            event.prevent_default()
+            return
+
+        elif event.key in ("f1", "alt+h"):
+            event.stop()
+            event.prevent_default()
+            if hasattr(self.app, "action_toggle_hint"):
+                self.app.action_toggle_hint()
+            return
+
+        elif event.key in ("ctrl+k", "ctrl+shift+p"):
+            event.stop()
+            event.prevent_default()
+            if hasattr(self.app, "action_command_palette"):
+                self.app.action_command_palette()
+            return
 
         await super()._on_key(event)
 
@@ -82,7 +191,7 @@ class SQLEditor(Vertical):
 
         with Horizontal(id="run-bar"):
             yield Static(
-                " ^J Run All │ ^G Run Selection/Stmt │ ^H Hint │ ^R Reset │ ^B Sidebar │ ^N/^P Tasks │ ^L Clear",
+                " ^J Run All │ ^G Run Stmt │ F1 Hint │ ^R Reset │ ^B Sidebar │ ^N/^P Tasks │ ^L Clear",
                 id="run-hint",
             )
             yield Static("", id="intellisense-bar")

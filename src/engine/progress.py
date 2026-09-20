@@ -34,7 +34,14 @@ class ProgressTracker:
                     task_id INTEGER NOT NULL,
                     completed_at TIMESTAMP DEFAULT current_timestamp,
                     PRIMARY KEY (lecture_id, task_id)
-                )
+                );
+                CREATE TABLE IF NOT EXISTS saved_queries (
+                    lecture_id VARCHAR NOT NULL,
+                    task_id INTEGER NOT NULL,
+                    query_text TEXT NOT NULL,
+                    updated_at TIMESTAMP DEFAULT current_timestamp,
+                    PRIMARY KEY (lecture_id, task_id)
+                );
             """)
         return self._conn
 
@@ -45,6 +52,28 @@ class ProgressTracker:
             "INSERT OR IGNORE INTO completed_tasks (lecture_id, task_id) VALUES (?, ?)",
             [lecture_id, task_id],
         )
+
+    def save_query(self, lecture_id: str, task_id: int, query_text: str) -> None:
+        """Save a user's working/passed SQL query for a task."""
+        if not query_text.strip():
+            return
+        conn = self._ensure_connected()
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO saved_queries (lecture_id, task_id, query_text, updated_at)
+            VALUES (?, ?, ?, current_timestamp)
+            """,
+            [lecture_id, task_id, query_text],
+        )
+
+    def get_saved_query(self, lecture_id: str, task_id: int) -> str | None:
+        """Retrieve a previously saved SQL query for a task."""
+        conn = self._ensure_connected()
+        row = conn.execute(
+            "SELECT query_text FROM saved_queries WHERE lecture_id = ? AND task_id = ?",
+            [lecture_id, task_id],
+        ).fetchone()
+        return row[0] if row else None
 
     def is_completed(self, lecture_id: str, task_id: int) -> bool:
         """Check if a specific task has been completed."""
@@ -94,17 +123,22 @@ class ProgressTracker:
         )
 
     def reset_lecture(self, lecture_id: str) -> None:
-        """Clear all progress for a specific lecture."""
+        """Clear all progress and saved queries for a specific lecture."""
         conn = self._ensure_connected()
         conn.execute(
             "DELETE FROM completed_tasks WHERE lecture_id = ?",
             [lecture_id],
         )
+        conn.execute(
+            "DELETE FROM saved_queries WHERE lecture_id = ?",
+            [lecture_id],
+        )
 
     def reset_all(self) -> None:
-        """Clear all progress."""
+        """Clear all progress and saved queries."""
         conn = self._ensure_connected()
         conn.execute("DELETE FROM completed_tasks")
+        conn.execute("DELETE FROM saved_queries")
 
     def close(self) -> None:
         if self._conn:

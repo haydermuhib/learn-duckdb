@@ -16,8 +16,19 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-duckdb': ['@duckdb/duckdb-wasm', 'apache-arrow'],
+          'vendor-codemirror': ['@uiw/react-codemirror', '@codemirror/lang-sql', '@codemirror/theme-one-dark'],
+          'vendor-react': ['react', 'react-dom'],
+        },
+      },
+    },
+  },
   optimizeDeps: {
     exclude: ['@duckdb/duckdb-wasm'],
   },
 });
-

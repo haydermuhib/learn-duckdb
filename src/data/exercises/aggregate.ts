@@ -113,10 +113,10 @@ export const aggregate_exercises: ExerciseDef[] = [
     "example": "SELECT COUNT(*), MAX(salary) FROM employees WHERE department_id = 1;",
     "steps": [
       {
-        "task": "In one query, show how many analysts there are and their total salary.",
-        "solution": "SELECT COUNT(*), SUM(salary) FROM employees WHERE role = 'Analista'",
+        "task": "In one query, show how many analysts there are and their total salary (role containing 'Analyst').",
+        "solution": "SELECT COUNT(*), SUM(salary) FROM employees WHERE role LIKE '%Analyst%'",
         "hints": [
-          "SELECT COUNT(*), SUM(salary) … WHERE job_title = 'Analyst'"
+          "SELECT COUNT(*), SUM(salary) FROM employees WHERE role LIKE '%Analyst%'"
         ],
         "requires": [
           "COUNT",

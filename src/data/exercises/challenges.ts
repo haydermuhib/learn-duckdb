@@ -30,11 +30,11 @@ export const challenges_exercises: ExerciseDef[] = [
     "concept": "You need the department name (another table), an average per group and only the highest one.",
     "steps": [
       {
-        "task": "Show the name of the department with the highest average salary and that average rounded to 2 decimals.",
-        "solution": "SELECT d.name, ROUND(AVG(e.salary), 2) AS promedio FROM employees e JOIN departments d ON e.department_id = d.id GROUP BY d.id, d.name ORDER BY promedio DESC LIMIT 1",
+        "task": "Show the name of the department with the highest average salary and that average rounded to 2 decimals (named avg_salary).",
+        "solution": "SELECT d.name, ROUND(AVG(e.salary), 2) AS avg_salary FROM employees e JOIN departments d ON e.department_id = d.id GROUP BY d.id, d.name ORDER BY avg_salary DESC LIMIT 1",
         "hints": [
           "Join employees with departments and group by department.",
-          "ORDER BY the average DESC LIMIT 1."
+          "ORDER BY avg_salary DESC LIMIT 1."
         ],
         "requires": [
           "JOIN",

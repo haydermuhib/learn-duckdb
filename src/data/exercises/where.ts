@@ -171,10 +171,10 @@ export const where_exercises: ExerciseDef[] = [
     "example": "SELECT name FROM departments WHERE city <> 'London';",
     "steps": [
       {
-        "task": "Show name and job title of the employees who are not managers.",
-        "solution": "SELECT name, role FROM employees WHERE role <> 'Gerente'",
+        "task": "Show name and role of the employees who are not managers (role NOT LIKE '%Manager%').",
+        "solution": "SELECT name, role FROM employees WHERE role NOT LIKE '%Manager%'",
         "hints": [
-          "job_title <> 'Manager'"
+          "role NOT LIKE '%Manager%'"
         ],
         "requires": [
           "WHERE"

@@ -186,11 +186,11 @@ export const interview_exercises: ExerciseDef[] = [
     "concept": "A classic: the row with the maximum in each group. Number within each group with RANK and keep place 1; with RANK, a tie shows both.",
     "steps": [
       {
-        "task": "For each department, show its name and the name and salary of whoever earns the most there.",
-        "solution": "WITH r AS (SELECT name, department_id, salary, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS lugar FROM employees WHERE department_id IS NOT NULL) SELECT d.name AS departamento, r.name, r.salary FROM r JOIN departments d ON d.id = r.department_id WHERE r.lugar = 1",
+        "task": "For each department, show its name (as department) and the name and salary of whoever earns the most there.",
+        "solution": "WITH r AS (SELECT name, department_id, salary, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rank_num FROM employees WHERE department_id IS NOT NULL) SELECT d.name AS department, r.name, r.salary FROM r JOIN departments d ON d.id = r.department_id WHERE r.rank_num = 1",
         "hints": [
-          "RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) in a WITH.",
-          "Join departments and filter place = 1."
+          "RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rank_num in a WITH.",
+          "Join departments and filter rank_num = 1."
         ],
         "requires": [
           "OVER"
@@ -223,13 +223,13 @@ export const interview_exercises: ExerciseDef[] = [
     "module": "interview",
     "db": "store",
     "title": "Days between one purchase and the next",
-    "concept": "LAG brings the same customer’s previous order date; julianday turns dates into numbers so you can subtract them. Then you group to get each customer’s average.",
+    "concept": "LAG brings the same customer’s previous order date; subtracting two dates calculates the difference in days. Then you group to get each customer’s average.",
     "steps": [
       {
-        "task": "For customers with more than one order, show their customer_id and the average number of days between one order and the next.",
-        "solution": "WITH g AS (SELECT customer_id, julianday(order_date) - julianday(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)) AS dias FROM orders) SELECT customer_id, AVG(dias) AS promedio FROM g WHERE dias IS NOT NULL GROUP BY customer_id",
+        "task": "For customers with more than one order, show their customer_id and the average number of days between one order and the next (as avg_days).",
+        "solution": "WITH g AS (SELECT customer_id, (CAST(order_date AS DATE) - CAST(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS DATE)) AS days FROM orders) SELECT customer_id, AVG(days) AS avg_days FROM g WHERE days IS NOT NULL GROUP BY customer_id",
         "hints": [
-          "In a WITH: julianday(order_date) - julianday(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)).",
+          "In a WITH: (CAST(order_date AS DATE) - CAST(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS DATE)) AS days.",
           "Each customer’s first order gives NULL: drop it with WHERE days IS NOT NULL and average per customer."
         ],
         "requires": [

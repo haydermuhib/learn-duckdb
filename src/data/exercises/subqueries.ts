@@ -135,10 +135,10 @@ export const subqueries_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show the name and total spending of the customers who spent more than average (quantity times price, no cancelled orders). Use two WITH steps: spending per customer, then its average.",
-        "solution": "WITH gasto AS (SELECT p.customer_id, SUM(d.quantity * pr.price) AS total FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY p.customer_id), promedio AS (SELECT AVG(total) AS valor FROM gasto) SELECT c.name, g.total FROM gasto g JOIN customers c ON c.id = g.customer_id JOIN promedio ON g.total > promedio.valor",
+        "solution": "WITH spending AS (SELECT p.customer_id, SUM(d.quantity * pr.price) AS total FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY p.customer_id), avg_spending AS (SELECT AVG(total) AS avg_val FROM spending) SELECT c.name, s.total FROM spending s JOIN customers c ON c.id = s.customer_id JOIN avg_spending ON s.total > avg_spending.avg_val",
         "hints": [
-          "WITH spending AS (…per customer…), average AS (SELECT AVG(total) AS value FROM spending)",
-          "Join spending with customers and keep total > average.value."
+          "WITH spending AS (…per customer…), avg_spending AS (SELECT AVG(total) AS avg_val FROM spending)",
+          "Join spending with customers and keep total > avg_spending.avg_val."
         ],
         "requires": [
           "WITH"

@@ -108,14 +108,14 @@ export const order_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Sorting by a calculation",
     "concept": "ORDER BY accepts the alias of a calculated column, so you do not repeat the calculation. When two rows tie, a second column decides the order and the result always comes out the same.",
-    "example": "SELECT name, price * 1.16 AS con_iva FROM products ORDER BY con_iva;",
+    "example": "SELECT name, price * 1.16 AS with_tax FROM products ORDER BY with_tax;",
     "steps": [
       {
-        "task": "Show the name and inventory value (price times stock) of each product, from highest to lowest. If two tie, sort them by name.",
-        "solution": "SELECT name, price * stock AS valor FROM products ORDER BY valor DESC, name",
+        "task": "Show the name and inventory value (price times stock, named inventory_value) of each product, from highest to lowest. If two tie, sort them by name.",
+        "solution": "SELECT name, price * stock AS inventory_value FROM products ORDER BY inventory_value DESC, name",
         "hints": [
-          "Name the calculation with AS and use it in ORDER BY.",
-          "ORDER BY value DESC, name"
+          "Name the calculation with AS inventory_value and use it in ORDER BY.",
+          "ORDER BY inventory_value DESC, name"
         ],
         "requires": []
       }

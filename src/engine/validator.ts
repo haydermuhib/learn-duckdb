@@ -180,10 +180,14 @@ function valuesMatch(a: any, b: any): boolean {
   return String(a) === String(b);
 }
 
+function safeStringify(row: any[]): string {
+  return JSON.stringify(row, (_, v) => (typeof v === 'bigint' ? v.toString() : v));
+}
+
 function sortRows(rows: any[][]): any[][] {
   return [...rows].sort((a, b) => {
-    const strA = JSON.stringify(a);
-    const strB = JSON.stringify(b);
+    const strA = safeStringify(a);
+    const strB = safeStringify(b);
     return strA.localeCompare(strB);
   });
 }

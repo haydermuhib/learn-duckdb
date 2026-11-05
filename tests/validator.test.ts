@@ -115,6 +115,23 @@ describe('Validator Logic & Result Matching', () => {
     expect(compareResults(resA, resB, false)).toBe(false);
   });
 
+  it('should handle BigInt values in rows without throwing', () => {
+    const resA: QueryResult = {
+      columns: ['count'],
+      rows: [[BigInt(100)]],
+      executionTimeMs: 1.0,
+      rowCount: 1,
+    };
+    const resB: QueryResult = {
+      columns: ['count'],
+      rows: [[100]],
+      executionTimeMs: 1.0,
+      rowCount: 1,
+    };
+
+    expect(compareResults(resA, resB, false)).toBe(true);
+  });
+
   it('should identify mutation statements accurately', () => {
     const isMutation = (sql: string) => /^(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i.test(sql.trim());
 

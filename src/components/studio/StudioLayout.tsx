@@ -188,17 +188,33 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const hasNext = currentIndex < EXERCISES.length - 1;
   const hasPrev = currentIndex > 0;
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (hasNext) {
       setCurrentId(EXERCISES[currentIndex + 1].id);
     }
-  };
+  }, [hasNext, currentIndex]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (hasPrev) {
       setCurrentId(EXERCISES[currentIndex - 1].id);
     }
-  };
+  }, [hasPrev, currentIndex]);
+
+  // Global window keyboard listener for Alt+N (Next) and Alt+P (Prev)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        handleNext();
+      } else if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        handlePrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [handleNext, handlePrev]);
 
   // Hints
   const currentStep = currentExercise.steps[0];
@@ -371,6 +387,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               onChange={handleEditorChange}
               onRun={handleRunQuery}
               onCheck={handleCheckAnswer}
+              onNext={handleNext}
+              hasNext={hasNext}
               onReset={() => handleEditorChange('')}
               onHint={handleHint}
               onShowSolution={handleShowSolution}

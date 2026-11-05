@@ -2,13 +2,15 @@ import React, { useCallback } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye } from 'lucide-react';
+import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye, ArrowRight } from 'lucide-react';
 
 interface SqlEditorProps {
   value: string;
   onChange: (val: string) => void;
   onRun: () => void;
   onCheck: () => void;
+  onNext?: () => void;
+  hasNext?: boolean;
   onReset: () => void;
   onHint: () => void;
   onShowSolution: () => void;
@@ -23,6 +25,8 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   onChange,
   onRun,
   onCheck,
+  onNext,
+  hasNext,
   onReset,
   onHint,
   onShowSolution,
@@ -33,16 +37,27 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
 }) => {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Ctrl+Enter or Cmd+Enter -> Check Answer
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         onCheck();
       }
+      // Alt+N or (Ctrl+Alt+Right) -> Next Exercise
+      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'ArrowRight')) {
+        e.preventDefault();
+        if (hasNext && onNext) {
+          onNext();
+        }
+      }
     },
-    [onCheck]
+    [onCheck, onNext, hasNext]
   );
 
   return (
-    <div className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal flex-1 overflow-hidden" onKeyDown={handleKeyDown}>
+    <div
+      className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal flex-1 overflow-hidden"
+      onKeyDown={handleKeyDown}
+    >
       {/* Editor Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border text-white text-xs select-none">
         <div className="flex items-center gap-2">
@@ -51,8 +66,9 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <div className="w-3 h-3 rounded-full bg-green-500 border border-black/20" />
           <span className="font-mono text-xs text-slate-400 ml-2">editor.sql (DuckDB)</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-400 font-mono text-[11px]">
+        <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
           <span>Run: <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">Ctrl+Enter</kbd></span>
+          <span>Next: <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">Alt+N</kbd></span>
         </div>
       </div>
 
@@ -78,22 +94,42 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       {/* Action Footer Buttons */}
       <div className="p-3 bg-[#131C2E] border-t-2 border-code-border flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          {/* Check Answer */}
           <button
             onClick={onCheck}
             disabled={isChecking || isRunning || !value.trim()}
+            title="Check answer (Ctrl+Enter)"
             className="flex items-center gap-1.5 px-4 py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50"
           >
             <CheckCircle2 size={15} />
             {isChecking ? 'Checking...' : 'Check Answer'}
           </button>
+
+          {/* Run Query */}
           <button
             onClick={onRun}
             disabled={isRunning || isChecking || !value.trim()}
+            title="Run query without testing"
             className="flex items-center gap-1.5 px-3 py-2 bg-surface-card text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-surface-muted active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50"
           >
             <Play size={14} className="fill-ink" />
             {isRunning ? 'Running...' : 'Run Query'}
           </button>
+
+          {/* Next Exercise Button */}
+          {hasNext && onNext && (
+            <button
+              onClick={onNext}
+              title="Next Exercise (Shortcut: Alt+N)"
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-400 text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-emerald-300 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs"
+            >
+              <span>Next</span>
+              <kbd className="hidden sm:inline-block bg-emerald-600/30 text-emerald-950 px-1 py-0.2 rounded text-[10px] font-mono border border-emerald-600/40">
+                Alt+N
+              </kbd>
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -129,4 +165,3 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
     </div>
   );
 };
-

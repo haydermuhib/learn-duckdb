@@ -187,3 +187,4 @@
   Update `README.md` reflecting the new web app, features, local setup, and architecture.
 - [ ] **Step 5: Git commit and tag**
   Commit the web app to `main`.
+

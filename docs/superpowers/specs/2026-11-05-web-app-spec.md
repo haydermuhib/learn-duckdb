@@ -92,3 +92,4 @@ Convert `learn-duckdb` from a downloadable Python Textual terminal tool into a c
   - `learn_duckdb_completed_exercises`: Set of completed exercise IDs.
   - `learn_duckdb_current_exercise`: Last active exercise ID.
   - `learn_duckdb_drafts`: Map of `exerciseId -> userDraftSql`.
+

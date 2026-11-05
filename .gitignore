@@ -35,3 +35,9 @@ learning.txt
 
 # Antigravity / Agents
 .agents/
+
+# Node / Web
+node_modules/
+dist/
+scratch/
+.env.local

@@ -1,153 +1,80 @@
 # 🦆 learn-duckdb
 
-Interactive SQL learning in your terminal, powered by DuckDB.
+**Interactive Modern SQL Learning in Your Browser, Powered by DuckDB-Wasm.**
 
-learn-duckdb is a local-first SQL tutor built directly into your terminal. There is no browser UI, no remote database server, and no setup overhead.
+`learn-duckdb` is a 100% client-side, interactive analytical SQL learning platform. It runs real DuckDB inside your browser using WebAssembly and Web Workers—no remote servers, no setup, and no sign-up required.
 
-![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)
+![DuckDB](https://img.shields.io/badge/powered%20by-DuckDB%20Wasm-FEC62E.svg)
+![React 18](https://img.shields.io/badge/react-18-blue.svg)
+![TypeScript](https://img.shields.io/badge/typescript-5-blue.svg)
 ![License MIT](https://img.shields.io/badge/license-MIT-green.svg)
-![DuckDB](https://img.shields.io/badge/powered%20by-DuckDB-FEC62E.svg)
-![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-blueviolet.svg)
 
----
-
-## Installation
-
-### Linux and macOS
-```bash
-curl -fsSL https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.sh | bash
-```
-
-### Windows (PowerShell)
-```powershell
-irm https://raw.githubusercontent.com/haydermuhib/learn-duckdb/main/install.ps1 | iex
-```
-
-Once installed, open the application from any terminal:
-```bash
-learn-duckdb
-```
-
-<details>
-<summary><b>Running directly with uv (without global install)</b></summary>
-
-```bash
-# Run on demand with uvx
-uvx --from git+https://github.com/haydermuhib/learn-duckdb.git learn-duckdb
-
-# Or clone and run in a local repository
-git clone https://github.com/haydermuhib/learn-duckdb.git
-cd learn-duckdb
-uv run app.py
-```
-
-</details>
-
----
-
-## Architecture and workflow
-
-```
-┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│   YAML Lessons  │──────▶│ In-Memory DuckDB│◀──────│  Your SQL Code  │
-└─────────────────┘       └────────┬────────┘       └─────────────────┘
-                                   │
-                                   ▼
-                          ┌─────────────────┐
-                          │ Output Matching │
-                          │ (Pass / Retry)  │
-                          └─────────────────┘
-```
-
-1. **In-memory execution**: Each lecture loads its tables directly into memory (`:memory:`). You can run queries or modify tables without altering source data.
-2. **Result-based grading**: The engine evaluates query output rather than exact SQL syntax. Any valid query returning the required rows and columns passes.
-3. **Persistent playground**: When switching to Sandbox mode, tables save to local `.duckdb` files that persist across sessions.
-
----
-
-## Curriculum
-
-| Section | Topic | Exercises | Level |
-|:---|:---|:---|:---|
-| 01 | SELECT basics | 8 | Beginner |
-| 02 | Filtering and conditions | 8 | Beginner |
-| 03 | Sorting, limits, and NULL values | 8 | Beginner |
-| 04 | Real-world data queries | 8 | Intermediate |
-| 05 | JOINs and aggregations | 8 | Intermediate |
-| 06 | Window functions | 8 | Advanced |
-
-<details>
-<summary><b>View detailed topic breakdown</b></summary>
-
-* **01 SELECT basics**: Column projection, arithmetic expressions, table aliases.
-* **02 Filtering**: `WHERE`, `LIKE`, `ILIKE`, `IN`, `BETWEEN`, Boolean operators.
-* **03 Sorting & limits**: `ORDER BY`, `NULLS FIRST/LAST`, `LIMIT`, `OFFSET`.
-* **04 Real-world queries**: Multi-table data exploration and practical business queries.
-* **05 JOINs & aggregates**: `INNER JOIN`, `LEFT JOIN`, `GROUP BY`, `HAVING`, aggregate functions.
-* **06 Window functions**: `OVER ()`, `PARTITION BY`, `ROW_NUMBER`, `RANK`, `LAG`, `LEAD`.
-
-</details>
+> **Looking for the original Terminal TUI version?**
+> The terminal Python version is preserved on the [`cli`](https://github.com/haydermuhib/learn-duckdb/tree/cli) branch.
 
 ---
 
 ## Features
 
-* **SQL IntelliSense**: Autocomplete suggestions for SQL keywords, functions, clauses, and live table and column names.
-* **Statement under cursor execution**: Press <kbd>Ctrl+Enter</kbd> to run only the query at your cursor position, or <kbd>Shift+Enter</kbd> to run all editor text.
-* **Automatic task progression**: Solving a task validates your output and moves to the next lesson automatically.
-* **Resizable and collapsible sidebar**: Drag the divider with your mouse, adjust with <kbd>Alt+Left</kbd> / <kbd>Alt+Right</kbd>, or toggle with <kbd>Ctrl+B</kbd>.
-* **Terminal scale adaptation**: Responsive layout adjusts cleanly across varying terminal font sizes and window dimensions.
-* **Schema explorer and ERD**: Inspect tables, columns, primary and foreign keys, or generate ASCII Entity-Relationship diagrams.
-* **In-app update notifications**: Checks GitHub releases on startup and prompts for in-place updates.
-* **Isolated progress storage**: User progress saves to `~/.local/share/learn-duckdb/progress.duckdb` and remains safe across git updates.
+- **148+ Interactive Exercises**: Structured across 18 progressive modules from foundational `SELECT` to advanced windowing, recursive CTEs, and interview challenges.
+- **DuckDB Superpowers**: Learn modern SQL features unavailable in traditional engines (`GROUP BY ALL`, `SELECT * EXCLUDE`, `SELECT * REPLACE`, and `QUALIFY`).
+- **100% In-Browser Privacy**: Powered by `@duckdb/duckdb-wasm`. All data, seed tables, and queries execute locally in your browser.
+- **Instant Validation**: Real-time feedback comparing your query against canonical solutions with instant pass/fail validation.
+- **Built-in Schema Explorer**: Inspect table schemas, data types, and preview seed rows with a single click.
+- **LocalStorage Persistence**: Solved exercises, progress, and query drafts are saved automatically.
 
 ---
 
-## Quick reference: keyboard shortcuts
+## Curriculum (18 Modules)
 
-| Key | Action |
-|:---|:---|
-| <kbd>Ctrl+J</kbd> | Run all queries in editor |
-| <kbd>Ctrl+G</kbd> | Run query under cursor (or selected text) |
-| <kbd>Ctrl+C</kbd> / <kbd>Ctrl+V</kbd> | Copy / paste text in SQL editor |
-| <kbd>Tab</kbd> | Accept autocomplete suggestion |
-| <kbd>Ctrl+B</kbd> | Toggle sidebar visibility |
-| <kbd>Alt+Left</kbd> / <kbd>Alt+Right</kbd> | Shrink or expand sidebar width |
-| <kbd>Ctrl+N</kbd> / <kbd>Ctrl+P</kbd> | Next or previous task |
-| <kbd>F1</kbd> (or <kbd>Alt+H</kbd>) | Toggle task hint |
-| <kbd>Ctrl+K</kbd> (or <kbd>Ctrl+Shift+P</kbd>) | Open Command Palette |
-| <kbd>Ctrl+I</kbd> | Import CSV / Parquet file into Sandbox |
-| <kbd>Ctrl+R</kbd> | Reset database (with confirmation prompt) |
-| <kbd>Ctrl+L</kbd> | Clear editor text |
-| <kbd>Ctrl+T</kbd> | Generate ASCII ERD diagram |
-| <kbd>Ctrl+Q</kbd> | Quit application |
+1. **Basic SELECT**: First queries, selecting columns, calculations, DISTINCT, `EXCLUDE`, and `REPLACE`.
+2. **Filtering with WHERE**: Comparison operators, boolean logic, `BETWEEN`, `IN`, and pattern matching.
+3. **Sorting and Limiting**: `ORDER BY`, `LIMIT`, `OFFSET`, and `ORDER BY ALL`.
+4. **Aggregate Functions**: `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`.
+5. **Grouping with GROUP BY**: Grouping metrics, `HAVING`, and `GROUP BY ALL`.
+6. **Joining Tables (JOIN)**: `INNER JOIN`, `LEFT JOIN`, and multi-table relationships.
+7. **Subqueries & CTEs**: Scalar subqueries, correlated queries, and `WITH` CTEs.
+8. **Text, Dates and CASE**: String manipulation, date intervals, and conditional `CASE WHEN`.
+9. **Changing Data (DML)**: `INSERT`, `UPDATE`, and `DELETE`.
+10. **Advanced Aggregation**: Conditional aggregations, percentiles, and ratios.
+11. **JOIN Pitfalls, EXISTS and UNION**: Set operations and anti-joins.
+12. **More Text and Dates**: Advanced date calculations and string parsing.
+13. **Window Functions**: `OVER`, `PARTITION BY`, `ROW_NUMBER`, `RANK`, and DuckDB `QUALIFY`.
+14. **Recursive Queries**: `WITH RECURSIVE` tree traversals and sequences.
+15. **Changing Data: Level 2**: `CREATE TABLE`, `ON CONFLICT` upsert, and `CREATE VIEW`.
+16. **Case Study: School**: Realistic academic analytics.
+17. **Practical Challenges**: End-to-end analytical reporting.
+18. **Interview Challenges**: Cohorts, retention rates, top earners, and frequency gaps.
 
 ---
 
-## Development and contributing
+## Local Development
+
+Runtime is isolated and pinned using [Volta](https://volta.sh):
 
 ```bash
 # Clone the repository
 git clone https://github.com/haydermuhib/learn-duckdb.git
 cd learn-duckdb
 
-# Install dependencies and start development environment
-uv sync
-uv run app.py
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-<details>
-<summary><b>Adding a new lecture</b></summary>
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-1. Create a new directory under `data/lectures/` (e.g. `07_advanced_analytics/`).
-2. Add `seed.sql` with table definitions and seed records.
-3. Add `solutions.sql` containing reference answers for each task.
-4. Add `lecture.yaml` specifying task instructions, hints, and expected row counts.
+### Building for Production
 
-</details>
+```bash
+npm run build
+npm run preview
+```
 
 ---
 
 ## License
 
-MIT License. Open source and free for personal and educational use.
+[MIT](LICENSE)

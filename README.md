@@ -4,6 +4,7 @@
 
 `learn-duckdb` is a 100% client-side, interactive analytical SQL learning platform. It runs real DuckDB inside your browser using WebAssembly and Web Workers—no remote servers, no setup, and no sign-up required.
 
+![Release v1.0.0](https://img.shields.io/badge/release-v1.0.0-FEC62E.svg)
 ![DuckDB](https://img.shields.io/badge/powered%20by-DuckDB%20Wasm-FEC62E.svg)
 ![React 18](https://img.shields.io/badge/react-18-blue.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-5-blue.svg)

@@ -42,3 +42,4 @@ export interface ModuleDef {
   description?: string;
   order: number;
 }
+

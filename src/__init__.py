@@ -1,1 +1,0 @@
-# learn-duckdb source package

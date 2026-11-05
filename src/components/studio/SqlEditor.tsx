@@ -129,3 +129,4 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
     </div>
   );
 };
+

@@ -148,3 +148,4 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     </div>
   );
 };
+

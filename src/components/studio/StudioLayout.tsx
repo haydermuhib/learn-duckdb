@@ -393,3 +393,4 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     </div>
   );
 };
+

@@ -102,3 +102,4 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
     </div>
   );
 };
+

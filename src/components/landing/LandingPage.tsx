@@ -388,3 +388,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning }) => 
     </div>
   );
 };
+

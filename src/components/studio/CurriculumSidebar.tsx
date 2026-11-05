@@ -216,3 +216,4 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     </>
   );
 };
+

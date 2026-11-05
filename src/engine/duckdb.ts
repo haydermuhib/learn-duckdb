@@ -143,3 +143,4 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
 export function getCurrentDatabase(): string {
   return currentDbName || 'store';
 }
+

@@ -6,12 +6,12 @@ export const functions_exercises: ExerciseDef[] = [
     "module": "functions",
     "db": "store",
     "title": "Joining text with ||",
-    "concept": "In SQLite and PostgreSQL, || joins text: name || ' - ' || city. MySQL uses CONCAT(name, ' - ', city) and SQL Server uses +.",
+    "concept": "In DuckDB, PostgreSQL, and SQLite, || concatenates strings: name || ' - ' || city. DuckDB also supports CONCAT(name, ' - ', city).",
     "example": "SELECT name || ' (' || category || ')' FROM products;",
     "steps": [
       {
-        "task": "Show one column called contact with each customer’s name and city like this: Ana López - Monterrey.",
-        "solution": "SELECT name || ' - ' || city AS contacto FROM customers",
+        "task": "Show one column called contact with each customer’s name and city like this: Bilal - London.",
+        "solution": "SELECT name || ' - ' || city AS contact FROM customers",
         "hints": [
           "name || ' - ' || city AS contact"
         ],
@@ -26,12 +26,12 @@ export const functions_exercises: ExerciseDef[] = [
     "module": "functions",
     "db": "store",
     "title": "Parts of a date",
-    "concept": "In SQLite, strftime('%m', date) gives the month, '%Y' the year and '%Y-%m' year and month. Other databases use MONTH(date) or EXTRACT(MONTH FROM date), but the idea is the same.",
+    "concept": "In DuckDB, strftime('%m', date) gives the month, '%Y' the year and '%Y-%m' year and month. You can also use date_trunc('month', date) or month(date).",
     "example": "SELECT name, strftime('%m', signup_date) FROM customers;",
     "steps": [
       {
-        "task": "Show how many orders there were each month (format 2025-03), sorted from the oldest month to the newest.",
-        "solution": "SELECT strftime('%Y-%m', order_date) AS mes, COUNT(*) FROM orders GROUP BY mes ORDER BY mes",
+        "task": "Show how many orders there were each month (format 2025-03) as month and total, sorted from the oldest month to the newest.",
+        "solution": "SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS total FROM orders GROUP BY month ORDER BY month",
         "hints": [
           "strftime('%Y-%m', order_date) AS month",
           "Group and sort by month."
@@ -48,14 +48,14 @@ export const functions_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Conditions with CASE",
     "concept": "CASE is SQL’s \"if\": CASE WHEN condition THEN value … ELSE other END. It checks the conditions in order and uses the first one that is true.",
-    "example": "SELECT name, CASE WHEN stock = 0 THEN 'Agotado' ELSE 'Disponible' END FROM products;",
+    "example": "SELECT name, CASE WHEN stock = 0 THEN 'Out of Stock' ELSE 'In Stock' END FROM products;",
     "steps": [
       {
         "task": "Show each product’s name and a price_range column: 'Expensive' if it costs 3000 or more, 'Mid-range' if it costs 500 or more, and 'Budget' otherwise.",
-        "solution": "SELECT name, CASE WHEN price >= 3000 THEN 'Caro' WHEN price >= 500 THEN 'Medio' ELSE 'Económico' END AS rango FROM products",
+        "solution": "SELECT name, CASE WHEN price >= 3000 THEN 'Expensive' WHEN price >= 500 THEN 'Mid-range' ELSE 'Budget' END AS price_range FROM products",
         "hints": [
           "Put the highest condition first: WHEN price >= 3000.",
-          "CASE WHEN … THEN 'Expensive' WHEN … THEN 'Mid-range' ELSE 'Budget' END"
+          "CASE WHEN … THEN 'Expensive' WHEN … THEN 'Mid-range' ELSE 'Budget' END AS price_range"
         ],
         "requires": [
           "CASE"
@@ -73,7 +73,7 @@ export const functions_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show each customer’s name and email; if there is no email, show the text 'No email'.",
-        "solution": "SELECT name, COALESCE(email, 'Sin email') FROM customers",
+        "solution": "SELECT name, COALESCE(email, 'No email') FROM customers",
         "hints": [
           "COALESCE(email, 'No email')"
         ],
@@ -93,9 +93,9 @@ export const functions_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show each product name and its price with tax (price times 1.16) as a whole number, dropping the cents (no rounding).",
-        "solution": "SELECT name, CAST(price * 1.16 AS INTEGER) AS precio_entero FROM products",
+        "solution": "SELECT name, CAST(price * 1.16 AS INTEGER) AS int_price FROM products",
         "hints": [
-          "CAST(price * 1.16 AS INTEGER)"
+          "CAST(price * 1.16 AS INTEGER) AS int_price"
         ],
         "requires": [
           "CAST"
@@ -108,12 +108,12 @@ export const functions_exercises: ExerciseDef[] = [
     "module": "functions",
     "db": "store",
     "title": "Avoiding division by zero: NULLIF",
-    "concept": "NULLIF(a, b) returns NULL if a equals b, otherwise a. Dividing by NULLIF(total, 0) avoids the division-by-zero error in SQL Server and PostgreSQL (SQLite already returns NULL, but the habit protects you elsewhere).",
+    "concept": "NULLIF(a, b) returns NULL if a equals b, otherwise a. Dividing by NULLIF(total, 0) avoids division-by-zero errors in SQL.",
     "example": "SELECT name, price / NULLIF(stock, 0) FROM products;",
     "steps": [
       {
-        "task": "For each customer, show what percentage of their orders was cancelled, rounded to 1 decimal. Customers with no orders must show NULL: divide by NULLIF(order count, 0).",
-        "solution": "SELECT c.name, ROUND(SUM(CASE WHEN p.status = 'cancelled' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(p.id), 0), 1) AS porcentaje FROM customers c LEFT JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name",
+        "task": "For each customer, show what percentage of their orders was cancelled (as cancel_pct), rounded to 1 decimal. Customers with no orders must show NULL: divide by NULLIF(order count, 0).",
+        "solution": "SELECT c.name, ROUND(SUM(CASE WHEN p.status = 'cancelled' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(p.id), 0), 1) AS cancel_pct FROM customers c LEFT JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name",
         "hints": [
           "LEFT JOIN customers to orders and count with COUNT(o.id).",
           "SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(o.id), 0)"
@@ -177,7 +177,7 @@ export const functions_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show each product’s name and its price as text with a dollar sign and two decimals, like $649.00. Name that column price_text.",
-        "solution": "SELECT name, printf('$%.2f', price) AS precio_texto FROM products",
+        "solution": "SELECT name, printf('$%.2f', price) AS price_text FROM products",
         "hints": [
           "printf('$%.2f', price) AS price_text"
         ],

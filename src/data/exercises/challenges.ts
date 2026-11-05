@@ -9,10 +9,10 @@ export const challenges_exercises: ExerciseDef[] = [
     "concept": "Combine JOIN, GROUP BY, ORDER BY and LIMIT. The task does not tell you where to start: think about which tables you need and the order each clause runs in.",
     "steps": [
       {
-        "task": "Show the name of the product with the most units ordered and how many units that was.",
-        "solution": "SELECT pr.name, SUM(d.quantity) AS unidades FROM order_items d JOIN products pr ON pr.id = d.product_id GROUP BY pr.id, pr.name ORDER BY unidades DESC LIMIT 1",
+        "task": "Show the name of the product with the most units ordered and how many units that was (as total_units).",
+        "solution": "SELECT pr.name, SUM(d.quantity) AS total_units FROM order_items d JOIN products pr ON pr.id = d.product_id GROUP BY pr.id, pr.name ORDER BY total_units DESC LIMIT 1",
         "hints": [
-          "Add up quantity per product.",
+          "Add up quantity per product: SUM(d.quantity) AS total_units.",
           "Sort from highest to lowest and keep 1 row."
         ],
         "requires": [
@@ -72,10 +72,11 @@ export const challenges_exercises: ExerciseDef[] = [
     "concept": "The final challenge brings together dates, several JOINs, a filter and a calculated aggregate.",
     "steps": [
       {
-        "task": "Show the revenue for each month (quantity times price, no cancelled orders), with the month as 2025-03, sorted from oldest to newest.",
-        "solution": "SELECT strftime('%Y-%m', p.order_date) AS mes, SUM(d.quantity * pr.price) AS ingreso FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY mes ORDER BY mes",
+        "task": "Show the revenue for each month (quantity times price, no cancelled orders), with the month as 2025-03 (as month) and total revenue (as revenue), sorted from oldest to newest.",
+        "solution": "SELECT strftime('%Y-%m', p.order_date) AS month, SUM(d.quantity * pr.price) AS revenue FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY month ORDER BY month",
         "hints": [
-          "strftime('%Y-%m', o.order_date) for the month.",
+          "strftime('%Y-%m', p.order_date) AS month",
+          "SUM(d.quantity * pr.price) AS revenue",
           "Join orders, order_items and products."
         ],
         "requires": [

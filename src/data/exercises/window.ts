@@ -11,7 +11,7 @@ export const window_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show name, price and each product’s position from most expensive (1) to cheapest.",
-        "solution": "SELECT name, price, ROW_NUMBER() OVER (ORDER BY price DESC) AS posicion FROM products",
+        "solution": "SELECT name, price, ROW_NUMBER() OVER (ORDER BY price DESC) AS position FROM products",
         "hints": [
           "ROW_NUMBER() OVER (ORDER BY price DESC)"
         ],
@@ -32,7 +32,7 @@ export const window_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "For each customer_id show how many orders they have and their place in a ranking by order count (most orders = place 1), using RANK.",
-        "solution": "SELECT customer_id, COUNT(*) AS total_pedidos, RANK() OVER (ORDER BY COUNT(*) DESC) AS lugar FROM orders GROUP BY customer_id",
+        "solution": "SELECT customer_id, COUNT(*) AS total_orders, RANK() OVER (ORDER BY COUNT(*) DESC) AS rank_pos FROM orders GROUP BY customer_id",
         "hints": [
           "Group by customer_id and add RANK() OVER (ORDER BY COUNT(*) DESC)."
         ],
@@ -43,7 +43,7 @@ export const window_exercises: ExerciseDef[] = [
       },
       {
         "task": "Make the same ranking with DENSE_RANK and compare: what place do customers with 1 order get now?",
-        "solution": "SELECT customer_id, COUNT(*) AS total_pedidos, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS lugar FROM orders GROUP BY customer_id",
+        "solution": "SELECT customer_id, COUNT(*) AS total_orders, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS rank_pos FROM orders GROUP BY customer_id",
         "hints": [
           "Swap RANK for DENSE_RANK."
         ],
@@ -63,7 +63,7 @@ export const window_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show name, department_id, salary and each employee’s place in a salary ranking within their department (highest paid = 1).",
-        "solution": "SELECT name, department_id, salary, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS lugar FROM employees",
+        "solution": "SELECT name, department_id, salary, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rank_pos FROM employees",
         "hints": [
           "RANK() OVER (PARTITION BY department_id ORDER BY salary DESC)"
         ],
@@ -83,7 +83,7 @@ export const window_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show name, hire date, salary and the running payroll: the total salary of everyone hired up to that date.",
-        "solution": "SELECT name, hire_date, salary, SUM(salary) OVER (ORDER BY hire_date) AS nomina_acumulada FROM employees",
+        "solution": "SELECT name, hire_date, salary, SUM(salary) OVER (ORDER BY hire_date) AS running_payroll FROM employees",
         "hints": [
           "SUM(salary) OVER (ORDER BY hire_date)"
         ],
@@ -103,11 +103,11 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT order_date, LAG(order_date) OVER (ORDER BY order_date) FROM orders;",
     "steps": [
       {
-        "task": "Show each month (2025-03), how many orders it had and the difference from the previous month.",
-        "solution": "WITH m AS (SELECT strftime('%Y-%m', order_date) AS mes, COUNT(*) AS total FROM orders GROUP BY mes) SELECT mes, total, total - LAG(total) OVER (ORDER BY mes) AS cambio FROM m",
+        "task": "Show each month (2025-03), how many orders it had (as total) and the difference from the previous month (as diff).",
+        "solution": "WITH m AS (SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS total FROM orders GROUP BY month) SELECT month, total, total - LAG(total) OVER (ORDER BY month) AS diff FROM m",
         "hints": [
           "First count orders per month in a WITH.",
-          "total - LAG(total) OVER (ORDER BY month)"
+          "total - LAG(total) OVER (ORDER BY month) AS diff"
         ],
         "requires": [
           "LAG"
@@ -124,10 +124,10 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT name, stock, SUM(stock) OVER () FROM products;",
     "steps": [
       {
-        "task": "Show each product name and what percentage of total inventory its stock is, rounded to 2 decimals.",
-        "solution": "SELECT name, ROUND(100.0 * stock / SUM(stock) OVER (), 2) AS porcentaje FROM products",
+        "task": "Show each product name and what percentage of total inventory its stock is (as pct_of_total), rounded to 2 decimals.",
+        "solution": "SELECT name, ROUND(100.0 * stock / SUM(stock) OVER (), 2) AS pct_of_total FROM products",
         "hints": [
-          "ROUND(100.0 * stock / SUM(stock) OVER (), 2)"
+          "ROUND(100.0 * stock / SUM(stock) OVER (), 2) AS pct_of_total"
         ],
         "requires": [
           "OVER"
@@ -165,10 +165,10 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT name, LEAD(name) OVER (ORDER BY signup_date) FROM customers;",
     "steps": [
       {
-        "task": "For each order show customer_id, order_date and the date of that customer’s next order.",
-        "solution": "SELECT customer_id, order_date, LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS siguiente FROM orders",
+        "task": "For each order show customer_id, order_date and the date of that customer’s next order (as next_order_date).",
+        "solution": "SELECT customer_id, order_date, LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS next_order_date FROM orders",
         "hints": [
-          "LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)"
+          "LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS next_order_date"
         ],
         "requires": [
           "LEAD"
@@ -185,10 +185,10 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT name, role, COUNT(*) OVER (PARTITION BY role ORDER BY hire_date) FROM employees;",
     "steps": [
       {
-        "task": "Show name, department_id, hire date and their department’s running payroll up to their hire.",
-        "solution": "SELECT name, department_id, hire_date, SUM(salary) OVER (PARTITION BY department_id ORDER BY hire_date) AS nomina_depto FROM employees",
+        "task": "Show name, department_id, hire date and their department’s running payroll up to their hire (as dept_running_payroll).",
+        "solution": "SELECT name, department_id, hire_date, SUM(salary) OVER (PARTITION BY department_id ORDER BY hire_date) AS dept_running_payroll FROM employees",
         "hints": [
-          "SUM(salary) OVER (PARTITION BY department_id ORDER BY hire_date)"
+          "SUM(salary) OVER (PARTITION BY department_id ORDER BY hire_date) AS dept_running_payroll"
         ],
         "requires": [
           "PARTITION BY"
@@ -205,11 +205,11 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT order_date, COUNT(*) OVER (ORDER BY order_date ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders;",
     "steps": [
       {
-        "task": "Show each month, its orders and the 3-month moving average (that month and the 2 before), rounded to 2 decimals.",
-        "solution": "WITH m AS (SELECT strftime('%Y-%m', order_date) AS mes, COUNT(*) AS total FROM orders GROUP BY mes) SELECT mes, total, ROUND(AVG(total) OVER (ORDER BY mes ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS promedio_movil FROM m",
+        "task": "Show each month, its orders and the 3-month moving average (that month and the 2 before), rounded to 2 decimals (as moving_avg).",
+        "solution": "WITH m AS (SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS total FROM orders GROUP BY month) SELECT month, total, ROUND(AVG(total) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg FROM m",
         "hints": [
           "Count orders per month in a WITH.",
-          "AVG(total) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)"
+          "AVG(total) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg"
         ],
         "requires": [
           "ROWS"
@@ -226,10 +226,10 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT name, NTILE(2) OVER (ORDER BY hire_date) FROM employees;",
     "steps": [
       {
-        "task": "Show name, salary and each employee’s salary quartile (1 = the top-paid 25%).",
-        "solution": "SELECT name, salary, NTILE(4) OVER (ORDER BY salary DESC) AS cuartil FROM employees",
+        "task": "Show name, salary and each employee’s salary quartile (1 = the top-paid 25%) as quartile.",
+        "solution": "SELECT name, salary, NTILE(4) OVER (ORDER BY salary DESC) AS quartile FROM employees",
         "hints": [
-          "NTILE(4) OVER (ORDER BY salary DESC)"
+          "NTILE(4) OVER (ORDER BY salary DESC) AS quartile"
         ],
         "requires": [
           "NTILE"
@@ -246,10 +246,10 @@ export const window_exercises: ExerciseDef[] = [
     "example": "SELECT name, FIRST_VALUE(name) OVER (ORDER BY hire_date) FROM employees;",
     "steps": [
       {
-        "task": "Show each employee’s name and department_id next to the name of the top earner in their department.",
-        "solution": "SELECT name, department_id, FIRST_VALUE(name) OVER (PARTITION BY department_id ORDER BY salary DESC) AS mejor_pagado FROM employees",
+        "task": "Show each employee’s name and department_id next to the name of the top earner in their department (as top_earner).",
+        "solution": "SELECT name, department_id, FIRST_VALUE(name) OVER (PARTITION BY department_id ORDER BY salary DESC) AS top_earner FROM employees",
         "hints": [
-          "FIRST_VALUE(name) OVER (PARTITION BY department_id ORDER BY salary DESC)"
+          "FIRST_VALUE(name) OVER (PARTITION BY department_id ORDER BY salary DESC) AS top_earner"
         ],
         "requires": [
           "FIRST_VALUE"
@@ -265,10 +265,10 @@ export const window_exercises: ExerciseDef[] = [
     "concept": "AVG(...) OVER (PARTITION BY ...) puts each row’s group average on that row without collapsing the rows, unlike GROUP BY. You see each person next to their area’s average.",
     "steps": [
       {
-        "task": "Show each employee’s name, department_id and salary, along with their department’s average salary rounded to 2 decimals.",
-        "solution": "SELECT name, department_id, salary, ROUND(AVG(salary) OVER (PARTITION BY department_id), 2) AS promedio_depto FROM employees",
+        "task": "Show each employee’s name, department_id and salary, along with their department’s average salary rounded to 2 decimals (as dept_avg_salary).",
+        "solution": "SELECT name, department_id, salary, ROUND(AVG(salary) OVER (PARTITION BY department_id), 2) AS dept_avg_salary FROM employees",
         "hints": [
-          "ROUND(AVG(salary) OVER (PARTITION BY department_id), 2)"
+          "ROUND(AVG(salary) OVER (PARTITION BY department_id), 2) AS dept_avg_salary"
         ],
         "requires": [
           "OVER",

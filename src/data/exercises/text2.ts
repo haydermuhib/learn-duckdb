@@ -5,16 +5,16 @@ export const text2_exercises: ExerciseDef[] = [
     "id": "substr-instr",
     "module": "text2",
     "db": "store",
-    "title": "Cutting text: SUBSTR and INSTR",
-    "concept": "SUBSTR(text, start, length) takes a piece of text (the first letter is position 1; without length it runs to the end). INSTR(text, '@') tells where a character appears. MySQL and SQL Server use SUBSTRING and LOCATE or CHARINDEX.",
-    "example": "SELECT name, SUBSTR(name, 1, 3) FROM products;",
+    "title": "Cutting text: SUBSTR and STRPOS",
+    "concept": "SUBSTR(text, start, length) extracts a substring (1-indexed). In DuckDB and PostgreSQL, STRPOS(string, search) finds the 1-based index of a substring (standard SQL also supports POSITION(search IN string)).",
+    "example": "SELECT name, SUBSTR(name, 1, 3), STRPOS(name, 'a') FROM products;",
     "steps": [
       {
-        "task": "Show the name of each customer with an email and their email domain (what comes after the @, e.g. gmail.com).",
-        "solution": "SELECT name, SUBSTR(email, INSTR(email, '@') + 1) AS dominio FROM customers WHERE email IS NOT NULL",
+        "task": "Show the name of each customer with an email and their email domain (what comes after the @, e.g. gmail.com) as domain.",
+        "solution": "SELECT name, SUBSTR(email, STRPOS(email, '@') + 1) AS domain FROM customers WHERE email IS NOT NULL",
         "hints": [
-          "INSTR(email, '@') gives the position of the @; the domain starts one position later.",
-          "SUBSTR(email, INSTR(email, '@') + 1)"
+          "STRPOS(email, '@') gives the position of the @; the domain starts one position later.",
+          "SUBSTR(email, STRPOS(email, '@') + 1) AS domain"
         ],
         "requires": [
           "SUBSTR"
@@ -27,14 +27,14 @@ export const text2_exercises: ExerciseDef[] = [
     "module": "text2",
     "db": "store",
     "title": "REPLACE, LENGTH and TRIM",
-    "concept": "REPLACE(text, find, put) swaps every occurrence of a text for another. LENGTH counts characters and TRIM removes spaces at both ends. LOWER and UPPER change case, though in SQLite only for unaccented letters.",
+    "concept": "REPLACE(text, find, put) swaps every occurrence of a text for another. LENGTH counts characters and TRIM removes spaces at both ends. LOWER and UPPER change case.",
     "example": "SELECT REPLACE(email, '@gmail.com', ''), LENGTH(email) FROM customers;",
     "steps": [
       {
-        "task": "Show each product name with spaces replaced by underscores (_) and, in another column, how many characters the original name has.",
-        "solution": "SELECT REPLACE(name, ' ', '_') AS guion, LENGTH(name) AS letras FROM products",
+        "task": "Show each product name with spaces replaced by underscores (_) as slug and, in another column, how many characters the original name has as char_count.",
+        "solution": "SELECT REPLACE(name, ' ', '_') AS slug, LENGTH(name) AS char_count FROM products",
         "hints": [
-          "REPLACE(name, ' ', '_') and LENGTH(name)"
+          "REPLACE(name, ' ', '_') AS slug and LENGTH(name) AS char_count"
         ],
         "requires": [
           "REPLACE",
@@ -47,17 +47,20 @@ export const text2_exercises: ExerciseDef[] = [
     "id": "date-diff",
     "module": "text2",
     "db": "company",
-    "title": "Days between dates: julianday",
-    "concept": "julianday(date) turns a date into a day number, so subtracting two juliandays gives the days between them. date('now') is today. MySQL uses DATEDIFF and PostgreSQL subtracts dates directly.",
-    "example": "SELECT name, julianday('now') - julianday(hire_date) FROM employees;",
+    "title": "Days between dates: DATE_DIFF",
+    "concept": "In DuckDB, date_diff('day', start_date, end_date) calculates the number of days between two dates. You can also subtract dates directly: CAST(date2 AS DATE) - CAST(date1 AS DATE).",
+    "example": "SELECT name, date_diff('day', CAST(hire_date AS DATE), DATE '2026-01-01') FROM employees;",
     "steps": [
       {
-        "task": "Show each employee’s name and how many days passed from their hire date to 2026-01-01.",
-        "solution": "SELECT name, julianday('2026-01-01') - julianday(hire_date) AS dias FROM employees",
+        "task": "Show each employee’s name and how many days passed from their hire date to 2026-01-01 (as days).",
+        "solution": "SELECT name, date_diff('day', CAST(hire_date AS DATE), DATE '2026-01-01') AS days FROM employees",
         "hints": [
-          "julianday('2026-01-01') - julianday(hire_date)"
+          "date_diff('day', CAST(hire_date AS DATE), DATE '2026-01-01') AS days",
+          "SELECT name, date_diff('day', CAST(hire_date AS DATE), DATE '2026-01-01') AS days FROM employees"
         ],
-        "requires": []
+        "requires": [
+          "DATE_DIFF"
+        ]
       }
     ]
   },
@@ -65,17 +68,19 @@ export const text2_exercises: ExerciseDef[] = [
     "id": "date-add",
     "module": "text2",
     "db": "store",
-    "title": "Adding days to a date",
-    "concept": "date(date, '+30 days') adds 30 days. It also takes '-1 month', '+1 year' or 'start of month'. date('now', '-30 days') gives the date a month ago, handy for filtering recent rows.",
-    "example": "SELECT name, date(signup_date, '+1 year') FROM customers;",
+    "title": "Adding days: Date arithmetic with INTERVAL",
+    "concept": "In DuckDB and standard SQL, you add intervals directly to dates: date_col + INTERVAL 30 DAY. You can also subtract: CURRENT_DATE - INTERVAL 30 DAY.",
+    "example": "SELECT name, CAST(signup_date AS DATE) + INTERVAL 1 YEAR FROM customers;",
     "steps": [
       {
-        "task": "Show id, order_date and each order’s return deadline: 30 days after the order date.",
-        "solution": "SELECT id, order_date, date(order_date, '+30 days') AS limite_devolucion FROM orders",
+        "task": "Show id, order_date and each order’s return deadline: 30 days after the order date (as return_deadline).",
+        "solution": "SELECT id, order_date, CAST(order_date AS DATE) + INTERVAL 30 DAY AS return_deadline FROM orders",
         "hints": [
-          "date(order_date, '+30 days')"
+          "CAST(order_date AS DATE) + INTERVAL 30 DAY AS return_deadline"
         ],
-        "requires": []
+        "requires": [
+          "INTERVAL"
+        ]
       }
     ]
   },
@@ -88,8 +93,8 @@ export const text2_exercises: ExerciseDef[] = [
     "example": "SELECT name, strftime('%w', signup_date) FROM customers;",
     "steps": [
       {
-        "task": "Show how many orders were placed on each day of the week (the day number and the count).",
-        "solution": "SELECT strftime('%w', order_date) AS dia, COUNT(*) FROM orders GROUP BY dia",
+        "task": "Show how many orders were placed on each day of the week (the day number as weekday and the count as total_orders).",
+        "solution": "SELECT strftime('%w', order_date) AS weekday, COUNT(*) AS total_orders FROM orders GROUP BY weekday",
         "hints": [
           "strftime('%w', order_date) AS weekday … GROUP BY weekday"
         ],
@@ -107,10 +112,10 @@ export const text2_exercises: ExerciseDef[] = [
     "concept": "strftime('%Y', date) pulls the year out of a date. Grouping by that value gives a count per year, the basis of almost any trend chart.",
     "steps": [
       {
-        "task": "Show how many people joined the company each year, from the oldest year to the newest.",
-        "solution": "SELECT strftime('%Y', hire_date) AS anio, COUNT(*) FROM employees GROUP BY anio ORDER BY anio",
+        "task": "Show how many people joined the company each year (as hire_year and total), from the oldest year to the newest.",
+        "solution": "SELECT strftime('%Y', hire_date) AS hire_year, COUNT(*) AS total FROM employees GROUP BY hire_year ORDER BY hire_year",
         "hints": [
-          "strftime('%Y', hire_date) AS year, then group and sort by year."
+          "strftime('%Y', hire_date) AS hire_year, then group and sort by hire_year."
         ],
         "requires": [
           "STRFTIME",

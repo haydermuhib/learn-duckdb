@@ -44,7 +44,7 @@ export const select_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Calculations and AS aliases",
     "concept": "A SELECT column can be a calculation: price * 2, stock - 1… AS names the result column. Without an alias, the column is named after the expression.",
-    "example": "SELECT name, stock * 2 AS doble FROM products;",
+    "example": "SELECT name, stock * 2 AS double_stock FROM products;",
     "steps": [
       {
         "task": "Show each product’s name and its price with tax (price times 1.16). Name the second column price_with_tax.",
@@ -85,7 +85,7 @@ export const select_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Columns calculated from each other",
     "concept": "A calculation can combine several columns of the same row: price * stock gives how much money each product has sitting in inventory. SQL does the math row by row.",
-    "example": "SELECT name, price - 100 AS con_descuento FROM products;",
+    "example": "SELECT name, price - 100 AS discounted_price FROM products;",
     "steps": [
       {
         "task": "Show each product’s name and the value of its inventory (price times stock). Name the column inventory_value.",

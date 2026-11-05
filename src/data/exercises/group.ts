@@ -107,11 +107,11 @@ export const group_exercises: ExerciseDef[] = [
     ]
   },
   {
-    "id": "group-concat",
+    "id": "group-string-agg",
     "module": "group",
     "db": "store",
     "title": "Joining a group’s values: STRING_AGG",
-    "concept": "STRING_AGG(column, ', ') joins each group's values into a single text string separated by a delimiter. You can add ORDER BY inside the parentheses to control the order. (While SQLite uses GROUP_CONCAT, modern SQL standards and DuckDB use STRING_AGG).",
+    "concept": "STRING_AGG(column, ', ') joins each group's values into a single text string separated by a delimiter. You can add ORDER BY inside the parentheses to control the order. (While SQLite used GROUP_CONCAT, modern SQL standards and DuckDB use STRING_AGG).",
     "example": "SELECT city, STRING_AGG(name, ', ') FROM customers GROUP BY city;",
     "steps": [
       {

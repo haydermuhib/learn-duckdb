@@ -25,17 +25,17 @@ export const school_exercises: ExerciseDef[] = [
     "module": "school",
     "db": "school",
     "title": "Each student’s age",
-    "concept": "Subtracting two julianday values gives days. Divided by 365.25 that gives years with decimals, and CAST(… AS INTEGER) drops the decimals: the age in full years.",
+    "concept": "In DuckDB, date_diff('year', start_date, end_date) calculates the age in full years between two dates.",
     "steps": [
       {
         "task": "Show each student’s name and their age in full years on January 1, 2026. Name the column age.",
-        "solution": "SELECT name, CAST((julianday('2026-01-01') - julianday(birth_date)) / 365.25 AS INTEGER) AS edad FROM students",
+        "solution": "SELECT name, date_diff('year', CAST(birth_date AS DATE), DATE '2026-01-01') AS age FROM students",
         "hints": [
-          "julianday('2026-01-01') - julianday(birth_date) gives the days lived.",
-          "Divide by 365.25 and convert with CAST(… AS INTEGER)."
+          "date_diff('year', CAST(birth_date AS DATE), DATE '2026-01-01') AS age",
+          "SELECT name, date_diff('year', CAST(birth_date AS DATE), DATE '2026-01-01') AS age FROM students"
         ],
         "requires": [
-          "CAST"
+          "DATE_DIFF"
         ]
       }
     ]

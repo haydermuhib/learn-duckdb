@@ -159,10 +159,10 @@ export const joins_exercises: ExerciseDef[] = [
     "example": "SELECT p.id, pr.name FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id;",
     "steps": [
       {
-        "task": "Show everything Ana López has ordered: order date, product name and quantity.",
-        "solution": "SELECT p.order_date, pr.name, d.quantity FROM customers c JOIN orders p ON p.customer_id = c.id JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE c.name = 'Ana López'",
+        "task": "Show everything Bilal has ordered: order date, product name and quantity.",
+        "solution": "SELECT p.order_date, pr.name, d.quantity FROM customers c JOIN orders p ON p.customer_id = c.id JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE c.name = 'Bilal'",
         "hints": [
-          "Join customers, orders, order_items and products, and filter with c.name = 'Ana López'."
+          "Join customers, orders, order_items and products, and filter with c.name = 'Bilal'."
         ],
         "requires": [
           "JOIN"
@@ -219,7 +219,7 @@ export const joins_exercises: ExerciseDef[] = [
     "concept": "When joining several tables, the same row can show up several times (a product bought in two orders). DISTINCT keeps each value once.",
     "steps": [
       {
-        "task": "List, without repeats, the products ordered by customers from CDMX.",
+        "task": "List, without repeats, the products ordered by customers from London.",
         "solution": "SELECT DISTINCT pr.name FROM customers c JOIN orders p ON p.customer_id = c.id JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE c.city = 'London'",
         "hints": [
           "Path: customers → orders → order_items → products.",
@@ -240,11 +240,11 @@ export const joins_exercises: ExerciseDef[] = [
     "concept": "With LEFT JOIN, a sum over a group with no rows gives NULL. COALESCE(SUM(...), 0) turns it into 0, which is usually what a report needs.",
     "steps": [
       {
-        "task": "Show every product with the units sold of each. Those never sold must show 0.",
-        "solution": "SELECT pr.name, COALESCE(SUM(d.quantity), 0) AS unidades FROM products pr LEFT JOIN order_items d ON d.product_id = pr.id GROUP BY pr.id, pr.name",
+        "task": "Show every product with the units sold of each (as units_sold). Those never sold must show 0.",
+        "solution": "SELECT pr.name, COALESCE(SUM(d.quantity), 0) AS units_sold FROM products pr LEFT JOIN order_items d ON d.product_id = pr.id GROUP BY pr.id, pr.name",
         "hints": [
           "products LEFT JOIN order_items, grouping by product.",
-          "COALESCE(SUM(oi.quantity), 0)"
+          "COALESCE(SUM(d.quantity), 0) AS units_sold"
         ],
         "requires": [
           "LEFT JOIN",

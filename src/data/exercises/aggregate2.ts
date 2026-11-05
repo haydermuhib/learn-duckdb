@@ -27,7 +27,7 @@ export const aggregate2_exercises: ExerciseDef[] = [
     "db": "company",
     "title": "Grouping by two columns",
     "concept": "With GROUP BY a, b each group is a distinct combination of a and b. Use it to cross two categories, like department and job title.",
-    "example": "SELECT role, strftime('%Y', hire_date) AS anio, COUNT(*) FROM employees GROUP BY role, anio;",
+    "example": "SELECT role, strftime('%Y', hire_date) AS hire_year, COUNT(*) FROM employees GROUP BY role, hire_year;",
     "steps": [
       {
         "task": "Show how many employees hold each job title within each department (department_id, job_title and the count).",
@@ -50,10 +50,10 @@ export const aggregate2_exercises: ExerciseDef[] = [
     "example": "SELECT category, SUM(CASE WHEN stock = 0 THEN 1 ELSE 0 END) FROM products GROUP BY category;",
     "steps": [
       {
-        "task": "For each customer_id, show in two columns how many orders were delivered and how many were cancelled.",
-        "solution": "SELECT customer_id, SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS entregados, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelados FROM orders GROUP BY customer_id",
+        "task": "For each customer_id, show in two columns how many orders were delivered (as delivered) and how many were cancelled (as cancelled).",
+        "solution": "SELECT customer_id, SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled FROM orders GROUP BY customer_id",
         "hints": [
-          "SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END)",
+          "SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered",
           "Do the same for cancelled and group by customer_id."
         ],
         "requires": [
@@ -67,8 +67,8 @@ export const aggregate2_exercises: ExerciseDef[] = [
     "id": "integer-division",
     "module": "aggregate2",
     "db": "store",
-    "title": "Percentages and integer division",
-    "concept": "Dividing two integers in SQLite (and SQL Server and PostgreSQL) drops the decimals: 8 / 14 gives 0. Multiply by 100.0 first, or use CAST(x AS REAL), to get a decimal result.",
+    "title": "Percentages and division",
+    "concept": "In standard SQL, dividing integers can truncate decimals depending on the database engine. In DuckDB, / produces floating-point decimals, while // performs integer division. Multiplying by 100.0 or using CAST(x AS DOUBLE) guarantees exact decimal division across all engines.",
     "example": "SELECT 8 / 14, 8 * 100.0 / 14;",
     "steps": [
       {

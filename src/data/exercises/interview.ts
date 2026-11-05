@@ -60,11 +60,11 @@ export const interview_exercises: ExerciseDef[] = [
     "concept": "Growth % = (this month - last month) * 100 / last month. Put together what you have seen: revenue per month in a WITH and LAG for the previous month.",
     "steps": [
       {
-        "task": "Show each month, its revenue (quantity times price, no cancelled orders) and the growth % over the previous month, rounded to 1 decimal.",
-        "solution": "WITH m AS (SELECT strftime('%Y-%m', p.order_date) AS mes, SUM(d.quantity * pr.price) AS ingreso FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY mes) SELECT mes, ingreso, ROUND((ingreso - LAG(ingreso) OVER (ORDER BY mes)) * 100.0 / LAG(ingreso) OVER (ORDER BY mes), 1) AS crecimiento FROM m",
+        "task": "Show each month, its revenue (quantity times price, no cancelled orders) and the growth % over the previous month (as growth_pct), rounded to 1 decimal.",
+        "solution": "WITH m AS (SELECT strftime('%Y-%m', p.order_date) AS month, SUM(d.quantity * pr.price) AS revenue FROM orders p JOIN order_items d ON d.order_id = p.id JOIN products pr ON pr.id = d.product_id WHERE p.status <> 'cancelled' GROUP BY month) SELECT month, revenue, ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / LAG(revenue) OVER (ORDER BY month), 1) AS growth_pct FROM m",
         "hints": [
           "Work out revenue per month in a WITH, as in the revenue per month challenge.",
-          "(revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / LAG(revenue) OVER (ORDER BY month)"
+          "(revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / LAG(revenue) OVER (ORDER BY month) AS growth_pct"
         ],
         "requires": [
           "LAG"
@@ -81,7 +81,7 @@ export const interview_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show the name and salary of the employees who earn more than their manager, along with the manager’s name and salary.",
-        "solution": "SELECT e.name, e.salary, j.name AS jefe, j.salary FROM employees e JOIN employees j ON e.manager_id = j.id WHERE e.salary > j.salary",
+        "solution": "SELECT e.name, e.salary, j.name AS manager_name, j.salary FROM employees e JOIN employees j ON e.manager_id = j.id WHERE e.salary > j.salary",
         "hints": [
           "FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary"
         ],
@@ -111,14 +111,14 @@ export const interview_exercises: ExerciseDef[] = [
     "module": "interview",
     "db": "company",
     "title": "The median",
-    "concept": "The median is the middle value once sorted; with an even number of rows, the average of the two middle ones. SQLite has no MEDIAN: number the rows with ROW_NUMBER, count them with COUNT(*) OVER () and average the middle rows.",
+    "concept": "DuckDB provides a built-in MEDIAN(salary) aggregate function. In standard SQL without MEDIAN, you can number rows with ROW_NUMBER() and average the middle rows.",
     "steps": [
       {
-        "task": "Work out the median salary.",
-        "solution": "WITH ordenados AS (SELECT salary, ROW_NUMBER() OVER (ORDER BY salary) AS n, COUNT(*) OVER () AS total FROM employees) SELECT AVG(salary) AS mediana FROM ordenados WHERE n IN ((total + 1) / 2, (total + 2) / 2)",
+        "task": "Work out the median salary (named median).",
+        "solution": "SELECT MEDIAN(salary) AS median FROM employees",
         "hints": [
-          "ROW_NUMBER() OVER (ORDER BY salary) AS n and COUNT(*) OVER () AS total in a WITH.",
-          "The middle rows are n = (total + 1) / 2 and n = (total + 2) / 2 (integer division)."
+          "Use DuckDB's native aggregate: SELECT MEDIAN(salary) AS median FROM employees",
+          "Or using window functions: WITH ranked AS (SELECT salary, ROW_NUMBER() OVER (ORDER BY salary) AS n, COUNT(*) OVER () AS total FROM employees) SELECT AVG(salary) AS median FROM ranked WHERE n IN ((total + 1) / 2, (total + 2) / 2)"
         ],
         "requires": []
       }
@@ -133,7 +133,7 @@ export const interview_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Show the name and last order date of the customers who have not ordered since August 1, 2025.",
-        "solution": "SELECT c.name, MAX(p.order_date) AS ultimo FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name HAVING MAX(p.order_date) < '2025-08-01'",
+        "solution": "SELECT c.name, MAX(p.order_date) AS last_order_date FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name HAVING MAX(p.order_date) < '2025-08-01'",
         "hints": [
           "Group by customer and use HAVING MAX(o.order_date) < '2025-08-01'."
         ],
@@ -146,13 +146,13 @@ export const interview_exercises: ExerciseDef[] = [
     "module": "interview",
     "db": "store",
     "title": "From signup to first purchase",
-    "concept": "Combine an aggregate (MIN for the first order) with date arithmetic on the result. Functions like julianday accept an aggregate as their argument.",
+    "concept": "Combine an aggregate (MIN for the first order) with date arithmetic on the result. In DuckDB, use date_diff('day', start_date, end_date) to find the day difference.",
     "steps": [
       {
-        "task": "For each customer who has bought, show their name, the date of their first order and how many days passed from signup to that order.",
-        "solution": "SELECT c.name, MIN(p.order_date) AS primer_pedido, julianday(MIN(p.order_date)) - julianday(c.signup_date) AS dias FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name",
+        "task": "For each customer who has bought, show their name, the date of their first order (as first_order_date) and how many days passed from signup to that order (as days).",
+        "solution": "SELECT c.name, MIN(p.order_date) AS first_order_date, date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name",
         "hints": [
-          "MIN(o.order_date) gives the first order; subtract the signup date with julianday."
+          "MIN(p.order_date) gives the first order; subtract with date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days."
         ],
         "requires": []
       }
@@ -167,10 +167,10 @@ export const interview_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "Find the third highest salary (not counting repeats).",
-        "solution": "WITH r AS (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS lugar FROM employees) SELECT DISTINCT salary FROM r WHERE lugar = 3",
+        "solution": "WITH r AS (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rank_pos FROM employees) SELECT DISTINCT salary FROM r WHERE rank_pos = 3",
         "hints": [
           "Compute DENSE_RANK() OVER (ORDER BY salary DESC) in a WITH.",
-          "Outside: SELECT DISTINCT salary FROM r WHERE place = 3"
+          "Outside: SELECT DISTINCT salary FROM r WHERE rank_pos = 3"
         ],
         "requires": [
           "DENSE_RANK"
@@ -246,11 +246,11 @@ export const interview_exercises: ExerciseDef[] = [
     "concept": "To turn values into columns (one per status, for example), group by the row you want and sum one CASE per column. It is what an Excel pivot table does.",
     "steps": [
       {
-        "task": "Show one row per month (formatted like 2025-03), in order, with three columns: how many orders were delivered, how many are shipped and how many were cancelled.",
-        "solution": "SELECT strftime('%Y-%m', order_date) AS mes, SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS entregados, SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) AS enviados, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelados FROM orders GROUP BY mes ORDER BY mes",
+        "task": "Show one row per month (formatted like 2025-03), in order, with three columns: how many orders were delivered (as delivered_orders), how many are shipped (as shipped_orders) and how many were cancelled (as cancelled_orders).",
+        "solution": "SELECT strftime('%Y-%m', order_date) AS month, SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered_orders, SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) AS shipped_orders, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_orders FROM orders GROUP BY month ORDER BY month",
         "hints": [
-          "Group by strftime('%Y-%m', order_date).",
-          "One column per status: SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END)"
+          "Group by strftime('%Y-%m', order_date) AS month.",
+          "One column per status: SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered_orders"
         ],
         "requires": [
           "CASE"

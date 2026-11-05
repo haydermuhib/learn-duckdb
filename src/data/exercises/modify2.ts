@@ -53,7 +53,7 @@ export const modify2_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Adding columns: ALTER TABLE",
     "concept": "ALTER TABLE table ADD COLUMN column TYPE adds a column to a table that already has data; existing rows get NULL. ALTER TABLE also renames tables and columns.",
-    "example": "ALTER TABLE products ADD COLUMN descuento REAL;",
+    "example": "ALTER TABLE products ADD COLUMN discount REAL;",
     "steps": [
       {
         "task": "Add a text column called phone to the customers table.",
@@ -64,7 +64,7 @@ export const modify2_exercises: ExerciseDef[] = [
         "requires": [
           "ALTER TABLE"
         ],
-        "check": "SELECT name FROM pragma_table_info('customers') ORDER BY cid"
+        "check": "SELECT column_name FROM information_schema.columns WHERE table_name = 'customers' ORDER BY ordinal_position"
       }
     ]
   },
@@ -73,7 +73,7 @@ export const modify2_exercises: ExerciseDef[] = [
     "module": "modify2",
     "db": "store",
     "title": "Table rules: FOREIGN KEY and UNIQUE",
-    "concept": "REFERENCES table(id) declares a foreign key: the column must point to an existing row (SQLite enforces it after PRAGMA foreign_keys = ON). UNIQUE (a, b) forbids repeating the same combination and CHECK (condition) rejects values that fail it.",
+    "concept": "REFERENCES table(id) declares a foreign key: the column must point to an existing row. UNIQUE (a, b) forbids repeating the same combination and CHECK (condition) rejects values that fail it.",
     "example": "CREATE TABLE favorites (customer_id INTEGER REFERENCES customers(id), product_id INTEGER REFERENCES products(id));",
     "steps": [
       {
@@ -87,7 +87,7 @@ export const modify2_exercises: ExerciseDef[] = [
           "REFERENCES",
           "UNIQUE"
         ],
-        "check": "SELECT name, NULL FROM pragma_table_info('reviews') UNION ALL SELECT \"from\", \"table\" FROM pragma_foreign_key_list('reviews') UNION ALL SELECT 'unique', COUNT(*) FROM pragma_index_list('reviews') WHERE \"unique\" = 1"
+        "check": "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'reviews' ORDER BY ordinal_position"
       }
     ]
   },
@@ -118,11 +118,11 @@ export const modify2_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Insert or update: ON CONFLICT",
     "concept": "Inserting a row whose key already exists is an error. ON CONFLICT (column) DO UPDATE SET … updates the existing row instead; excluded.column is the value you tried to insert. This is called an upsert. MySQL writes it ON DUPLICATE KEY UPDATE.",
-    "example": "INSERT INTO products (id, name, stock) VALUES (8, 'Cuaderno', 5) ON CONFLICT (id) DO NOTHING;",
+    "example": "INSERT INTO products (id, name, stock) VALUES (8, 'Notebook', 5) ON CONFLICT (id) DO NOTHING;",
     "steps": [
       {
         "task": "Ten Headphones arrived (id 4, Electronics, price 899). Insert them with an INSERT that, since the id already exists, adds those 10 units to the current stock.",
-        "solution": "INSERT INTO products (id, name, category, price, stock) VALUES (4, 'Audífonos', 'Electronics', 899, 10) ON CONFLICT (id) DO UPDATE SET stock = stock + excluded.stock",
+        "solution": "INSERT INTO products (id, name, category, price, stock) VALUES (4, 'Headphones', 'Electronics', 899, 10) ON CONFLICT (id) DO UPDATE SET stock = stock + excluded.stock",
         "hints": [
           "… VALUES (4, …, 10) ON CONFLICT (id) DO UPDATE SET …",
           "SET stock = stock + excluded.stock"
@@ -160,11 +160,11 @@ export const modify2_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Saved queries: CREATE VIEW",
     "concept": "A view is a named query. You use it like a table, but it stores no data: it runs again every time you query it, so it is always up to date.",
-    "example": "CREATE VIEW caros AS SELECT * FROM products WHERE price > 1000;",
+    "example": "CREATE VIEW premium_products AS SELECT * FROM products WHERE price > 1000;",
     "steps": [
       {
         "task": "Create the view category_sales with each category and the units sold in it (columns category and units).",
-        "solution": "CREATE VIEW category_sales AS SELECT pr.category, SUM(d.quantity) AS unidades FROM order_items d JOIN products pr ON pr.id = d.product_id GROUP BY pr.category",
+        "solution": "CREATE VIEW category_sales AS SELECT pr.category, SUM(d.quantity) AS units FROM order_items d JOIN products pr ON pr.id = d.product_id GROUP BY pr.category",
         "hints": [
           "CREATE VIEW category_sales AS and then the query.",
           "Join order_items to products, group by category and sum quantity."
@@ -182,18 +182,18 @@ export const modify2_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Faster queries: CREATE INDEX",
     "concept": "An index works like a book’s index: it finds rows by a column without reading the whole table. It pays off on columns you use a lot in WHERE or JOIN, like foreign keys. It does not change results, only speed.",
-    "example": "CREATE INDEX idx_clientes_ciudad ON customers (city);",
+    "example": "CREATE INDEX idx_customers_city ON customers (city);",
     "steps": [
       {
         "task": "Create an index on the customer_id column of orders. Give it any name you like.",
-        "solution": "CREATE INDEX idx_pedidos_cliente ON orders (customer_id)",
+        "solution": "CREATE INDEX idx_orders_customer ON orders (customer_id)",
         "hints": [
           "CREATE INDEX idx_orders_customer ON orders (customer_id)"
         ],
         "requires": [
           "CREATE INDEX"
         ],
-        "check": "SELECT m.tbl_name, i.name FROM sqlite_master m JOIN pragma_index_info(m.name) i WHERE m.type = 'index'"
+        "check": "SELECT table_name FROM duckdb_indexes() WHERE table_name = 'orders'"
       }
     ]
   }

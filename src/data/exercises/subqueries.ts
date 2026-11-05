@@ -69,11 +69,11 @@ export const subqueries_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Step-by-step queries with WITH",
     "concept": "WITH name AS (SELECT …) creates a temporary table (a CTE) the next query can use as if it existed. It splits a hard query into steps you read top to bottom.",
-    "example": "WITH caros AS (SELECT * FROM products WHERE price > 1000) SELECT category, COUNT(*) FROM caros GROUP BY category;",
+    "example": "WITH premium_products AS (SELECT * FROM products WHERE price > 1000) SELECT category, COUNT(*) FROM premium_products GROUP BY category;",
     "steps": [
       {
         "task": "With WITH, first work out the units ordered per product, then show the name and total of the products with 4 units or more.",
-        "solution": "WITH unidades AS (SELECT product_id, SUM(quantity) AS total FROM order_items GROUP BY product_id) SELECT pr.name, u.total FROM unidades u JOIN products pr ON pr.id = u.product_id WHERE u.total >= 4",
+        "solution": "WITH units AS (SELECT product_id, SUM(quantity) AS total FROM order_items GROUP BY product_id) SELECT pr.name, u.total FROM units u JOIN products pr ON pr.id = u.product_id WHERE u.total >= 4",
         "hints": [
           "WITH units AS (SELECT product_id, SUM(quantity) AS total FROM order_items GROUP BY product_id)",
           "Then join units with products and filter total >= 4."
@@ -113,11 +113,11 @@ export const subqueries_exercises: ExerciseDef[] = [
     "example": "SELECT name, (SELECT COUNT(*) FROM orders WHERE customer_id = customers.id) FROM customers;",
     "steps": [
       {
-        "task": "Show each product’s name and how many units of it have been ordered (0 if never), using a subquery in the SELECT.",
-        "solution": "SELECT name, (SELECT COALESCE(SUM(quantity), 0) FROM order_items d WHERE d.product_id = products.id) AS unidades FROM products",
+        "task": "Show each product’s name and how many units of it have been ordered (0 if never) as total_units, using a subquery in the SELECT.",
+        "solution": "SELECT name, (SELECT COALESCE(SUM(quantity), 0) FROM order_items d WHERE d.product_id = products.id) AS total_units FROM products",
         "hints": [
           "(SELECT SUM(quantity) FROM order_items i WHERE i.product_id = products.id)",
-          "Wrap the sum in COALESCE(…, 0)."
+          "Wrap the sum in COALESCE(…, 0) AS total_units."
         ],
         "requires": [
           "(SELECT"
@@ -194,7 +194,7 @@ export const subqueries_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "With a WITH named payroll, compute the total salary of each department. Then show the names of the departments whose payroll is over 100000, with that total.",
-        "solution": "WITH nomina AS (SELECT department_id, SUM(salary) AS total FROM employees GROUP BY department_id) SELECT d.name, n.total FROM nomina n JOIN departments d ON d.id = n.department_id WHERE n.total > 100000",
+        "solution": "WITH payroll AS (SELECT department_id, SUM(salary) AS total FROM employees GROUP BY department_id) SELECT d.name, p.total FROM payroll p JOIN departments d ON d.id = p.department_id WHERE p.total > 100000",
         "hints": [
           "WITH payroll AS (SELECT department_id, SUM(salary) AS total FROM employees GROUP BY department_id)",
           "Join payroll to departments and filter WHERE p.total > 100000."

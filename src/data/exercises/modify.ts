@@ -7,11 +7,11 @@ export const modify_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Adding rows with INSERT",
     "concept": "INSERT INTO table (columns) VALUES (values) adds a row. Columns you leave out are NULL, except id: as an INTEGER PRIMARY KEY, the database assigns the next number.",
-    "example": "INSERT INTO customers (name, city) VALUES ('Karla Ríos', 'León');",
+    "example": "INSERT INTO customers (name, city) VALUES ('Karla Rios', 'Leeds');",
     "steps": [
       {
         "task": "Add the product Speaker, in the Electronics category, with price 1199 and stock 12.",
-        "solution": "INSERT INTO products (name, category, price, stock) VALUES ('Bocina', 'Electronics', 1199, 12)",
+        "solution": "INSERT INTO products (name, category, price, stock) VALUES ('Speaker', 'Electronics', 1199, 12)",
         "hints": [
           "INSERT INTO products (name, category, price, stock) VALUES (…)"
         ],
@@ -28,7 +28,7 @@ export const modify_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Changing data with UPDATE",
     "concept": "UPDATE table SET column = value WHERE condition changes the rows that meet the condition. Without WHERE it changes every row in the table, so always check the condition first.",
-    "example": "UPDATE products SET stock = stock + 10 WHERE name = 'Cafetera';",
+    "example": "UPDATE products SET stock = stock + 10 WHERE name = 'Coffee Maker';",
     "steps": [
       {
         "task": "Raise the price of every Stationery product by 10%.",
@@ -73,7 +73,7 @@ export const modify_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Creating a table",
     "concept": "CREATE TABLE name (column TYPE, …) creates an empty table. Common types: INTEGER, REAL (decimals) and TEXT. PRIMARY KEY marks the column that identifies each row and NOT NULL forbids leaving it empty.",
-    "example": "CREATE TABLE categorias (id INTEGER PRIMARY KEY, name TEXT NOT NULL);",
+    "example": "CREATE TABLE categories (id INTEGER PRIMARY KEY, name TEXT NOT NULL);",
     "steps": [
       {
         "task": "Create the suppliers table with three columns: id (integer, primary key), name (text, required) and phone (text).",
@@ -85,7 +85,7 @@ export const modify_exercises: ExerciseDef[] = [
         "requires": [
           "CREATE TABLE"
         ],
-        "check": "SELECT name, pk, \"notnull\" FROM pragma_table_info('suppliers') ORDER BY cid"
+        "check": "SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name = 'suppliers' ORDER BY ordinal_position"
       }
     ]
   },
@@ -95,10 +95,10 @@ export const modify_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "Several rows in one INSERT",
     "concept": "One INSERT can add several rows at once: separate each group of values with a comma. It is faster and shorter than one INSERT per row.",
-    "example": "INSERT INTO products (name, price) VALUES ('Lápiz', 10), ('Goma', 8);",
+    "example": "INSERT INTO products (name, price) VALUES ('Pencil', 10), ('Eraser', 8);",
     "steps": [
       {
-        "task": "In a single INSERT, add two customers: Karla Rey, from Puebla, and Luis Mora, from CDMX (just name and city).",
+        "task": "In a single INSERT, add two customers: Karla Rey, from Leeds, and Luis Mora, from London (just name and city).",
         "solution": "INSERT INTO customers (name, city) VALUES ('Karla Rey', 'Leeds'), ('Luis Mora', 'London')",
         "hints": [
           "INSERT INTO customers (name, city) VALUES ('Karla Rey', 'Leeds'), (…)"

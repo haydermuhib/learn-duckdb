@@ -87,7 +87,7 @@ export const order_exercises: ExerciseDef[] = [
     "module": "order",
     "db": "company",
     "title": "Where NULLs go when sorting",
-    "concept": "In SQLite and MySQL NULLs come first when sorting low to high; in PostgreSQL, last. To decide yourself, write NULLS FIRST or NULLS LAST after the column (or, where unsupported, sort by column IS NULL first).",
+    "concept": "In SQL sorting, NULL placement depends on the engine. In DuckDB, NULLs come last when sorting ASC by default. To decide yourself, write NULLS FIRST or NULLS LAST after the column.",
     "example": "SELECT name, manager_id FROM employees ORDER BY manager_id NULLS LAST;",
     "steps": [
       {

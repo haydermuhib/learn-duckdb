@@ -227,8 +227,8 @@ export const where_exercises: ExerciseDef[] = [
     "module": "where",
     "db": "store",
     "title": "A single character: the _ wildcard",
-    "concept": "In LIKE, % stands for any number of characters and _ for exactly one. '_a%' means: any one character, then an a, then anything. In SQLite, LIKE ignores upper and lower case.",
-    "example": "SELECT name FROM customers WHERE city LIKE 'M_rida';",
+    "concept": "In LIKE, % stands for any number of characters and _ for exactly one. '_a%' means: any one character, then an a, then anything. In DuckDB, ILIKE is case-insensitive, while standard LIKE matches case-sensitively or according to collation.",
+    "example": "SELECT name FROM customers WHERE city LIKE 'L_nd_n';",
     "steps": [
       {
         "task": "Show the products whose name has an a as its second letter.",

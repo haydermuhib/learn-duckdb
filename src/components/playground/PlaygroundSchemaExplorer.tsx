@@ -234,3 +234,4 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
     </div>
   );
 };
+

@@ -31,7 +31,7 @@ export const joins_exercises: ExerciseDef[] = [
     "example": "SELECT p.id, c.name FROM orders p JOIN customers c ON p.customer_id = c.id WHERE p.status = 'cancelled';",
     "steps": [
       {
-        "task": "Show id and order_date of the orders placed by customers from Monterrey.",
+        "task": "Show id and order_date of the orders placed by customers from Birmingham.",
         "solution": "SELECT p.id, p.order_date FROM orders p JOIN customers c ON p.customer_id = c.id WHERE c.city = 'Birmingham'",
         "hints": [
           "Join orders and customers and filter with c.city = 'Birmingham'."

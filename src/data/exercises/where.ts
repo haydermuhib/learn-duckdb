@@ -26,11 +26,11 @@ export const where_exercises: ExerciseDef[] = [
     "module": "where",
     "db": "store",
     "title": "Comparing text",
-    "concept": "Text goes in single quotes: 'Monterrey'. Without them, SQL would think Monterrey is a column name. Double quotes are for column names, not text.",
+    "concept": "Text goes in single quotes: 'Birmingham'. Without them, SQL would think Birmingham is a column name. Double quotes are for column names, not text.",
     "example": "SELECT * FROM customers WHERE city = 'London';",
     "steps": [
       {
-        "task": "Show the names of the customers who live in Monterrey.",
+        "task": "Show the names of the customers who live in Birmingham.",
         "solution": "SELECT name FROM customers WHERE city = 'Birmingham'",
         "hints": [
           "The condition is city = 'Birmingham', in single quotes."

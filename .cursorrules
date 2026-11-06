@@ -25,3 +25,4 @@ These layout rules are non-negotiable standards for `learn-duckdb`. Agents and c
 ## 5. Scrollable Syllabus Footer Placement
 - In `CurriculumSidebar.tsx`, the footer containing the progress summary, Backup, Import, and Reset buttons must ALWAYS remain embedded at the natural bottom of the scrollable exercise list (`mt-4` inside the scroll container).
 - It must NEVER be fixed or floating over the exercise list. It belongs at the natural end of the scroll.
+

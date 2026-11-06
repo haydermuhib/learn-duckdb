@@ -28,3 +28,4 @@ export const LAYOUT_SETTINGS = {
     footerAtEndOfScroll: true,
   },
 } as const;
+

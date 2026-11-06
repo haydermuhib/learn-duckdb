@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   initPlayground,
   getPlaygroundTables,
@@ -55,6 +55,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Initialize playground and load initial tables
@@ -118,6 +119,9 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       const res = await executePlaygroundQuery(previewSql);
       setQueryResult(res);
       setStatusMessage(`Previewing 10 sample rows from "${tableName}". (Your editor query is preserved)`);
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
     } catch (err: any) {
       setErrorMessage(err.message || `Failed to preview table ${tableName}`);
     } finally {
@@ -290,7 +294,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
       {/* Main Playground Workspace */}
       <main className="flex-1 p-3 lg:p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
           {/* Left Column: File Uploader & Schema Explorer */}
           <div className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-3 shrink-0">
           {/* File Uploader */}
@@ -371,10 +375,12 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
           />
 
           {/* Live Results Table */}
-          <ResultsTable
-            result={queryResult}
-            feedback={null}
-          />
+          <div ref={resultsRef} className="w-full">
+            <ResultsTable
+              result={queryResult}
+              feedback={null}
+            />
+          </div>
         </div>
       </div>
     </main>

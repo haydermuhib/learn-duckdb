@@ -129,19 +129,15 @@ export async function validateUserQuery(
       expectedResult,
     };
   } catch (err: any) {
-    let msg = err.message || 'An unexpected error occurred during execution.';
-    if (/syntax error at or near ["']ANTI["']/i.test(msg) || /LEFT\s+ANTI\s+JOIN/i.test(trimmedSql)) {
-      msg = "DuckDB syntax error: Use 'ANTI JOIN' directly (DuckDB does not use the 'LEFT ANTI JOIN' syntax).";
-    }
     return {
       pass: false,
-      message: msg,
+      message: err.message || 'An unexpected error occurred during execution.',
       error: err.message || String(err),
     };
   }
 }
 
-function compareResults(actual: QueryResult, expected: QueryResult, strictOrder: boolean): boolean {
+export function compareResults(actual: QueryResult, expected: QueryResult, strictOrder: boolean): boolean {
   if (actual.columns.length !== expected.columns.length) return false;
   if (actual.rowCount !== expected.rowCount) return false;
 

@@ -86,8 +86,8 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
         </div>
       </div>
 
-      {/* Table list - natural height, no constrained inner scroll container */}
-      <div className="p-2 space-y-1.5">
+      {/* Table list with bounded scroll so expanding all tables never blows out the page */}
+      <div className="p-2 space-y-1.5 max-h-[420px] overflow-y-auto custom-scrollbar">
         {database.tables.map(table => {
           const isExpanded = !!expandedTables[table.name];
           const isTableCopied = copiedIdentifier === table.name;

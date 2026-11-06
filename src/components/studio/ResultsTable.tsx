@@ -211,7 +211,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           )}
 
       {/* Table Content */}
-      <div className="overflow-auto max-h-[400px] min-h-[140px] custom-scrollbar">
+      <div className="overflow-x-auto overflow-y-auto max-h-[380px] min-h-[140px] custom-scrollbar w-full">
         {!displayResult && !feedback && (
           <div className="py-10 px-4 flex flex-col items-center justify-center text-center text-ink-muted">
             <span className="text-3xl mb-2">⚡</span>
@@ -229,7 +229,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         )}
 
         {displayResult && displayResult.columns.length > 0 && (
-          <table className="w-full text-left border-collapse font-mono text-xs">
+          <table className="w-full min-w-full text-left border-collapse font-mono text-xs">
             <thead>
               <tr className="bg-slate-100 border-b-2 border-ink sticky top-0 z-10">
                 <th className="py-2 px-3 text-[10px] uppercase text-ink-muted font-bold border-r border-slate-200 w-10 text-center">

@@ -5,6 +5,112 @@
  * 3. Standardizes uppercase keywords while strictly preserving strings, double-quoted identifiers, and comments.
  * 4. Cleans redundant whitespaces without altering query semantics.
  */
+
+// Single-pass scanner to safely capture comments and quoted literals without collisions
+const LITERAL_OR_COMMENT_REGEX = /\/\*[\s\S]*?\*\/|--[^\r\n]*|'(?:''|[^'])*'|"(?:""|[^"])*"/g;
+
+// Window specification regex supporting nested parentheses (e.g. OVER (PARTITION BY COALESCE(dept, 'N/A') ORDER BY id))
+const WINDOW_SPEC_REGEX = /\bover\s*\((?:[^()]+|\([^()]*\))*\)/gi;
+
+// Major clauses that should begin on a new line
+const MAJOR_CLAUSES = [
+  'SELECT DISTINCT',
+  'SELECT',
+  'FROM',
+  'WHERE',
+  'GROUP BY',
+  'HAVING',
+  'ORDER BY',
+  'LIMIT',
+  'OFFSET',
+  'LEFT OUTER JOIN',
+  'RIGHT OUTER JOIN',
+  'FULL OUTER JOIN',
+  'INNER JOIN',
+  'LEFT JOIN',
+  'RIGHT JOIN',
+  'FULL JOIN',
+  'CROSS JOIN',
+  'SEMI JOIN',
+  'ANTI JOIN',
+  'ASOF JOIN',
+  'POSITIONAL JOIN',
+  'NATURAL JOIN',
+  'JOIN',
+  'ON',
+  'UNION ALL',
+  'UNION',
+  'INTERSECT',
+  'EXCEPT',
+  'INSERT INTO',
+  'VALUES',
+  'UPDATE',
+  'SET',
+  'DELETE FROM',
+  'WITH RECURSIVE',
+  'WITH',
+  'WINDOW',
+];
+
+// Minor keywords to uppercase
+const OTHER_KEYWORDS = [
+  'DISTINCT',
+  'AND',
+  'OR',
+  'NOT',
+  'IN',
+  'IS',
+  'NULL',
+  'AS',
+  'ASC',
+  'DESC',
+  'CASE',
+  'WHEN',
+  'THEN',
+  'ELSE',
+  'END',
+  'OVER',
+  'PARTITION BY',
+  'BETWEEN',
+  'LIKE',
+  'ILIKE',
+  'EXISTS',
+  'ALL',
+  'ANY',
+  'COUNT',
+  'SUM',
+  'AVG',
+  'MIN',
+  'MAX',
+  'STRING_AGG',
+  'LIST',
+  'UNNEST',
+  'FILTER',
+  'EXCLUDE',
+  'REPLACE',
+  'COLUMNS',
+  'CREATE TABLE',
+  'DROP TABLE',
+  'ALTER TABLE',
+  'PRIMARY KEY',
+  'FOREIGN KEY',
+  'TRUE',
+  'FALSE',
+];
+
+// Precompile regexes once at module level (sorted by length descending for greedy multi-word match)
+const SORTED_CLAUSES = [...MAJOR_CLAUSES].sort((a, b) => b.length - a.length);
+const CLAUSE_REGEX = new RegExp(
+  `\\b(${SORTED_CLAUSES.map(c => c.replace(/ /g, '\\s+')).join('|')})\\b`,
+  'gi'
+);
+
+const SORTED_KEYWORDS = [...OTHER_KEYWORDS].sort((a, b) => b.length - a.length);
+const KEYWORD_REGEX = new RegExp(
+  `\\b(${SORTED_KEYWORDS.map(k => k.replace(/ /g, '\\s+')).join('|')})\\b`,
+  'gi'
+);
+
 export function formatSql(sql: string): string {
   if (!sql || !sql.trim()) return sql;
 
@@ -14,20 +120,11 @@ export function formatSql(sql: string): string {
     return `__SQL_LITERAL_${placeholders.length - 1}__`;
   };
 
-  // 1. Protect block comments: /* ... */
-  let tokenized = sql.replace(/\/\*[\s\S]*?\*\//g, saveLiteral);
+  // 1. Protect comments, string literals, and double-quoted identifiers in a single pass
+  let tokenized = sql.replace(LITERAL_OR_COMMENT_REGEX, saveLiteral);
 
-  // 2. Protect single-line comments: -- ...
-  tokenized = tokenized.replace(/--[^\r\n]*/g, saveLiteral);
-
-  // 3. Protect string literals: 'example' or 'it''s'
-  tokenized = tokenized.replace(/'(?:''|[^'])*'/g, saveLiteral);
-
-  // 4. Protect double-quoted identifiers: "my_column" or "from"
-  tokenized = tokenized.replace(/"(?:""|[^"])*"/g, saveLiteral);
-
-  // 5. Protect window specifications OVER (...) so ORDER BY inside them does not get broken onto a new line
-  tokenized = tokenized.replace(/\bover\s*\([^)]*\)/gi, match => {
+  // 2. Protect window specifications OVER (...) so ORDER BY inside them does not get broken onto a new line
+  tokenized = tokenized.replace(WINDOW_SPEC_REGEX, match => {
     const innerFormatted = match
       .replace(/\bover\b/gi, 'OVER')
       .replace(/\bpartition\s+by\b/gi, 'PARTITION BY')
@@ -40,119 +137,18 @@ export function formatSql(sql: string): string {
     return saveLiteral(innerFormatted);
   });
 
-  // Major clauses that should begin on a new line
-  const majorClauses = [
-    'SELECT DISTINCT',
-    'SELECT',
-    'FROM',
-    'WHERE',
-    'GROUP BY',
-    'HAVING',
-    'ORDER BY',
-    'LIMIT',
-    'OFFSET',
-    'LEFT OUTER JOIN',
-    'RIGHT OUTER JOIN',
-    'FULL OUTER JOIN',
-    'INNER JOIN',
-    'LEFT JOIN',
-    'RIGHT JOIN',
-    'FULL JOIN',
-    'CROSS JOIN',
-    'SEMI JOIN',
-    'ANTI JOIN',
-    'ASOF JOIN',
-    'POSITIONAL JOIN',
-    'NATURAL JOIN',
-    'JOIN',
-    'ON',
-    'UNION ALL',
-    'UNION',
-    'INTERSECT',
-    'EXCEPT',
-    'INSERT INTO',
-    'VALUES',
-    'UPDATE',
-    'SET',
-    'DELETE FROM',
-    'WITH RECURSIVE',
-    'WITH',
-    'WINDOW',
-  ];
-
-  // Minor keywords to uppercase
-  const otherKeywords = [
-    'DISTINCT',
-    'AND',
-    'OR',
-    'NOT',
-    'IN',
-    'IS',
-    'NULL',
-    'AS',
-    'ASC',
-    'DESC',
-    'CASE',
-    'WHEN',
-    'THEN',
-    'ELSE',
-    'END',
-    'OVER',
-    'PARTITION BY',
-    'BETWEEN',
-    'LIKE',
-    'ILIKE',
-    'EXISTS',
-    'ALL',
-    'ANY',
-    'COUNT',
-    'SUM',
-    'AVG',
-    'MIN',
-    'MAX',
-    'STRING_AGG',
-    'LIST',
-    'UNNEST',
-    'FILTER',
-    'EXCLUDE',
-    'REPLACE',
-    'COLUMNS',
-    'CREATE TABLE',
-    'DROP TABLE',
-    'ALTER TABLE',
-    'PRIMARY KEY',
-    'FOREIGN KEY',
-    'TRUE',
-    'FALSE',
-    'ANTI',
-    'SEMI',
-    'ASOF',
-    'POSITIONAL',
-    'NATURAL',
-  ];
-
   // Normalize spaces
   tokenized = tokenized.replace(/\s+/g, ' ').trim();
 
-  // Single-pass regex for major clauses (sorted by length descending so multi-word clauses match first)
-  const sortedClauses = [...majorClauses].sort((a, b) => b.length - a.length);
-  const clauseRegex = new RegExp(
-    `\\b(${sortedClauses.map(c => c.replace(/ /g, '\\s+')).join('|')})\\b`,
-    'gi'
-  );
+  // Apply major clauses newline formatting
   tokenized = tokenized.replace(
-    clauseRegex,
+    CLAUSE_REGEX,
     match => `\n${match.toUpperCase().replace(/\s+/g, ' ')} `
   );
 
-  // Single-pass regex for other keywords
-  const sortedKeywords = [...otherKeywords].sort((a, b) => b.length - a.length);
-  const keywordRegex = new RegExp(
-    `\\b(${sortedKeywords.map(k => k.replace(/ /g, '\\s+')).join('|')})\\b`,
-    'gi'
-  );
+  // Apply keyword uppercasing
   tokenized = tokenized.replace(
-    keywordRegex,
+    KEYWORD_REGEX,
     match => match.toUpperCase().replace(/\s+/g, ' ')
   );
 
@@ -164,9 +160,9 @@ export function formatSql(sql: string): string {
 
   let formatted = lines.join('\n');
 
-  // Restore protected literals in reverse
+  // Restore protected literals in reverse using replacer function to avoid '$' special pattern injection
   for (let i = placeholders.length - 1; i >= 0; i--) {
-    formatted = formatted.replace(`__SQL_LITERAL_${i}__`, placeholders[i]);
+    formatted = formatted.replace(`__SQL_LITERAL_${i}__`, () => placeholders[i]);
   }
 
   return formatted;

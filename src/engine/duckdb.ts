@@ -57,6 +57,11 @@ export async function initDuckDB(): Promise<{ db: duckdb.AsyncDuckDB; conn: duck
 export async function switchDatabase(dbName: string): Promise<void> {
   const { conn } = await initDuckDB();
   if (currentDbName === dbName) return;
+  if (currentDbName && DATABASES[currentDbName]) {
+    for (const table of DATABASES[currentDbName].tables) {
+      await conn.query(`DROP TABLE IF EXISTS ${table.name};`);
+    }
+  }
   await loadDatabaseTables(conn, dbName);
   currentDbName = dbName;
 }
@@ -120,16 +125,13 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
   const columns = arrowTable.schema.fields.map(f => f.name);
   const rows: any[][] = [];
 
-  for (let i = 0; i < arrowTable.numRows; i++) {
-    const rowObj = arrowTable.get(i);
-    if (rowObj) {
-      const rowArr = columns.map(col => {
-        const val = (rowObj as any)[col];
-        if (typeof val === 'bigint') return Number(val);
-        return val;
-      });
-      rows.push(rowArr);
-    }
+  for (const row of arrowTable) {
+    const rowArr = columns.map(col => {
+      const val = row[col];
+      if (typeof val === 'bigint') return Number(val);
+      return val;
+    });
+    rows.push(rowArr);
   }
 
   return {

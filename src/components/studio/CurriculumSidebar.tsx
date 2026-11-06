@@ -22,7 +22,7 @@ interface CurriculumSidebarProps {
   onClose: () => void;
   onResetProgress?: () => void;
   onExportProgress?: () => void;
-  onImportProgress?: (completed: string[], assisted: string[]) => void;
+  onImportProgress?: (completed: string[], assisted: string[], drafts?: Record<string, string>) => void;
 }
 
 export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
@@ -72,7 +72,8 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
         if (Array.isArray(data.completedIds) && onImportProgress) {
           onImportProgress(
             data.completedIds,
-            Array.isArray(data.assistedIds) ? data.assistedIds : []
+            Array.isArray(data.assistedIds) ? data.assistedIds : [],
+            data.drafts && typeof data.drafts === 'object' ? data.drafts : undefined
           );
         }
       } catch (err) {

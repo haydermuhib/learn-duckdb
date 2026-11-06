@@ -1,49 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { QueryResult } from '../src/engine/duckdb';
+import { compareResults } from '../src/engine/validator';
 
-// We test the comparison & validation rules directly
 describe('Validator Logic & Result Matching', () => {
-  function compareResults(actual: QueryResult, expected: QueryResult, strictOrder: boolean): boolean {
-    if (actual.columns.length !== expected.columns.length) return false;
-    if (actual.rowCount !== expected.rowCount) return false;
-
-    let actualRows = actual.rows;
-    let expectedRows = expected.rows;
-
-    if (!strictOrder) {
-      actualRows = [...actualRows].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-      expectedRows = [...expectedRows].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-    }
-
-    for (let i = 0; i < actualRows.length; i++) {
-      const aRow = actualRows[i];
-      const eRow = expectedRows[i];
-      for (let j = 0; j < aRow.length; j++) {
-        const a = aRow[j];
-        const b = eRow[j];
-        if (a === b) continue;
-        if (a === null || a === undefined) {
-          if (b !== null && b !== undefined) return false;
-          continue;
-        }
-        if (b === null || b === undefined) return false;
-
-        if (typeof a === 'number' && typeof b === 'number') {
-          if (Math.abs(a - b) >= 0.001) return false;
-          continue;
-        }
-
-        if (typeof a === 'string' && typeof b === 'string') {
-          if (a.trim() !== b.trim()) return false;
-          continue;
-        }
-
-        if (String(a) !== String(b)) return false;
-      }
-    }
-
-    return true;
-  }
 
   it('should match identical query results', () => {
     const resA: QueryResult = {

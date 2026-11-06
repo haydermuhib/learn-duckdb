@@ -159,4 +159,43 @@ ON c.id = o.customer_id;`
     expect(formatSql('')).toBe('');
     expect(formatSql('   ')).toBe('   ');
   });
+
+  it('safely handles strings containing comment markers without truncation', () => {
+    const raw = "select id, 'Hello -- not a comment' as greeting, '/* also not comment */' as note from users;";
+    const formatted = formatSql(raw);
+
+    expect(formatted).toBe(
+`SELECT id, 'Hello -- not a comment' AS greeting, '/* also not comment */' AS note
+FROM users;`
+    );
+  });
+
+  it('preserves dollar patterns in strings without JS replace injection ($&, $1)', () => {
+    const raw = "select price, '$& is a special string' as literal, '$100 discount' as note from sales;";
+    const formatted = formatSql(raw);
+
+    expect(formatted).toBe(
+`SELECT price, '$& is a special string' AS literal, '$100 discount' AS note
+FROM sales;`
+    );
+  });
+
+  it('preserves quotes inside comments without token collision', () => {
+    const raw = "-- Don't remove this user's filter\nselect id from users;";
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain("-- Don't remove this user's filter");
+    expect(formatted).toContain("SELECT id");
+    expect(formatted).toContain("FROM users;");
+  });
+
+  it('handles window functions with nested expressions inside OVER clause', () => {
+    const raw = "select name, rank() over (partition by coalesce(dept, 'General') order by salary desc) as rnk from employees;";
+    const formatted = formatSql(raw);
+
+    expect(formatted).toBe(
+`SELECT name, rank() OVER (PARTITION BY coalesce(dept, 'General') ORDER BY salary DESC) AS rnk
+FROM employees;`
+    );
+  });
 });

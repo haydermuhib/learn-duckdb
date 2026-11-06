@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { EXERCISES, MODULES, DATABASES } from '../../data/curriculum';
 import { ExerciseDef } from '../../types/curriculum';
@@ -22,6 +22,7 @@ const STORAGE_KEY_COMPLETED = 'learn_duckdb_completed_exercises';
 const STORAGE_KEY_ASSISTED = 'learn_duckdb_assisted_exercises';
 const STORAGE_KEY_CURRENT = 'learn_duckdb_current_id';
 const STORAGE_KEY_DRAFTS = 'learn_duckdb_drafts';
+const MAX_SAVED_DRAFTS = 50;
 
 export const StudioLayout: React.FC<StudioLayoutProps> = ({
   onBackToLanding,
@@ -90,6 +91,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Sync editor SQL when switching exercises
   useEffect(() => {
@@ -104,16 +106,36 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     } catch {}
   }, [currentExercise.id]);
 
-  // Persist draft on change
+  // Debounce persisting drafts (300ms) with LRU eviction capped at MAX_SAVED_DRAFTS
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDrafts(prev => {
+        if (prev[currentExercise.id] === editorSql) return prev;
+        // Re-insert to refresh recency in insertion order
+        const next = { ...prev };
+        delete next[currentExercise.id];
+        if (editorSql.trim()) {
+          next[currentExercise.id] = editorSql;
+        }
+
+        // Evict oldest drafts if over cap
+        const keys = Object.keys(next);
+        if (keys.length > MAX_SAVED_DRAFTS) {
+          const toEvict = keys.slice(0, keys.length - MAX_SAVED_DRAFTS);
+          for (const k of toEvict) delete next[k];
+        }
+
+        try {
+          localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [editorSql, currentExercise.id]);
+
   const handleEditorChange = (newVal: string) => {
     setEditorSql(newVal);
-    setDrafts(prev => {
-      const next = { ...prev, [currentExercise.id]: newVal };
-      try {
-        localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
   };
 
   // Run Query Only
@@ -181,7 +203,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
         if (usedAssistance) {
           setFeedback({
-            pass: true,
+            ...validation,
             message: 'Exercise completed with hints. Solve independently anytime to earn full mastery!',
           });
         }
@@ -196,18 +218,18 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   };
 
-  // Preview table helper: non-destructively preview table without touching editor query
+  // Preview table helper: non-destructively preview table without touching editor query or polluting exercise validation
   const handlePreviewTable = async (tableName: string) => {
     const previewSql = `SELECT * FROM ${tableName} LIMIT 5;`;
     setIsRunning(true);
+    setFeedback(null);
     try {
       await switchDatabase(currentExercise.db);
       const res = await executeQuery(previewSql);
       setQueryResult(res);
-      setFeedback({
-        pass: true,
-        message: `Showing 5 preview rows from "${tableName}". Your editor query is preserved.`,
-      });
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
     } catch (err: any) {
       setFeedback({
         pass: false,
@@ -236,16 +258,24 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
   // Progress backup & restore handlers
   const handleExportProgress = () => {
+    let assistedCount = 0;
+    completedIds.forEach(id => {
+      if (assistedIds.has(id)) assistedCount++;
+    });
+    const masteredCount = completedIds.size - assistedCount;
+
     const backupData = {
       version: 1,
       exportedAt: new Date().toISOString(),
       completedIds: Array.from(completedIds),
       assistedIds: Array.from(assistedIds),
+      drafts,
       stats: {
         total: EXERCISES.length,
         completed: completedIds.size,
-        mastered: completedIds.size - assistedIds.size,
-        withHints: assistedIds.size,
+        mastered: masteredCount,
+        withHints: assistedCount,
+        draftCount: Object.keys(drafts).length,
       },
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
@@ -259,7 +289,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleImportProgress = (completed: string[], assisted: string[]) => {
+  const handleImportProgress = (
+    completed: string[],
+    assisted: string[],
+    importedDrafts?: Record<string, string>
+  ) => {
     const nextCompleted = new Set(completed);
     const nextAssisted = new Set(assisted);
     setCompletedIds(nextCompleted);
@@ -268,9 +302,23 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
       localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
     } catch {}
+
+    if (importedDrafts && typeof importedDrafts === 'object') {
+      const mergedDrafts = { ...drafts, ...importedDrafts };
+      setDrafts(mergedDrafts);
+      if (mergedDrafts[currentExercise.id]) {
+        setEditorSql(mergedDrafts[currentExercise.id]);
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(mergedDrafts));
+      } catch {}
+    }
+
     setFeedback({
       pass: true,
-      message: `Successfully restored progress (${nextCompleted.size} exercises completed)!`,
+      message: `Successfully restored progress (${nextCompleted.size} exercises, ${
+        importedDrafts ? Object.keys(importedDrafts).length : 0
+      } drafts)!`,
     });
   };
 
@@ -281,9 +329,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const handleConfirmReset = () => {
     setCompletedIds(new Set());
     setAssistedIds(new Set());
+    setDrafts({});
     try {
       localStorage.removeItem(STORAGE_KEY_COMPLETED);
       localStorage.removeItem(STORAGE_KEY_ASSISTED);
+      localStorage.removeItem(STORAGE_KEY_DRAFTS);
     } catch {}
     setIsResetConfirmOpen(false);
     setFeedback({
@@ -488,7 +538,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
         {/* Studio Workspace Content */}
         <main className="flex-1 p-3 lg:p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-start">
             {/* Left Column: Task Description & Schema Explorer */}
             <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0">
             {/* Task Card */}
@@ -581,12 +631,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             />
 
             {/* Live Results Table & Validation feedback */}
-            <ResultsTable
-              result={queryResult}
-              feedback={feedback}
-              onNextExercise={handleNext}
-              hasNextExercise={hasNext}
-            />
+            <div ref={resultsRef} className="w-full">
+              <ResultsTable
+                result={queryResult}
+                feedback={feedback}
+                onNextExercise={handleNext}
+                hasNextExercise={hasNext}
+              />
+            </div>
           </div>
         </div>
       </main>

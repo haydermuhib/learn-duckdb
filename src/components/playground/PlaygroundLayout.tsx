@@ -289,9 +289,10 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       </header>
 
       {/* Main Playground Workspace */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-3 lg:p-4 gap-4">
-        {/* Left Column: File Uploader & Schema Explorer */}
-        <div className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-3 shrink-0 lg:overflow-y-auto lg:max-h-full pr-1 custom-scrollbar">
+      <main className="flex-1 overflow-y-auto p-3 lg:p-4 custom-scrollbar">
+        <div className="flex flex-col lg:flex-row gap-4 min-h-full">
+          {/* Left Column: File Uploader & Schema Explorer */}
+          <div className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-3 shrink-0">
           {/* File Uploader */}
           <PlaygroundFileUploader
             onFilesUploaded={handleFilesUploaded}
@@ -375,7 +376,8 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             feedback={null}
           />
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Keyboard Shortcuts Dialog */}
       <KeyboardShortcutsModal

@@ -234,31 +234,6 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   };
 
-  // Progress backup & reset handlers
-  const handleExportProgress = () => {
-    const backupData = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      completedIds: Array.from(completedIds),
-      assistedIds: Array.from(assistedIds),
-      stats: {
-        total: EXERCISES.length,
-        completed: completedIds.size,
-        mastered: completedIds.size - assistedIds.size,
-        withHints: assistedIds.size,
-      },
-    };
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `learn-duckdb-progress-${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   const handleOpenResetConfirm = () => {
     setIsResetConfirmOpen(true);
   };
@@ -274,21 +249,6 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setFeedback({
       pass: true,
       message: 'All learning progress has been reset. You now have a clean slate!',
-    });
-  };
-
-  const handleImportProgress = (completed: string[], assisted: string[]) => {
-    const nextCompleted = new Set(completed);
-    const nextAssisted = new Set(assisted);
-    setCompletedIds(nextCompleted);
-    setAssistedIds(nextAssisted);
-    try {
-      localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
-      localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
-    } catch {}
-    setFeedback({
-      pass: true,
-      message: `Successfully imported ${nextCompleted.size} exercises!`,
     });
   };
 
@@ -482,14 +442,13 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onResetProgress={handleOpenResetConfirm}
-          onExportProgress={handleExportProgress}
-          onImportProgress={handleImportProgress}
         />
 
         {/* Studio Workspace Content */}
-        <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-3 lg:p-4 gap-4">
-          {/* Left Column: Task Description & Schema Explorer */}
-          <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0 lg:overflow-y-auto lg:max-h-full pr-1.5 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto p-3 lg:p-4 custom-scrollbar">
+          <div className="flex flex-col lg:flex-row gap-4 min-h-full">
+            {/* Left Column: Task Description & Schema Explorer */}
+            <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0">
             {/* Task Card */}
             <div className="border-3 border-ink bg-surface-card p-4 shadow-brutal flex flex-col gap-3">
               <div className="flex items-center justify-between border-b border-ink/20 pb-2">
@@ -587,7 +546,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               hasNextExercise={hasNext}
             />
           </div>
-        </main>
+        </div>
+      </main>
       </div>
 
       {/* Keyboard Shortcuts Dialog */}

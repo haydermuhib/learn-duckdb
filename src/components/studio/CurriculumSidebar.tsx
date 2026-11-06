@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModuleDef, ExerciseDef } from '../../types/curriculum';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import {
@@ -9,8 +9,6 @@ import {
   Search,
   Sparkles,
   X,
-  Download,
-  Upload,
 } from 'lucide-react';
 
 interface CurriculumSidebarProps {
@@ -21,8 +19,6 @@ interface CurriculumSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onResetProgress?: () => void;
-  onExportProgress?: () => void;
-  onImportProgress?: (completed: string[], assisted: string[]) => void;
 }
 
 export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
@@ -33,11 +29,8 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   isOpen,
   onClose,
   onResetProgress,
-  onExportProgress,
-  onImportProgress,
 }) => {
   const [search, setSearch] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>(() => {
     // Expand module containing current exercise
@@ -60,29 +53,6 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
       ...prev,
       [modId]: !prev[modId],
     }));
-  };
-
-  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = event => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-        if (Array.isArray(data.completedIds) && onImportProgress) {
-          onImportProgress(
-            data.completedIds,
-            Array.isArray(data.assistedIds) ? data.assistedIds : []
-          );
-        } else {
-          alert('Invalid progress backup file.');
-        }
-      } catch {
-        alert('Could not read progress file: invalid JSON.');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
   };
 
   const filteredExercises = search.trim()
@@ -352,45 +322,16 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-200">
-            {onExportProgress && (
+          {onResetProgress && (
+            <div className="pt-1 border-t border-slate-200">
               <button
                 type="button"
-                onClick={onExportProgress}
-                className="flex items-center justify-center gap-1 py-1 px-2 bg-white hover:bg-duck border border-ink text-[11px] font-bold shadow-brutal-xs transition-colors cursor-pointer"
-                title="Backup learning progress as JSON"
+                onClick={onResetProgress}
+                className="w-full text-center text-[11px] font-bold text-red-600 hover:text-red-800 hover:underline py-1 cursor-pointer"
               >
-                <Download size={11} />
-                <span>Backup</span>
+                Reset all progress
               </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-1 py-1 px-2 bg-white hover:bg-duck border border-ink text-[11px] font-bold shadow-brutal-xs transition-colors cursor-pointer"
-              title="Import progress from backup JSON"
-            >
-              <Upload size={11} />
-              <span>Import</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileImport}
-              className="hidden"
-            />
-          </div>
-
-          {onResetProgress && (
-            <button
-              type="button"
-              onClick={onResetProgress}
-              className="w-full text-center text-[10px] text-red-600 hover:text-red-800 hover:underline pt-0.5 cursor-pointer"
-            >
-              Reset all progress
-            </button>
+            </div>
           )}
         </div>
         </div>

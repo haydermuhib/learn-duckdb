@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { QueryResult } from '../../engine/duckdb';
 import { ValidationFeedback } from '../../engine/validator';
-import { CheckCircle2, AlertTriangle, Clock, Database, ArrowRight, Download, Check } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Database,
+  ArrowRight,
+  Download,
+  Check,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
 interface ResultsTableProps {
   result: QueryResult | null;
@@ -18,10 +28,14 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'user' | 'expected'>('user');
   const [copiedCsv, setCopiedCsv] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Reset tab to user whenever feedback or result changes
+  // Reset tab to user and ensure results are visible whenever feedback or result arrives
   useEffect(() => {
     setActiveTab('user');
+    if (result || feedback) {
+      setIsCollapsed(false);
+    }
   }, [feedback, result]);
 
   const hasExpected = Boolean(feedback?.expectedResult && feedback.expectedResult.columns.length > 0);
@@ -52,15 +66,36 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   };
 
   return (
-    <div className="flex flex-col border-3 border-ink bg-surface-card shadow-brutal flex-1 overflow-hidden min-h-[220px]">
+    <div
+      className={`flex flex-col border-3 border-ink bg-surface-card shadow-brutal overflow-hidden transition-all ${
+        isCollapsed ? 'shrink-0' : 'min-h-[220px]'
+      }`}
+    >
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b-2 border-ink bg-surface-muted text-xs font-bold">
+      <div
+        className={`flex items-center justify-between px-3 py-2 bg-surface-muted text-xs font-bold ${
+          isCollapsed ? '' : 'border-b-2 border-ink'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <Database size={14} className="text-ink-muted" />
           <span>Results & Output</span>
 
+          {/* Compact badge when collapsed */}
+          {isCollapsed && feedback && (
+            <span
+              className={`text-[10px] font-bold px-1.5 py-0.2 border ml-1 ${
+                feedback.pass
+                  ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
+                  : 'bg-rose-100 border-rose-500 text-rose-800'
+              }`}
+            >
+              {feedback.pass ? '✓ Pass' : '✕ Try Again'}
+            </span>
+          )}
+
           {/* Tabs: Your Output vs Expected Output */}
-          {hasExpected && (
+          {!isCollapsed && hasExpected && (
             <div className="flex items-center ml-2 border border-ink bg-white p-0.5 text-[11px]">
               <button
                 type="button"
@@ -88,77 +123,92 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           )}
         </div>
 
-        {displayResult && (
-          <div className="flex items-center gap-2.5 text-ink-muted font-mono text-[11px]">
-            {activeTab === 'user' && typeof displayResult.executionTimeMs === 'number' && (
-              <span className="hidden sm:flex items-center gap-1">
-                <Clock size={12} /> {displayResult.executionTimeMs} ms
+        <div className="flex items-center gap-2">
+          {!isCollapsed && displayResult && (
+            <div className="flex items-center gap-2.5 text-ink-muted font-mono text-[11px]">
+              {activeTab === 'user' && typeof displayResult.executionTimeMs === 'number' && (
+                <span className="hidden sm:flex items-center gap-1">
+                  <Clock size={12} /> {displayResult.executionTimeMs} ms
+                </span>
+              )}
+              <span className="hidden sm:inline">•</span>
+              <span>
+                {displayResult.rowCount} {displayResult.rowCount === 1 ? 'row' : 'rows'}
               </span>
-            )}
-            <span className="hidden sm:inline">•</span>
-            <span>
-              {displayResult.rowCount} {displayResult.rowCount === 1 ? 'row' : 'rows'}
-            </span>
 
-            {/* Export CSV button */}
-            {displayResult.columns.length > 0 && (
-              <button
-                type="button"
-                onClick={handleExportCsv}
-                className="flex items-center gap-1 text-[11px] font-sans font-bold px-2 py-0.5 bg-white hover:bg-duck border border-ink shadow-brutal-sm transition-colors text-ink cursor-pointer ml-1"
-                title="Download this table as a CSV file"
-              >
-                {copiedCsv ? (
-                  <>
-                    <Check size={11} className="text-emerald-700" />
-                    <span>Exported</span>
-                  </>
-                ) : (
-                  <>
-                    <Download size={11} />
-                    <span>CSV</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        )}
+              {/* Export CSV button */}
+              {displayResult.columns.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  className="flex items-center gap-1 text-[11px] font-sans font-bold px-2 py-0.5 bg-white hover:bg-duck border border-ink shadow-brutal-sm transition-colors text-ink cursor-pointer ml-1"
+                  title="Download this table as a CSV file"
+                >
+                  {copiedCsv ? (
+                    <>
+                      <Check size={11} className="text-emerald-700" />
+                      <span>Exported</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download size={11} />
+                      <span>CSV</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Hide / Show Toggle button */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(prev => !prev)}
+            className="flex items-center gap-1 text-[11px] font-sans font-bold px-2 py-0.5 bg-white hover:bg-duck border border-ink shadow-brutal-xs transition-colors text-ink cursor-pointer ml-1"
+            title={isCollapsed ? 'Expand and show query results' : 'Collapse and hide query results'}
+          >
+            {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+            <span>{isCollapsed ? 'Show Results' : 'Hide'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Validation Banner if available */}
-      {feedback && (
-        <div
-          className={`px-4 py-3 border-b-2 border-ink flex items-center justify-between transition-all ${
-            feedback.pass
-              ? 'bg-success-bg text-success-text'
-              : 'bg-failure-bg text-failure-text'
-          }`}
-        >
-          <div className="flex items-start gap-2.5">
-            {feedback.pass ? (
-              <CheckCircle2 size={18} className="text-emerald-700 shrink-0 mt-0.5" />
-            ) : (
-              <AlertTriangle size={18} className="text-red-700 shrink-0 mt-0.5" />
-            )}
-            <div>
-              <p className="font-bold text-sm leading-tight">
-                {feedback.pass ? 'Success!' : 'Not Quite Right'}
-              </p>
-              <p className="text-xs mt-0.5 opacity-90">{feedback.message}</p>
-            </div>
-          </div>
-
-          {feedback.pass && hasNextExercise && onNextExercise && (
-            <button
-              onClick={onNextExercise}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-white font-bold border-2 border-ink shadow-brutal-sm hover:bg-slate-800 text-xs shrink-0 cursor-pointer"
+      {!isCollapsed && (
+        <>
+          {/* Validation Banner if available */}
+          {feedback && (
+            <div
+              className={`px-4 py-3 border-b-2 border-ink flex items-center justify-between transition-all ${
+                feedback.pass
+                  ? 'bg-success-bg text-success-text'
+                  : 'bg-failure-bg text-failure-text'
+              }`}
             >
-              <span>Next Exercise</span>
-              <ArrowRight size={14} />
-            </button>
+              <div className="flex items-start gap-2.5">
+                {feedback.pass ? (
+                  <CheckCircle2 size={18} className="text-emerald-700 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle size={18} className="text-red-700 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="font-bold text-sm leading-tight">
+                    {feedback.pass ? 'Success!' : 'Not Quite Right'}
+                  </p>
+                  <p className="text-xs mt-0.5 opacity-90">{feedback.message}</p>
+                </div>
+              </div>
+
+              {feedback.pass && hasNextExercise && onNextExercise && (
+                <button
+                  onClick={onNextExercise}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-white font-bold border-2 border-ink shadow-brutal-sm hover:bg-slate-800 text-xs shrink-0 cursor-pointer"
+                >
+                  <span>Next Exercise</span>
+                  <ArrowRight size={14} />
+                </button>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
       {/* Table Content */}
       <div className="flex-1 overflow-auto">
@@ -235,6 +285,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           </table>
         )}
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 };

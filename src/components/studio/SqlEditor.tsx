@@ -1,7 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { keymap } from '@codemirror/view';
+import { Prec } from '@codemirror/state';
 import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye, ArrowRight } from 'lucide-react';
 
 interface SqlEditorProps {
@@ -35,9 +37,31 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   isChecking,
   isRunning,
 }) => {
+  // Intercept Ctrl+Enter and Cmd+Enter inside CodeMirror with highest precedence so it runs without inserting a newline
+  const keymapExtension = useMemo(() => {
+    return Prec.highest(
+      keymap.of([
+        {
+          key: 'Ctrl-Enter',
+          run: () => {
+            onCheck();
+            return true;
+          },
+        },
+        {
+          key: 'Mod-Enter',
+          run: () => {
+            onCheck();
+            return true;
+          },
+        },
+      ])
+    );
+  }, [onCheck]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Ctrl+Enter or Cmd+Enter -> Check Answer
+      // Fallback for container-level key events
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         onCheck();
@@ -71,7 +95,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           value={value}
           height="100%"
           theme={oneDark}
-          extensions={[sql()]}
+          extensions={[sql(), keymapExtension]}
           onChange={onChange}
           className="h-full"
           basicSetup={{

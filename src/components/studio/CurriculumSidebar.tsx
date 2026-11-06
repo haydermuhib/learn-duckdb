@@ -7,6 +7,7 @@ interface CurriculumSidebarProps {
   currentExerciseId: string;
   onSelectExercise: (id: string) => void;
   completedIds: Set<string>;
+  assistedIds?: Set<string>;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -15,6 +16,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   currentExerciseId,
   onSelectExercise,
   completedIds,
+  assistedIds = new Set(),
   isOpen,
   onClose,
 }) => {
@@ -95,6 +97,22 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
           </div>
         </div>
 
+        {/* Legend */}
+        <div className="px-3 py-1.5 bg-slate-50 border-b border-ink/20 flex items-center justify-between text-[10px] text-ink-muted">
+          <span className="flex items-center gap-1.5" title="Solved independently without hints or solution">
+            <span className="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <Check size={9} strokeWidth={3} />
+            </span>
+            <span className="font-semibold text-slate-700">Mastered</span>
+          </span>
+          <span className="flex items-center gap-1.5" title="Solved with revealed hints or solution">
+            <span className="w-3.5 h-3.5 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0">
+              <Check size={9} strokeWidth={2.5} />
+            </span>
+            <span className="font-semibold text-slate-700">With hints</span>
+          </span>
+        </div>
+
         {/* Exercises list */}
         <div className="flex-1 overflow-y-auto p-2 space-y-2">
           {filteredExercises ? (
@@ -123,7 +141,21 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                     <span className="truncate">{ex.title}</span>
                   </div>
                   {completedIds.has(ex.id) && (
-                    <Check size={14} className="text-emerald-700 shrink-0" />
+                    assistedIds.has(ex.id) ? (
+                      <div
+                        className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
+                        title="Completed with hints (Solve independently to earn mastery)"
+                      >
+                        <Check size={10} strokeWidth={2.5} />
+                      </div>
+                    ) : (
+                      <div
+                        className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
+                        title="Mastered (Solved independently)"
+                      >
+                        <Check size={11} strokeWidth={3} />
+                      </div>
+                    )
                   )}
                 </button>
               ))}
@@ -170,6 +202,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                       {modExercises.map((ex, exIdx) => {
                         const isActive = ex.id === currentExerciseId;
                         const isDone = completedIds.has(ex.id);
+                        const isAssisted = assistedIds.has(ex.id);
 
                         return (
                           <div
@@ -198,9 +231,21 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                             </div>
 
                             {isDone && (
-                              <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                                <Check size={11} strokeWidth={3} />
-                              </div>
+                              isAssisted ? (
+                                <div
+                                  className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
+                                  title="Completed with hints (Solve independently to earn mastery)"
+                                >
+                                  <Check size={10} strokeWidth={2.5} />
+                                </div>
+                              ) : (
+                                <div
+                                  className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
+                                  title="Mastered (Solved independently)"
+                                >
+                                  <Check size={11} strokeWidth={3} />
+                                </div>
+                              )
                             )}
                           </div>
                         );

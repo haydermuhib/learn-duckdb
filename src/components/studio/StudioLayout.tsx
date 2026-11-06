@@ -16,6 +16,7 @@ interface StudioLayoutProps {
 }
 
 const STORAGE_KEY_COMPLETED = 'learn_duckdb_completed_exercises';
+const STORAGE_KEY_ASSISTED = 'learn_duckdb_assisted_exercises';
 const STORAGE_KEY_CURRENT = 'learn_duckdb_current_id';
 const STORAGE_KEY_DRAFTS = 'learn_duckdb_drafts';
 
@@ -27,6 +28,15 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_COMPLETED);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const [assistedIds, setAssistedIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_ASSISTED);
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -67,6 +77,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [revealedHints, setRevealedHints] = useState<number>(0);
+  const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Sync editor SQL when switching exercises
@@ -75,6 +86,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setQueryResult(null);
     setFeedback(null);
     setRevealedHints(0);
+    setSolutionViewed(false);
     switchDatabase(currentExercise.db).catch(console.error);
     try {
       localStorage.setItem(STORAGE_KEY_CURRENT, currentExercise.id);
@@ -125,6 +137,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       }
 
       if (validation.pass) {
+        const usedAssistance = revealedHints > 0 || solutionViewed;
+
         confetti({
           particleCount: 80,
           spread: 60,
@@ -139,6 +153,27 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           } catch {}
           return next;
         });
+
+        // Track assisted status
+        setAssistedIds(prev => {
+          const next = new Set(prev);
+          if (usedAssistance) {
+            next.add(currentExercise.id);
+          } else {
+            next.delete(currentExercise.id); // independent solve upgrades lesson to mastered!
+          }
+          try {
+            localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify([...next]));
+          } catch {}
+          return next;
+        });
+
+        if (usedAssistance) {
+          setFeedback({
+            pass: true,
+            message: 'Exercise completed with hints. Solve independently anytime to earn full mastery!',
+          });
+        }
       }
     } catch (err: any) {
       setFeedback({
@@ -229,6 +264,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     if (currentStep?.solution) {
       setEditorSql(currentStep.solution);
       handleEditorChange(currentStep.solution);
+      setSolutionViewed(true);
     }
   };
 
@@ -305,6 +341,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           currentExerciseId={currentExercise.id}
           onSelectExercise={id => setCurrentId(id)}
           completedIds={completedIds}
+          assistedIds={assistedIds}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />

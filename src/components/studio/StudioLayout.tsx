@@ -220,7 +220,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
   // Preview table helper: non-destructively preview table without touching editor query or polluting exercise validation
   const handlePreviewTable = async (tableName: string) => {
-    const previewSql = `SELECT * FROM ${tableName} LIMIT 5;`;
+    const previewSql = `SELECT * FROM ${tableName};`;
     setIsRunning(true);
     setFeedback(null);
     try {

@@ -98,8 +98,8 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
         </div>
       </div>
 
-      {/* Table list */}
-      <div className="p-2 space-y-2 max-h-[480px] overflow-y-auto custom-scrollbar">
+      {/* Table list - naturally expands as deep as needed */}
+      <div className="p-2 space-y-2">
         {tables.length === 0 ? (
           <div className="p-4 text-center text-xs text-ink-muted">
             <p>No tables loaded.</p>

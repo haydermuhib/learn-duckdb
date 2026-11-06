@@ -175,7 +175,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
 
   return (
     <div
-      className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal overflow-hidden h-[240px] lg:h-[260px] shrink-0"
+      className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal overflow-hidden h-[460px] lg:h-[500px] shrink-0"
       onKeyDown={handleKeyDown}
     >
       {/* Editor Toolbar */}

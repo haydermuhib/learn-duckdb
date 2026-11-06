@@ -112,13 +112,13 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   };
 
   const handlePreviewTable = async (tableName: string) => {
-    const previewSql = `SELECT * FROM ${tableName} LIMIT 10;`;
+    const previewSql = `SELECT * FROM ${tableName};`;
     setIsRunning(true);
     setErrorMessage(null);
     try {
       const res = await executePlaygroundQuery(previewSql);
       setQueryResult(res);
-      setStatusMessage(`Previewing 10 sample rows from "${tableName}". (Your editor query is preserved)`);
+      setStatusMessage(`Previewing "${tableName}" (${res.rowCount} rows). (Your editor query is preserved)`);
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 50);

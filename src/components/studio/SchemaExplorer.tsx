@@ -86,8 +86,8 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
         </div>
       </div>
 
-      {/* Table list with bounded scroll so expanding all tables never blows out the page */}
-      <div className="p-2 space-y-1.5 max-h-[420px] overflow-y-auto custom-scrollbar">
+      {/* Table list - naturally expands as deep as needed */}
+      <div className="p-2 space-y-1.5">
         {database.tables.map(table => {
           const isExpanded = !!expandedTables[table.name];
           const isTableCopied = copiedIdentifier === table.name;
@@ -128,7 +128,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
                       e.stopPropagation();
                       onPreviewTable(table.name);
                     }}
-                    title={`Preview 5 sample rows from ${table.name} without changing your editor query`}
+                    title={`Preview rows from ${table.name} without changing your editor query`}
                     className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 hover:bg-duck hover:text-ink border border-slate-300 hover:border-ink transition-colors cursor-pointer bg-slate-50"
                   >
                     <Eye size={11} />

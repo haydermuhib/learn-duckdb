@@ -8,7 +8,8 @@ import { SqlEditor } from './SqlEditor';
 import { ResultsTable } from './ResultsTable';
 import { SchemaExplorer } from './SchemaExplorer';
 import { CurriculumSidebar } from './CurriculumSidebar';
-import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle } from 'lucide-react';
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard } from 'lucide-react';
 
 interface StudioLayoutProps {
   onBackToLanding: () => void;
@@ -79,6 +80,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [revealedHints, setRevealedHints] = useState<number>(0);
   const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Sync editor SQL when switching exercises
   useEffect(() => {
@@ -185,18 +187,23 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   };
 
-  // Preview table helper
+  // Preview table helper: non-destructively preview table without touching editor query
   const handlePreviewTable = async (tableName: string) => {
     const previewSql = `SELECT * FROM ${tableName} LIMIT 5;`;
-    setEditorSql(previewSql);
     setIsRunning(true);
     try {
       await switchDatabase(currentExercise.db);
       const res = await executeQuery(previewSql);
       setQueryResult(res);
-      setFeedback(null);
+      setFeedback({
+        pass: true,
+        message: `Showing 5 preview rows from "${tableName}". Your editor query is preserved.`,
+      });
     } catch (err: any) {
-      console.error(err);
+      setFeedback({
+        pass: false,
+        message: `Failed to preview table ${tableName}: ${err.message}`,
+      });
     } finally {
       setIsRunning(false);
     }
@@ -218,6 +225,61 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   };
 
+  // Progress backup & reset handlers
+  const handleExportProgress = () => {
+    const backupData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      completedIds: Array.from(completedIds),
+      assistedIds: Array.from(assistedIds),
+      stats: {
+        total: EXERCISES.length,
+        completed: completedIds.size,
+        mastered: completedIds.size - assistedIds.size,
+        withHints: assistedIds.size,
+      },
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `learn-duckdb-progress-${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleResetProgress = () => {
+    if (window.confirm('Are you sure you want to reset all your learning progress? This cannot be undone.')) {
+      setCompletedIds(new Set());
+      setAssistedIds(new Set());
+      try {
+        localStorage.removeItem(STORAGE_KEY_COMPLETED);
+        localStorage.removeItem(STORAGE_KEY_ASSISTED);
+      } catch {}
+      setFeedback({
+        pass: true,
+        message: 'All learning progress has been reset. You now have a clean slate!',
+      });
+    }
+  };
+
+  const handleImportProgress = (completed: string[], assisted: string[]) => {
+    const nextCompleted = new Set(completed);
+    const nextAssisted = new Set(assisted);
+    setCompletedIds(nextCompleted);
+    setAssistedIds(nextAssisted);
+    try {
+      localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
+      localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
+    } catch {}
+    setFeedback({
+      pass: true,
+      message: `Successfully imported ${nextCompleted.size} exercises!`,
+    });
+  };
+
   // Navigation: Next / Prev exercise
   const currentIndex = EXERCISES.findIndex(e => e.id === currentExercise.id);
   const hasNext = currentIndex < EXERCISES.length - 1;
@@ -235,7 +297,15 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   }, [hasPrev, currentIndex]);
 
-  // Global window keyboard listener for Alt+N (Next) and Alt+P (Prev)
+  // Hints
+  const currentStep = currentExercise.steps[0];
+  const maxHints = currentStep?.hints?.length || 0;
+
+  const handleHint = useCallback(() => {
+    setRevealedHints(prev => Math.min(prev + 1, maxHints));
+  }, [maxHints]);
+
+  // Global window keyboard listener
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
@@ -245,20 +315,28 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       } else if (e.altKey && (e.key === 'p' || e.key === 'P' || e.key === 'ArrowLeft')) {
         e.preventDefault();
         handlePrev();
+      } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        handleHint();
+      } else if (e.altKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        setSidebarOpen(prev => !prev);
+      } else if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const active = document.activeElement;
+        const isEditing =
+          active?.tagName === 'INPUT' ||
+          active?.tagName === 'TEXTAREA' ||
+          active?.closest('.cm-editor');
+        if (!isEditing) {
+          e.preventDefault();
+          setIsShortcutsOpen(prev => !prev);
+        }
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [handleNext, handlePrev]);
-
-  // Hints
-  const currentStep = currentExercise.steps[0];
-  const maxHints = currentStep?.hints?.length || 0;
-
-  const handleHint = () => {
-    setRevealedHints(prev => Math.min(prev + 1, maxHints));
-  };
+  }, [handleNext, handlePrev, handleHint]);
 
   const handleShowSolution = () => {
     if (currentStep?.solution) {
@@ -305,6 +383,16 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         {/* Right Actions */}
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            onClick={() => setIsShortcutsOpen(true)}
+            title="View keyboard shortcuts (?)"
+            className="p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono flex items-center gap-1 cursor-pointer"
+          >
+            <Keyboard size={13} />
+            <span className="hidden sm:inline text-[11px] font-bold">Shortcuts</span>
+          </button>
+
+          <button
             onClick={handleResetDb}
             title="Reset database to seed rows"
             className="p-1.5 border-2 border-ink hover:bg-slate-100 text-xs font-mono flex items-center gap-1"
@@ -344,6 +432,9 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           assistedIds={assistedIds}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          onResetProgress={handleResetProgress}
+          onExportProgress={handleExportProgress}
+          onImportProgress={handleImportProgress}
         />
 
         {/* Studio Workspace Content */}
@@ -446,6 +537,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           </div>
         </main>
       </div>
+
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
     </div>
   );
 };

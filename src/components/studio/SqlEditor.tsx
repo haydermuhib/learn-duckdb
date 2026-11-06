@@ -4,7 +4,7 @@ import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
-import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye, ArrowRight } from 'lucide-react';
+import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye, ArrowRight, Wand2 } from 'lucide-react';
 
 interface SqlEditorProps {
   value: string;
@@ -58,6 +58,25 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       ])
     );
   }, [onCheck]);
+
+  const handleFormat = useCallback(() => {
+    if (!value.trim()) return;
+    const keywords = [
+      'SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'IN', 'IS', 'NULL',
+      'GROUP BY', 'HAVING', 'ORDER BY', 'ASC', 'DESC', 'LIMIT', 'OFFSET',
+      'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL JOIN', 'CROSS JOIN',
+      'ON', 'USING', 'AS', 'UNION', 'ALL', 'INTERSECT', 'EXCEPT',
+      'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'OVER', 'PARTITION BY',
+      'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE',
+      'DROP TABLE', 'ALTER TABLE', 'WITH', 'RECURSIVE',
+    ];
+    let formatted = value.trim();
+    keywords.forEach(kw => {
+      const regex = new RegExp(`\\b${kw.replace(/ /g, '\\s+')}\\b`, 'gi');
+      formatted = formatted.replace(regex, kw);
+    });
+    onChange(formatted);
+  }, [value, onChange]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -171,9 +190,19 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           )}
 
           <button
+            type="button"
+            onClick={handleFormat}
+            disabled={!value.trim()}
+            title="Prettify & capitalize SQL keywords"
+            className="p-1.5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+          >
+            <Wand2 size={15} />
+          </button>
+
+          <button
             onClick={onReset}
             title="Reset code"
-            className="p-1.5 text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
             <RotateCcw size={15} />
           </button>

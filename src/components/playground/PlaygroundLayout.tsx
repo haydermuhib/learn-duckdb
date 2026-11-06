@@ -14,6 +14,7 @@ import { ResultsTable } from '../studio/ResultsTable';
 import { PlaygroundFileUploader } from './PlaygroundFileUploader';
 import { PlaygroundSchemaExplorer } from './PlaygroundSchemaExplorer';
 import { KeyboardShortcutsModal } from '../studio/KeyboardShortcutsModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import {
   ArrowLeft,
   RefreshCw,
@@ -54,6 +55,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Initialize playground and load initial tables
   useEffect(() => {
@@ -156,21 +158,19 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   };
 
   const handleResetPlayground = async () => {
-    if (window.confirm('Reset playground to default dataset? All custom tables will be removed.')) {
-      setIsRunning(true);
-      try {
-        await resetPlayground();
-        const updated = await getPlaygroundTables();
-        setTables(updated);
-        setEditorSql(DEFAULT_PLAYGROUND_SQL);
-        setQueryResult(null);
-        setErrorMessage(null);
-        setStatusMessage('Playground reset to default dataset (ecommerce_sales).');
-      } catch (err: any) {
-        setErrorMessage(`Failed to reset playground: ${err.message}`);
-      } finally {
-        setIsRunning(false);
-      }
+    setIsRunning(true);
+    try {
+      await resetPlayground();
+      const updated = await getPlaygroundTables();
+      setTables(updated);
+      setEditorSql(DEFAULT_PLAYGROUND_SQL);
+      setQueryResult(null);
+      setErrorMessage(null);
+      setStatusMessage('Playground reset to default dataset (ecommerce_sales).');
+    } catch (err: any) {
+      setErrorMessage(`Failed to reset playground: ${err.message}`);
+    } finally {
+      setIsRunning(false);
     }
   };
 
@@ -195,9 +195,9 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas text-ink">
+    <div className="h-screen flex flex-col bg-canvas text-ink overflow-hidden">
       {/* Top Header */}
-      <header className="border-b-3 border-ink bg-surface-card px-4 py-2.5 flex items-center justify-between shadow-brutal-sm sticky top-0 z-30">
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -253,7 +253,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
           <button
             type="button"
-            onClick={handleResetPlayground}
+            onClick={() => setIsResetConfirmOpen(true)}
             title="Reset playground to seed dataset"
             className="p-1.5 border-2 border-ink hover:bg-slate-100 text-xs font-mono flex items-center gap-1 cursor-pointer"
           >
@@ -381,6 +381,22 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       <KeyboardShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Reset Playground Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        title="Reset Playground Dataset?"
+        message="Are you sure you want to reset the playground to the default dataset?"
+        detail="All custom uploaded tables and in-memory files will be dropped. The default ecommerce_sales dataset and query will be restored."
+        confirmLabel="Reset Playground"
+        cancelLabel="Keep Current Tables"
+        variant="warning"
+        onConfirm={async () => {
+          setIsResetConfirmOpen(false);
+          await handleResetPlayground();
+        }}
+        onCancel={() => setIsResetConfirmOpen(false)}
       />
     </div>
   );

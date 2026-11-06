@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlaygroundTableSchema } from '../../engine/playgroundDuckdb';
+import { ConfirmModal } from '../common/ConfirmModal';
 import {
   Database,
   Table,
@@ -27,6 +28,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
 }) => {
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
   const [copiedIdentifier, setCopiedIdentifier] = useState<string | null>(null);
+  const [tableToDelete, setTableToDelete] = useState<{ name: string; fileName?: string } | null>(null);
 
   // Auto-expand first table when tables load
   useEffect(() => {
@@ -170,9 +172,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                         type="button"
                         onClick={e => {
                           e.stopPropagation();
-                          if (window.confirm(`Delete table "${table.name}"?`)) {
-                            onDeleteTable(table.name, table.fileName);
-                          }
+                          setTableToDelete({ name: table.name, fileName: table.fileName });
                         }}
                         title={`Delete table "${table.name}"`}
                         className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -231,6 +231,27 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
           })
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!tableToDelete}
+        title={`Delete Table "${tableToDelete?.name}"?`}
+        message={
+          <span>
+            Are you sure you want to delete table <strong className="font-mono bg-slate-100 px-1 py-0.5 border border-slate-300">{tableToDelete?.name}</strong>?
+          </span>
+        }
+        detail="This table and its loaded data will be dropped from your current DuckDB session. You can re-upload your file at any time."
+        confirmLabel="Delete Table"
+        cancelLabel="Keep Table"
+        variant="danger"
+        onConfirm={() => {
+          if (tableToDelete && onDeleteTable) {
+            onDeleteTable(tableToDelete.name, tableToDelete.fileName);
+          }
+          setTableToDelete(null);
+        }}
+        onCancel={() => setTableToDelete(null)}
+      />
     </div>
   );
 };

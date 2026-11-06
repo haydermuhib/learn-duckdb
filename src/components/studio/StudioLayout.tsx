@@ -373,9 +373,9 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas text-ink">
+    <div className="h-screen flex flex-col bg-canvas text-ink overflow-hidden">
       {/* Studio Top Navigation Bar */}
-      <header className="border-b-3 border-ink bg-surface-card px-4 py-2.5 flex items-center justify-between shadow-brutal-sm sticky top-0 z-30">
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToLanding}
@@ -472,7 +472,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       </header>
 
       {/* Main Studio Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Curriculum Drawer */}
         <CurriculumSidebar
           currentExerciseId={currentExercise.id}

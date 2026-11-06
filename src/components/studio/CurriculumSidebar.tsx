@@ -116,13 +116,13 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-ink/40 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 top-14 bg-ink/40 z-30 lg:hidden backdrop-blur-sm"
         />
       )}
 
       {/* Drawer Container */}
       <aside
-        className={`fixed lg:relative top-0 bottom-0 left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
+        className={`fixed lg:relative top-14 lg:top-0 bottom-0 left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           isOpen
             ? 'w-80 translate-x-0 opacity-100'
             : 'w-0 -translate-x-full lg:translate-x-0 lg:w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none'

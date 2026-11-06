@@ -90,16 +90,16 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           },
         },
         {
-          key: 'Alt-n',
+          key: 'Mod-b',
           run: () => {
-            if (onNext) onNext();
+            if (onToggleSidebar) onToggleSidebar();
             return true;
           },
         },
         {
-          key: 'Alt-N',
+          key: 'Ctrl-b',
           run: () => {
-            if (onNext) onNext();
+            if (onToggleSidebar) onToggleSidebar();
             return true;
           },
         },
@@ -111,37 +111,9 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           },
         },
         {
-          key: 'Alt-p',
-          run: () => {
-            if (onPrev) onPrev();
-            return true;
-          },
-        },
-        {
-          key: 'Alt-P',
-          run: () => {
-            if (onPrev) onPrev();
-            return true;
-          },
-        },
-        {
           key: 'Alt-ArrowLeft',
           run: () => {
             if (onPrev) onPrev();
-            return true;
-          },
-        },
-        {
-          key: 'Alt-s',
-          run: () => {
-            if (onToggleSidebar) onToggleSidebar();
-            return true;
-          },
-        },
-        {
-          key: 'Alt-S',
-          run: () => {
-            if (onToggleSidebar) onToggleSidebar();
             return true;
           },
         },
@@ -169,6 +141,9 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         onCheck();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB')) {
+        e.preventDefault();
+        if (onToggleSidebar) onToggleSidebar();
       } else if (
         e.altKey &&
         (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')
@@ -177,22 +152,16 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         handleFormat();
       } else if (
         e.altKey &&
-        (e.key === 'p' || e.key === 'P' || e.code === 'KeyP' || e.key === 'ArrowLeft')
+        (e.key === 'ArrowLeft' || e.code === 'ArrowLeft')
       ) {
         e.preventDefault();
         if (onPrev) onPrev();
       } else if (
         e.altKey &&
-        (e.key === 'n' || e.key === 'N' || e.code === 'KeyN' || e.key === 'ArrowRight')
+        (e.key === 'ArrowRight' || e.code === 'ArrowRight')
       ) {
         e.preventDefault();
         if (onNext) onNext();
-      } else if (
-        e.altKey &&
-        (e.key === 's' || e.key === 'S' || e.code === 'KeyS')
-      ) {
-        e.preventDefault();
-        if (onToggleSidebar) onToggleSidebar();
       } else if (
         e.altKey &&
         (e.key === 'h' || e.key === 'H' || e.code === 'KeyH')
@@ -233,13 +202,13 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <span>
             Prev:{' '}
             <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
-              Alt+P
+              Alt+←
             </kbd>
           </span>
           <span>
             Next:{' '}
             <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
-              Alt+N
+              Alt+→
             </kbd>
           </span>
         </div>
@@ -293,12 +262,12 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           {hasNext && onNext && (
             <button
               onClick={onNext}
-              title="Next Exercise (Shortcut: Alt+N)"
+              title="Next Exercise (Shortcut: Alt+→)"
               className="flex items-center gap-1.5 px-3 py-2 bg-emerald-400 text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-emerald-300 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs cursor-pointer"
             >
               <span>Next</span>
               <kbd className="hidden sm:inline-block bg-emerald-600/30 text-emerald-950 px-1 py-0.2 rounded text-[10px] font-mono border border-emerald-600/40">
-                Alt+N
+                Alt+→
               </kbd>
               <ArrowRight size={14} />
             </button>

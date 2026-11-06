@@ -35,7 +35,7 @@
 - **Instant Local Validation:** Queries are verified in sub-milliseconds against expected solution tables with floating-point tolerance and smart row sorting.
 - **Interactive Schema Explorer:** Real-time table browser with primary key indicators, column types, and instant one-click `SELECT * LIMIT 5` previews.
 - **Persistent Progress:** Exercise completions, drafts, and active databases are automatically saved to `localStorage`.
-- **Keyboard-Driven Studio:** Built with CodeMirror 6 with instant shortcuts (`Ctrl+Enter` to test, `Alt+N` for next exercise).
+- **Keyboard-Driven Studio:** Built with CodeMirror 6 with instant shortcuts (`Ctrl+Enter` to test, `Alt+→` for next exercise, `Ctrl+B` for sidebar).
 
 ---
 

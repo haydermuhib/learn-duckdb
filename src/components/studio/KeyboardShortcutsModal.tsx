@@ -8,11 +8,11 @@ interface KeyboardShortcutsModalProps {
 
 const SHORTCUTS = [
   { keys: ['Ctrl', 'Enter'], desc: 'Run SQL & Check Answer (Mac: ⌘ + Enter)' },
+  { keys: ['Alt', '→'], desc: 'Go to Next Exercise' },
+  { keys: ['Alt', '←'], desc: 'Go to Previous Exercise' },
+  { keys: ['Ctrl', 'B'], desc: 'Toggle Curriculum Sidebar (Mac: ⌘ + B)' },
   { keys: ['Alt', 'Shift', 'F'], desc: 'Prettify & Format SQL Query (or Alt + F)' },
-  { keys: ['Alt', 'N'], desc: 'Go to Next Exercise (or Alt + →)' },
-  { keys: ['Alt', 'P'], desc: 'Go to Previous Exercise (or Alt + ←)' },
   { keys: ['Alt', 'H'], desc: 'Reveal Next Hint' },
-  { keys: ['Alt', 'S'], desc: 'Toggle Curriculum Sidebar' },
   { keys: ['?'], desc: 'Toggle this Shortcuts Guide' },
   { keys: ['Esc'], desc: 'Close dialogs or drawers' },
 ];

@@ -22,8 +22,9 @@ All notable changes to this project will be documented in this file.
   - **Practice Studio**: 3-panel workspace with CodeMirror 6 SQL editor, live schema tree explorer, instant table preview, tabbed output grid, and progressive hints.
 - **Keyboard Shortcuts**:
   - `Ctrl+Enter` / `Cmd+Enter`: Run & check answer
-  - `Alt+N` / `Alt+Right`: Instant next exercise navigation
-  - `Alt+P`: Previous exercise
+  - `Alt+→`: Instant next exercise navigation
+  - `Alt+←`: Previous exercise
+  - `Ctrl+B` / `Cmd+B`: Toggle syllabus sidebar
 - **Unit Testing**: 15 Vitest unit tests verifying curriculum integrity, schema validations, BigInt serialization, and floating-point tolerances.
 - **Legacy CLI Preservation**: The previous terminal Python TUI version is preserved on the [`cli`](https://github.com/haydermuhib/learn-duckdb/tree/cli) branch.
 

@@ -326,24 +326,24 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
 
-      const isKeyN = e.key === 'n' || e.key === 'N' || e.code === 'KeyN' || e.key === 'ArrowRight';
-      const isKeyP = e.key === 'p' || e.key === 'P' || e.code === 'KeyP' || e.key === 'ArrowLeft';
-      const isKeyS = e.key === 's' || e.key === 'S' || e.code === 'KeyS';
-      const isKeyH = e.key === 'h' || e.key === 'H' || e.code === 'KeyH';
+      const isNext = e.altKey && (e.key === 'ArrowRight' || e.code === 'ArrowRight');
+      const isPrev = e.altKey && (e.key === 'ArrowLeft' || e.code === 'ArrowLeft');
+      const isToggleSidebar = (e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB');
+      const isHint = e.altKey && (e.key === 'h' || e.key === 'H' || e.code === 'KeyH');
 
-      if (e.altKey && isKeyN) {
+      if (isNext) {
         e.preventDefault();
         e.stopPropagation();
         handleNext();
-      } else if (e.altKey && isKeyP) {
+      } else if (isPrev) {
         e.preventDefault();
         e.stopPropagation();
         handlePrev();
-      } else if (e.altKey && isKeyS) {
+      } else if (isToggleSidebar) {
         e.preventDefault();
         e.stopPropagation();
         setSidebarOpen(prev => !prev);
-      } else if (e.altKey && isKeyH) {
+      } else if (isHint) {
         e.preventDefault();
         e.stopPropagation();
         handleHint();
@@ -387,7 +387,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
           <button
             onClick={() => setSidebarOpen(prev => !prev)}
-            title="Toggle Curriculum Syllabus (Alt+S)"
+            title="Toggle Curriculum Syllabus (Ctrl+B)"
             className="flex items-center gap-1.5 px-3 py-1.5 bg-duck text-ink text-xs font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
           >
             <BookOpen size={14} />

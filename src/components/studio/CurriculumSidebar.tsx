@@ -126,7 +126,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             <button
               type="button"
               onClick={onClose}
-              title="Close Syllabus (Alt+S)"
+              title="Close Syllabus (Ctrl+B)"
               className="p-1 hover:bg-slate-200 border border-ink cursor-pointer"
             >
               <X size={16} />

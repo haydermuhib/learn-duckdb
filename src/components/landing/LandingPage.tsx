@@ -17,9 +17,10 @@ import {
 
 interface LandingPageProps {
   onStartLearning: (moduleId?: string) => void;
+  onOpenPlayground?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpenPlayground }) => {
   // Interactive Sandbox Teaser on Hero
   const [demoQuery, setDemoQuery] = useState(
     "SELECT category, COUNT(*) AS items, ROUND(AVG(price), 2) AS avg_price\nFROM products\nGROUP BY ALL\nORDER BY items DESC;"
@@ -76,7 +77,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning }) => 
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {onOpenPlayground && (
+              <button
+                type="button"
+                onClick={onOpenPlayground}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-duck text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+              >
+                <Zap size={14} className="fill-ink" />
+                <span>Playground</span>
+              </button>
+            )}
+
             <a
               href="https://github.com/haydermuhib/learn-duckdb"
               target="_blank"
@@ -123,11 +135,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning }) => 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => onStartLearning()}
-              className="px-8 py-4 bg-duck text-ink font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center gap-2"
+              className="px-8 py-4 bg-duck text-ink font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center gap-2 cursor-pointer"
             >
               <span>Start Learning Free</span>
               <ArrowRight size={18} />
             </button>
+            {onOpenPlayground && (
+              <button
+                onClick={onOpenPlayground}
+                className="px-6 py-4 bg-white text-ink font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Zap size={18} />
+                <span>Open SQL Playground</span>
+              </button>
+            )}
             <a
               href="#syllabus"
               className="px-6 py-4 bg-surface-card text-ink font-bold text-base border-3 border-ink shadow-brutal hover:bg-surface-muted active:translate-x-1 active:translate-y-1 transition-all"

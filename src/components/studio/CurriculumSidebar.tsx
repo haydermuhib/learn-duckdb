@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ModuleDef, ExerciseDef } from '../../types/curriculum';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import {
@@ -44,6 +44,16 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
     return currentEx ? { [currentEx.module]: true } : { select: true };
   });
+
+  useEffect(() => {
+    const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
+    if (currentEx) {
+      setExpandedModules(prev => ({
+        ...prev,
+        [currentEx.module]: true,
+      }));
+    }
+  }, [currentExerciseId]);
 
   const toggleModule = (modId: string) => {
     setExpandedModules(prev => ({
@@ -91,6 +101,14 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   });
   const masteredCount = completedIds.size - assistedCount;
   const remainingCount = Math.max(0, EXERCISES.length - completedIds.size);
+
+  const handleExerciseClick = (id: string) => {
+    onSelectExercise(id);
+    // Only auto-close on mobile screens where the drawer is a blocking overlay modal
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      onClose();
+    }
+  };
 
   return (
     <>
@@ -184,10 +202,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
               {filteredExercises.map(ex => (
                 <button
                   key={ex.id}
-                  onClick={() => {
-                    onSelectExercise(ex.id);
-                    onClose();
-                  }}
+                  onClick={() => handleExerciseClick(ex.id)}
                   className={`w-full text-left p-2 border-2 border-ink text-xs flex items-center justify-between transition-colors cursor-pointer ${
                     ex.id === currentExerciseId
                       ? 'bg-duck font-bold shadow-brutal-sm'
@@ -276,10 +291,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                         return (
                           <div
                             key={ex.id}
-                            onClick={() => {
-                              onSelectExercise(ex.id);
-                              onClose();
-                            }}
+                            onClick={() => handleExerciseClick(ex.id)}
                             className={`flex items-center justify-between px-3 py-2 cursor-pointer text-xs transition-colors ${
                               isActive
                                 ? 'bg-duck text-ink font-bold border-l-4 border-l-ink'

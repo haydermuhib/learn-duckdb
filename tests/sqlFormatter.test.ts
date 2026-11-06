@@ -122,7 +122,7 @@ FROM students;`
     );
   });
 
-  it('formats DuckDB ANTI JOIN and LEFT ANTI JOIN properly on separate lines', () => {
+  it('formats DuckDB native ANTI JOIN and SEMI JOIN properly on separate lines', () => {
     const rawAnti = "select c.name from customers c anti join orders o on c.id = o.customer_id;";
     expect(formatSql(rawAnti)).toBe(
 `SELECT c.name
@@ -131,11 +131,11 @@ ANTI JOIN orders o
 ON c.id = o.customer_id;`
     );
 
-    const rawLeftAnti = "select c.name from customers c left anti join orders o on c.id = o.customer_id;";
-    expect(formatSql(rawLeftAnti)).toBe(
+    const rawSemi = "select c.name from customers c semi join orders o on c.id = o.customer_id;";
+    expect(formatSql(rawSemi)).toBe(
 `SELECT c.name
 FROM customers c
-LEFT ANTI JOIN orders o
+SEMI JOIN orders o
 ON c.id = o.customer_id;`
     );
   });

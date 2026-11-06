@@ -1,17 +1,43 @@
 /**
  * Formats SQL queries:
- * 1. Places major clauses (SELECT, FROM, WHERE, GROUP BY, ORDER BY, JOIN, etc.) on their own lines.
- * 2. Standardizes uppercase keywords while preserving strings, identifiers, and comments.
- * 3. Cleans redundant whitespaces.
+ * 1. Places major query clauses (SELECT, FROM, WHERE, GROUP BY, ORDER BY, JOIN, etc.) on their own lines.
+ * 2. Keeps window function specifications (OVER (PARTITION BY ... ORDER BY ...)) clean and inline.
+ * 3. Standardizes uppercase keywords while strictly preserving strings, double-quoted identifiers, and comments.
+ * 4. Cleans redundant whitespaces without altering query semantics.
  */
 export function formatSql(sql: string): string {
   if (!sql || !sql.trim()) return sql;
 
-  // Protect string literals: 'example' or 'it''s'
-  const stringLiterals: string[] = [];
-  let tokenized = sql.replace(/'(?:''|[^'])*'/g, match => {
-    stringLiterals.push(match);
-    return `__SQL_STR_${stringLiterals.length - 1}__`;
+  const placeholders: string[] = [];
+  const saveLiteral = (str: string) => {
+    placeholders.push(str);
+    return `__SQL_LITERAL_${placeholders.length - 1}__`;
+  };
+
+  // 1. Protect block comments: /* ... */
+  let tokenized = sql.replace(/\/\*[\s\S]*?\*\//g, saveLiteral);
+
+  // 2. Protect single-line comments: -- ...
+  tokenized = tokenized.replace(/--[^\r\n]*/g, saveLiteral);
+
+  // 3. Protect string literals: 'example' or 'it''s'
+  tokenized = tokenized.replace(/'(?:''|[^'])*'/g, saveLiteral);
+
+  // 4. Protect double-quoted identifiers: "my_column" or "from"
+  tokenized = tokenized.replace(/"(?:""|[^"])*"/g, saveLiteral);
+
+  // 5. Protect window specifications OVER (...) so ORDER BY inside them does not get broken onto a new line
+  tokenized = tokenized.replace(/\bover\s*\([^)]*\)/gi, match => {
+    const innerFormatted = match
+      .replace(/\bover\b/gi, 'OVER')
+      .replace(/\bpartition\s+by\b/gi, 'PARTITION BY')
+      .replace(/\border\s+by\b/gi, 'ORDER BY')
+      .replace(/\basc\b/gi, 'ASC')
+      .replace(/\bdesc\b/gi, 'DESC')
+      .replace(/\bnulls\s+first\b/gi, 'NULLS FIRST')
+      .replace(/\bnulls\s+last\b/gi, 'NULLS LAST')
+      .replace(/\s+/g, ' ');
+    return saveLiteral(innerFormatted);
   });
 
   // Major clauses that should begin on a new line
@@ -91,25 +117,34 @@ export function formatSql(sql: string): string {
     'ALTER TABLE',
     'PRIMARY KEY',
     'FOREIGN KEY',
+    'TRUE',
+    'FALSE',
   ];
 
-  // Normalize spaces first
+  // Normalize spaces
   tokenized = tokenized.replace(/\s+/g, ' ').trim();
 
-  // Insert line breaks before major clauses
-  // Sort clauses by length descending so multi-word clauses match first
+  // Single-pass regex for major clauses (sorted by length descending so multi-word clauses match first)
   const sortedClauses = [...majorClauses].sort((a, b) => b.length - a.length);
-  for (const clause of sortedClauses) {
-    const pattern = new RegExp(`\\b${clause.replace(/ /g, '\\s+')}\\b`, 'gi');
-    tokenized = tokenized.replace(pattern, `\n${clause} `);
-  }
+  const clauseRegex = new RegExp(
+    `\\b(${sortedClauses.map(c => c.replace(/ /g, '\\s+')).join('|')})\\b`,
+    'gi'
+  );
+  tokenized = tokenized.replace(
+    clauseRegex,
+    match => `\n${match.toUpperCase().replace(/\s+/g, ' ')} `
+  );
 
-  // Capitalize other keywords
+  // Single-pass regex for other keywords
   const sortedKeywords = [...otherKeywords].sort((a, b) => b.length - a.length);
-  for (const kw of sortedKeywords) {
-    const pattern = new RegExp(`\\b${kw.replace(/ /g, '\\s+')}\\b`, 'gi');
-    tokenized = tokenized.replace(pattern, kw);
-  }
+  const keywordRegex = new RegExp(
+    `\\b(${sortedKeywords.map(k => k.replace(/ /g, '\\s+')).join('|')})\\b`,
+    'gi'
+  );
+  tokenized = tokenized.replace(
+    keywordRegex,
+    match => match.toUpperCase().replace(/\s+/g, ' ')
+  );
 
   // Clean up each line: normalize internal spaces and trim edges
   const lines = tokenized
@@ -119,10 +154,10 @@ export function formatSql(sql: string): string {
 
   let formatted = lines.join('\n');
 
-  // Restore string literals
-  stringLiterals.forEach((literal, idx) => {
-    formatted = formatted.replace(`__SQL_STR_${idx}__`, literal);
-  });
+  // Restore protected literals in reverse
+  for (let i = placeholders.length - 1; i >= 0; i--) {
+    formatted = formatted.replace(`__SQL_LITERAL_${i}__`, placeholders[i]);
+  }
 
   return formatted;
 }

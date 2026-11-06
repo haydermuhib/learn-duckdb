@@ -44,6 +44,12 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   isChecking,
   isRunning,
 }) => {
+  const handleFormat = useCallback(() => {
+    if (!value.trim()) return;
+    const formatted = formatSql(value);
+    onChange(formatted);
+  }, [value, onChange]);
+
   // Intercept shortcuts inside CodeMirror with highest precedence so they never get swallowed by editor defaults
   const keymapExtension = useMemo(() => {
     return Prec.highest(
@@ -59,6 +65,27 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Mod-Enter',
           run: () => {
             onCheck();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-Shift-f',
+          run: () => {
+            handleFormat();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-Shift-F',
+          run: () => {
+            handleFormat();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-f',
+          run: () => {
+            handleFormat();
             return true;
           },
         },
@@ -106,13 +133,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         },
       ])
     );
-  }, [onCheck, onNext, onPrev, onToggleSidebar, onHint]);
-
-  const handleFormat = useCallback(() => {
-    if (!value.trim()) return;
-    const formatted = formatSql(value);
-    onChange(formatted);
-  }, [value, onChange]);
+  }, [onCheck, onNext, onPrev, onToggleSidebar, onHint, handleFormat]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -120,6 +141,12 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         onCheck();
+      } else if (
+        e.altKey &&
+        (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')
+      ) {
+        e.preventDefault();
+        handleFormat();
       } else if (
         e.altKey &&
         (e.key === 'p' || e.key === 'P' || e.code === 'KeyP' || e.key === 'ArrowLeft')
@@ -146,7 +173,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         onHint();
       }
     },
-    [onCheck, onPrev, onNext, onToggleSidebar, onHint]
+    [onCheck, onPrev, onNext, onToggleSidebar, onHint, handleFormat]
   );
 
   return (
@@ -167,6 +194,12 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             Run:{' '}
             <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
               Ctrl+Enter
+            </kbd>
+          </span>
+          <span>
+            Format:{' '}
+            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+              Alt+F
             </kbd>
           </span>
           <span>
@@ -269,7 +302,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             type="button"
             onClick={handleFormat}
             disabled={!value.trim()}
-            title="Prettify SQL: place clauses on new lines & capitalize keywords"
+            title="Prettify SQL (Alt+Shift+F or Alt+F): align clauses & capitalize keywords"
             className="p-1.5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
           >
             <Wand2 size={15} />

@@ -8,6 +8,7 @@ interface KeyboardShortcutsModalProps {
 
 const SHORTCUTS = [
   { keys: ['Ctrl', 'Enter'], desc: 'Run SQL & Check Answer (Mac: ⌘ + Enter)' },
+  { keys: ['Alt', 'Shift', 'F'], desc: 'Prettify & Format SQL Query (or Alt + F)' },
   { keys: ['Alt', 'N'], desc: 'Go to Next Exercise (or Alt + →)' },
   { keys: ['Alt', 'P'], desc: 'Go to Previous Exercise (or Alt + ←)' },
   { keys: ['Alt', 'H'], desc: 'Reveal Next Hint' },

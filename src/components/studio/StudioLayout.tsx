@@ -9,6 +9,7 @@ import { ResultsTable } from './ResultsTable';
 import { SchemaExplorer } from './SchemaExplorer';
 import { CurriculumSidebar } from './CurriculumSidebar';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { ConfirmResetModal } from './ConfirmResetModal';
 import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard } from 'lucide-react';
 
 interface StudioLayoutProps {
@@ -81,6 +82,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Sync editor SQL when switching exercises
   useEffect(() => {
@@ -250,19 +252,22 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleResetProgress = () => {
-    if (window.confirm('Are you sure you want to reset all your learning progress? This cannot be undone.')) {
-      setCompletedIds(new Set());
-      setAssistedIds(new Set());
-      try {
-        localStorage.removeItem(STORAGE_KEY_COMPLETED);
-        localStorage.removeItem(STORAGE_KEY_ASSISTED);
-      } catch {}
-      setFeedback({
-        pass: true,
-        message: 'All learning progress has been reset. You now have a clean slate!',
-      });
-    }
+  const handleOpenResetConfirm = () => {
+    setIsResetConfirmOpen(true);
+  };
+
+  const handleConfirmReset = () => {
+    setCompletedIds(new Set());
+    setAssistedIds(new Set());
+    try {
+      localStorage.removeItem(STORAGE_KEY_COMPLETED);
+      localStorage.removeItem(STORAGE_KEY_ASSISTED);
+    } catch {}
+    setIsResetConfirmOpen(false);
+    setFeedback({
+      pass: true,
+      message: 'All learning progress has been reset. You now have a clean slate!',
+    });
   };
 
   const handleImportProgress = (completed: string[], assisted: string[]) => {
@@ -432,7 +437,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           assistedIds={assistedIds}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          onResetProgress={handleResetProgress}
+          onResetProgress={handleOpenResetConfirm}
           onExportProgress={handleExportProgress}
           onImportProgress={handleImportProgress}
         />
@@ -518,6 +523,9 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               onCheck={handleCheckAnswer}
               onNext={handleNext}
               hasNext={hasNext}
+              onPrev={handlePrev}
+              hasPrev={hasPrev}
+              onToggleSidebar={() => setSidebarOpen(prev => !prev)}
               onReset={() => handleEditorChange('')}
               onHint={handleHint}
               onShowSolution={handleShowSolution}
@@ -542,6 +550,13 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       <KeyboardShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Custom Retro-Brutalist Reset Progress Confirmation Modal */}
+      <ConfirmResetModal
+        isOpen={isResetConfirmOpen}
+        onConfirm={handleConfirmReset}
+        onCancel={() => setIsResetConfirmOpen(false)}
       />
     </div>
   );

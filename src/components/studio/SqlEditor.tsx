@@ -5,6 +5,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
 import { Play, CheckCircle2, RotateCcw, Lightbulb, Eye, ArrowRight, Wand2 } from 'lucide-react';
+import { formatSql } from '../../utils/sqlFormatter';
 
 interface SqlEditorProps {
   value: string;
@@ -13,6 +14,9 @@ interface SqlEditorProps {
   onCheck: () => void;
   onNext?: () => void;
   hasNext?: boolean;
+  onPrev?: () => void;
+  hasPrev?: boolean;
+  onToggleSidebar?: () => void;
   onReset: () => void;
   onHint: () => void;
   onShowSolution: () => void;
@@ -29,6 +33,9 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   onCheck,
   onNext,
   hasNext,
+  onPrev,
+  hasPrev,
+  onToggleSidebar,
   onReset,
   onHint,
   onShowSolution,
@@ -37,7 +44,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   isChecking,
   isRunning,
 }) => {
-  // Intercept Ctrl+Enter and Cmd+Enter inside CodeMirror with highest precedence so it runs without inserting a newline
+  // Intercept shortcuts inside CodeMirror with highest precedence so they never get swallowed by editor defaults
   const keymapExtension = useMemo(() => {
     return Prec.highest(
       keymap.of([
@@ -55,26 +62,55 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             return true;
           },
         },
+        {
+          key: 'Alt-n',
+          run: () => {
+            if (onNext) onNext();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-ArrowRight',
+          run: () => {
+            if (onNext) onNext();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-p',
+          run: () => {
+            if (onPrev) onPrev();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-ArrowLeft',
+          run: () => {
+            if (onPrev) onPrev();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-s',
+          run: () => {
+            if (onToggleSidebar) onToggleSidebar();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-h',
+          run: () => {
+            onHint();
+            return true;
+          },
+        },
       ])
     );
-  }, [onCheck]);
+  }, [onCheck, onNext, onPrev, onToggleSidebar, onHint]);
 
   const handleFormat = useCallback(() => {
     if (!value.trim()) return;
-    const keywords = [
-      'SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'IN', 'IS', 'NULL',
-      'GROUP BY', 'HAVING', 'ORDER BY', 'ASC', 'DESC', 'LIMIT', 'OFFSET',
-      'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL JOIN', 'CROSS JOIN',
-      'ON', 'USING', 'AS', 'UNION', 'ALL', 'INTERSECT', 'EXCEPT',
-      'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'OVER', 'PARTITION BY',
-      'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE',
-      'DROP TABLE', 'ALTER TABLE', 'WITH', 'RECURSIVE',
-    ];
-    let formatted = value.trim();
-    keywords.forEach(kw => {
-      const regex = new RegExp(`\\b${kw.replace(/ /g, '\\s+')}\\b`, 'gi');
-      formatted = formatted.replace(regex, kw);
-    });
+    const formatted = formatSql(value);
     onChange(formatted);
   }, [value, onChange]);
 
@@ -84,9 +120,33 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         onCheck();
+      } else if (
+        e.altKey &&
+        (e.key === 'p' || e.key === 'P' || e.code === 'KeyP' || e.key === 'ArrowLeft')
+      ) {
+        e.preventDefault();
+        if (onPrev) onPrev();
+      } else if (
+        e.altKey &&
+        (e.key === 'n' || e.key === 'N' || e.code === 'KeyN' || e.key === 'ArrowRight')
+      ) {
+        e.preventDefault();
+        if (onNext) onNext();
+      } else if (
+        e.altKey &&
+        (e.key === 's' || e.key === 'S' || e.code === 'KeyS')
+      ) {
+        e.preventDefault();
+        if (onToggleSidebar) onToggleSidebar();
+      } else if (
+        e.altKey &&
+        (e.key === 'h' || e.key === 'H' || e.code === 'KeyH')
+      ) {
+        e.preventDefault();
+        onHint();
       }
     },
-    [onCheck]
+    [onCheck, onPrev, onNext, onToggleSidebar, onHint]
   );
 
   return (
@@ -103,8 +163,24 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <span className="font-mono text-xs text-slate-400 ml-2">editor.sql (DuckDB)</span>
         </div>
         <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
-          <span>Run: <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">Ctrl+Enter</kbd></span>
-          <span>Next: <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">Alt+N</kbd></span>
+          <span>
+            Run:{' '}
+            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+              Ctrl+Enter
+            </kbd>
+          </span>
+          <span>
+            Prev:{' '}
+            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+              Alt+P
+            </kbd>
+          </span>
+          <span>
+            Next:{' '}
+            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+              Alt+N
+            </kbd>
+          </span>
         </div>
       </div>
 
@@ -135,7 +211,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             onClick={onCheck}
             disabled={isChecking || isRunning || !value.trim()}
             title="Check answer (Ctrl+Enter)"
-            className="flex items-center gap-1.5 px-4 py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
           >
             <CheckCircle2 size={15} />
             {isChecking ? 'Checking...' : 'Check Answer'}
@@ -146,7 +222,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             onClick={onRun}
             disabled={isRunning || isChecking || !value.trim()}
             title="Run query without testing"
-            className="flex items-center gap-1.5 px-3 py-2 bg-surface-card text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-surface-muted active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-card text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-surface-muted active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
           >
             <Play size={14} className="fill-ink" />
             {isRunning ? 'Running...' : 'Run Query'}
@@ -157,7 +233,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             <button
               onClick={onNext}
               title="Next Exercise (Shortcut: Alt+N)"
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-400 text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-emerald-300 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs"
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-400 text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-emerald-300 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs cursor-pointer"
             >
               <span>Next</span>
               <kbd className="hidden sm:inline-block bg-emerald-600/30 text-emerald-950 px-1 py-0.2 rounded text-[10px] font-mono border border-emerald-600/40">
@@ -172,7 +248,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           {maxHints > 0 && hintCount < maxHints && (
             <button
               onClick={onHint}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 text-slate-200 border border-slate-600 hover:bg-slate-700 text-xs font-mono rounded-none"
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 text-slate-200 border border-slate-600 hover:bg-slate-700 text-xs font-mono rounded-none cursor-pointer"
             >
               <Lightbulb size={13} className="text-yellow-400" />
               Hint ({hintCount}/{maxHints})
@@ -182,7 +258,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           {maxHints > 0 && hintCount >= maxHints && (
             <button
               onClick={onShowSolution}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 text-yellow-300 border border-yellow-600 hover:bg-slate-700 text-xs font-mono rounded-none"
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 text-yellow-300 border border-yellow-600 hover:bg-slate-700 text-xs font-mono rounded-none cursor-pointer"
             >
               <Eye size={13} />
               Show Solution
@@ -193,7 +269,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             type="button"
             onClick={handleFormat}
             disabled={!value.trim()}
-            title="Prettify & capitalize SQL keywords"
+            title="Prettify SQL: place clauses on new lines & capitalize keywords"
             className="p-1.5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
           >
             <Wand2 size={15} />

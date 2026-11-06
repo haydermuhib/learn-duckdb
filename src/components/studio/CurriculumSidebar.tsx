@@ -131,7 +131,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             />
             <input
               type="text"
-              placeholder="Search 148+ exercises..."
+              placeholder="Search 149+ exercises..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 text-xs font-sans border-2 border-ink focus:outline-none focus:bg-duck-light/40"

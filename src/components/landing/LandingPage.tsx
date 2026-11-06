@@ -56,7 +56,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
     },
     {
       q: 'How many exercises are included?',
-      a: '148+ exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.',
+      a: '149+ exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.',
     },
     {
       q: 'What if I am already comfortable with basic SQL?',
@@ -128,7 +128,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
           </h1>
 
           <p className="text-lg sm:text-xl text-ink-muted max-w-2xl mx-auto leading-relaxed">
-            148+ interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>. 
+            149+ interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>. 
             Zero installation, zero server lag, and zero sign-up required.
           </p>
 
@@ -271,7 +271,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 </div>
                 <h3 className="text-xl font-bold mb-2">Interview-Grade Challenges</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
-                  Progress through 148+ exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
+                  Progress through 149+ exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
                 </p>
               </div>
             </div>
@@ -288,7 +288,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 Curriculum Map
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-3">
-                18 Structured Modules • 148+ Exercises
+                18 Structured Modules • 149+ Exercises
               </h2>
             </div>
             <button

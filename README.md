@@ -4,7 +4,7 @@
 
 ### Master Modern Analytical SQL in Your Browser, Powered by DuckDB-Wasm
 
-148+ interactive query exercises running 100% locally with zero server lag, zero installation, and zero sign-up required.
+149+ interactive query exercises running 100% locally with zero server lag, zero installation, and zero sign-up required.
 
 [![Release v1.0.0](https://img.shields.io/badge/release-v1.0.0-FEC62E.svg?style=flat-square&logo=duckdb&logoColor=black)](https://github.com/haydermuhib/learn-duckdb/releases/tag/v1.0.0)
 [![DuckDB Wasm](https://img.shields.io/badge/engine-DuckDB--Wasm-FEC62E.svg?style=flat-square&logo=webassembly&logoColor=black)](https://duckdb.org)
@@ -30,8 +30,8 @@
 
 ## ⚡ Features
 
-- **148+ Interactive Exercises:** Structured across 18 progressive modules from your first `SELECT` to windowing, recursive CTEs, and interview challenges.
-- **DuckDB Superpowers:** Master modern analytical features unavailable in older engines (`GROUP BY ALL`, `SELECT * EXCLUDE`, `SELECT * REPLACE`, and `QUALIFY`).
+- **149+ Interactive Exercises:** Structured across 18 progressive modules from your first `SELECT` to windowing, recursive CTEs, and interview challenges.
+- **DuckDB Superpowers:** Master modern analytical features unavailable in older engines (`GROUP BY ALL`, `SELECT * EXCLUDE`, `SELECT * REPLACE`, `QUALIFY`, and native `ANTI JOIN`).
 - **Instant Local Validation:** Queries are verified in sub-milliseconds against expected solution tables with floating-point tolerance and smart row sorting.
 - **Interactive Schema Explorer:** Real-time table browser with primary key indicators, column types, and instant one-click `SELECT * LIMIT 5` previews.
 - **Persistent Progress:** Exercise completions, drafts, and active databases are automatically saved to `localStorage`.
@@ -131,7 +131,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) = 1;
 ## 📚 Curriculum (18 Modules)
 
 <details open>
-<summary><b>📋 Click to expand/collapse full syllabus breakdown (148 exercises)</b></summary>
+<summary><b>📋 Click to expand/collapse full syllabus breakdown (149 exercises)</b></summary>
 
 | Module | Title | Focus Areas | Exercises |
 |:---:|---|---|:---:|
@@ -140,7 +140,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) = 1;
 | **03** | **Sorting and Limiting** | ORDER BY, ASC/DESC, multi-column sorts, LIMIT, OFFSET, `ORDER BY ALL` | 7 |
 | **04** | **Aggregate Functions** | COUNT, SUM, AVG, MIN, MAX, filtered counts | 6 |
 | **05** | **Grouping with GROUP BY** | Group metrics, multi-grouping, HAVING vs WHERE, `GROUP BY ALL` | 9 |
-| **06** | **Joining Tables (JOIN)** | INNER JOIN, multi-table joins, LEFT JOIN, finding missing records | 13 |
+| **06** | **Joining Tables (JOIN)** | INNER JOIN, multi-table joins, LEFT JOIN, finding missing records, `ANTI JOIN` | 14 |
 | **07** | **Subqueries and CTEs** | WHERE subqueries, IN subqueries, scalar expressions, `WITH` CTEs | 10 |
 | **08** | **Text, Dates and CASE** | UPPER/LOWER, SUBSTR, COALESCE, CASE WHEN, date math | 9 |
 | **09** | **Changing Data (DML)** | Single/batch INSERT, targeted UPDATE, safe DELETE | 6 |
@@ -153,7 +153,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) = 1;
 | **16** | **Case Study: School** | Student GPAs, passing rates, top performers across academic subjects | 10 |
 | **17** | **Practical Challenges** | Real-world business reporting and analytical dashboards | 4 |
 | **18** | **Interview Challenges** | Retention cohorts, top earners per department, growth rates | 14 |
-| **TOTAL** | | | **148** |
+| **TOTAL** | | | **149** |
 
 </details>
 

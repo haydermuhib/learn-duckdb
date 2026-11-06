@@ -14,8 +14,8 @@ describe('Curriculum Data Integrity', () => {
     expect(moduleIds).toContain('interview');
   });
 
-  it('should contain exactly 148 interactive exercises', () => {
-    expect(EXERCISES.length).toBe(148);
+  it('should contain exactly 149 interactive exercises', () => {
+    expect(EXERCISES.length).toBe(149);
   });
 
   it('should ensure every exercise has unique id and valid properties', () => {
@@ -41,7 +41,11 @@ describe('Curriculum Data Integrity', () => {
 
   it('should include DuckDB superpower exercises', () => {
     const duckDbExercises = EXERCISES.filter(e => e.isDuckDbFeature);
-    expect(duckDbExercises.length).toBe(5);
+    expect(duckDbExercises.length).toBe(6);
+
+    const antiJoinEx = getExerciseById('duckdb-anti-join');
+    expect(antiJoinEx).toBeDefined();
+    expect(antiJoinEx?.steps[0].solution).toContain('ANTI JOIN');
 
     const excludeEx = getExerciseById('select-exclude');
     expect(excludeEx).toBeDefined();

@@ -122,6 +122,24 @@ FROM students;`
     );
   });
 
+  it('formats DuckDB ANTI JOIN and LEFT ANTI JOIN properly on separate lines', () => {
+    const rawAnti = "select c.name from customers c anti join orders o on c.id = o.customer_id;";
+    expect(formatSql(rawAnti)).toBe(
+`SELECT c.name
+FROM customers c
+ANTI JOIN orders o
+ON c.id = o.customer_id;`
+    );
+
+    const rawLeftAnti = "select c.name from customers c left anti join orders o on c.id = o.customer_id;";
+    expect(formatSql(rawLeftAnti)).toBe(
+`SELECT c.name
+FROM customers c
+LEFT ANTI JOIN orders o
+ON c.id = o.customer_id;`
+    );
+  });
+
   it('is idempotent: formatting already-formatted SQL produces identical output', () => {
     const queries = [
       "SELECT id, name FROM users WHERE active = TRUE ORDER BY name ASC LIMIT 10;",

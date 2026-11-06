@@ -104,12 +104,15 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
       {/* Drawer Container */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-80 bg-surface-card border-r-3 border-ink flex flex-col transition-transform duration-200 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:relative top-0 bottom-0 left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
+          isOpen
+            ? 'w-80 translate-x-0 opacity-100'
+            : 'w-0 -translate-x-full lg:translate-x-0 lg:w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none'
         }`}
       >
-        {/* Top Header */}
-        <div className="p-4 border-b-2 border-ink bg-surface-muted flex items-center justify-between">
+        <div className="w-80 flex-1 flex flex-col h-full overflow-hidden">
+          {/* Top Header */}
+        <div className="p-4 border-b-2 border-ink bg-surface-muted flex items-center justify-between min-w-[320px]">
           <div className="flex items-center gap-2">
             <BookOpen size={18} className="text-ink" />
             <span className="font-extrabold text-sm tracking-tight uppercase">
@@ -121,8 +124,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
               {completedIds.size}/{EXERCISES.length}
             </span>
             <button
+              type="button"
               onClick={onClose}
-              className="lg:hidden p-1 hover:bg-slate-200 border border-ink cursor-pointer"
+              title="Close Syllabus (Alt+S)"
+              className="p-1 hover:bg-slate-200 border border-ink cursor-pointer"
             >
               <X size={16} />
             </button>
@@ -375,6 +380,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
               Reset all progress
             </button>
           )}
+        </div>
         </div>
       </aside>
     </>

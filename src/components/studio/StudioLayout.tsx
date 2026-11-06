@@ -80,7 +80,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [isChecking, setIsChecking] = useState(false);
   const [revealedHints, setRevealedHints] = useState<number>(0);
   const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
@@ -291,16 +296,20 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const hasPrev = currentIndex > 0;
 
   const handleNext = useCallback(() => {
-    if (hasNext) {
+    if (currentIndex < EXERCISES.length - 1) {
       setCurrentId(EXERCISES[currentIndex + 1].id);
+    } else {
+      setCurrentId(EXERCISES[0].id);
     }
-  }, [hasNext, currentIndex]);
+  }, [currentIndex]);
 
   const handlePrev = useCallback(() => {
-    if (hasPrev) {
+    if (currentIndex > 0) {
       setCurrentId(EXERCISES[currentIndex - 1].id);
+    } else {
+      setCurrentId(EXERCISES[EXERCISES.length - 1].id);
     }
-  }, [hasPrev, currentIndex]);
+  }, [currentIndex]);
 
   // Hints
   const currentStep = currentExercise.steps[0];
@@ -310,22 +319,32 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setRevealedHints(prev => Math.min(prev + 1, maxHints));
   }, [maxHints]);
 
-  // Global window keyboard listener
+  // Global window keyboard listener (capture phase = true ensures it runs before any element swallows it)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'ArrowRight')) {
+
+      const isKeyN = e.key === 'n' || e.key === 'N' || e.code === 'KeyN' || e.key === 'ArrowRight';
+      const isKeyP = e.key === 'p' || e.key === 'P' || e.code === 'KeyP' || e.key === 'ArrowLeft';
+      const isKeyS = e.key === 's' || e.key === 'S' || e.code === 'KeyS';
+      const isKeyH = e.key === 'h' || e.key === 'H' || e.code === 'KeyH';
+
+      if (e.altKey && isKeyN) {
         e.preventDefault();
+        e.stopPropagation();
         handleNext();
-      } else if (e.altKey && (e.key === 'p' || e.key === 'P' || e.key === 'ArrowLeft')) {
+      } else if (e.altKey && isKeyP) {
         e.preventDefault();
+        e.stopPropagation();
         handlePrev();
-      } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+      } else if (e.altKey && isKeyS) {
         e.preventDefault();
-        handleHint();
-      } else if (e.altKey && (e.key === 's' || e.key === 'S')) {
-        e.preventDefault();
+        e.stopPropagation();
         setSidebarOpen(prev => !prev);
+      } else if (e.altKey && isKeyH) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleHint();
       } else if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const active = document.activeElement;
         const isEditing =
@@ -339,8 +358,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keydown', handleGlobalKeyDown, true);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
   }, [handleNext, handlePrev, handleHint]);
 
   const handleShowSolution = () => {

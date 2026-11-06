@@ -97,6 +97,13 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           },
         },
         {
+          key: 'Alt-N',
+          run: () => {
+            if (onNext) onNext();
+            return true;
+          },
+        },
+        {
           key: 'Alt-ArrowRight',
           run: () => {
             if (onNext) onNext();
@@ -105,6 +112,13 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         },
         {
           key: 'Alt-p',
+          run: () => {
+            if (onPrev) onPrev();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-P',
           run: () => {
             if (onPrev) onPrev();
             return true;
@@ -125,7 +139,21 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           },
         },
         {
+          key: 'Alt-S',
+          run: () => {
+            if (onToggleSidebar) onToggleSidebar();
+            return true;
+          },
+        },
+        {
           key: 'Alt-h',
+          run: () => {
+            onHint();
+            return true;
+          },
+        },
+        {
+          key: 'Alt-H',
           run: () => {
             onHint();
             return true;

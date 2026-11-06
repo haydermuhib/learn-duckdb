@@ -11,19 +11,20 @@ interface SqlEditorProps {
   value: string;
   onChange: (val: string) => void;
   onRun: () => void;
-  onCheck: () => void;
+  onCheck?: () => void;
   onNext?: () => void;
   hasNext?: boolean;
   onPrev?: () => void;
   hasPrev?: boolean;
   onToggleSidebar?: () => void;
   onReset: () => void;
-  onHint: () => void;
-  onShowSolution: () => void;
-  hintCount: number;
-  maxHints: number;
-  isChecking: boolean;
+  onHint?: () => void;
+  onShowSolution?: () => void;
+  hintCount?: number;
+  maxHints?: number;
+  isChecking?: boolean;
   isRunning: boolean;
+  isPlayground?: boolean;
 }
 
 export const SqlEditor: React.FC<SqlEditorProps> = ({
@@ -39,16 +40,19 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   onReset,
   onHint,
   onShowSolution,
-  hintCount,
-  maxHints,
-  isChecking,
+  hintCount = 0,
+  maxHints = 0,
+  isChecking = false,
   isRunning,
+  isPlayground = false,
 }) => {
   const handleFormat = useCallback(() => {
     if (!value.trim()) return;
     const formatted = formatSql(value);
     onChange(formatted);
   }, [value, onChange]);
+
+  const handleExecute = onCheck || onRun;
 
   // Intercept shortcuts inside CodeMirror with highest precedence so they never get swallowed by editor defaults
   const keymapExtension = useMemo(() => {
@@ -57,14 +61,14 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         {
           key: 'Ctrl-Enter',
           run: () => {
-            onCheck();
+            handleExecute();
             return true;
           },
         },
         {
           key: 'Mod-Enter',
           run: () => {
-            onCheck();
+            handleExecute();
             return true;
           },
         },
@@ -120,27 +124,27 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         {
           key: 'Alt-h',
           run: () => {
-            onHint();
+            if (onHint) onHint();
             return true;
           },
         },
         {
           key: 'Alt-H',
           run: () => {
-            onHint();
+            if (onHint) onHint();
             return true;
           },
         },
       ])
     );
-  }, [onCheck, onNext, onPrev, onToggleSidebar, onHint, handleFormat]);
+  }, [handleExecute, onNext, onPrev, onToggleSidebar, onHint, handleFormat]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Fallback for container-level key events
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
-        onCheck();
+        handleExecute();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB')) {
         e.preventDefault();
         if (onToggleSidebar) onToggleSidebar();
@@ -167,10 +171,10 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         (e.key === 'h' || e.key === 'H' || e.code === 'KeyH')
       ) {
         e.preventDefault();
-        onHint();
+        if (onHint) onHint();
       }
     },
-    [onCheck, onPrev, onNext, onToggleSidebar, onHint, handleFormat]
+    [handleExecute, onPrev, onNext, onToggleSidebar, onHint, handleFormat]
   );
 
   return (
@@ -184,7 +188,9 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <div className="w-3 h-3 rounded-full bg-red-500 border border-black/20" />
           <div className="w-3 h-3 rounded-full bg-yellow-500 border border-black/20" />
           <div className="w-3 h-3 rounded-full bg-green-500 border border-black/20" />
-          <span className="font-mono text-xs text-slate-400 ml-2">editor.sql (DuckDB)</span>
+          <span className="font-mono text-xs text-slate-400 ml-2">
+            {isPlayground ? 'playground.sql (DuckDB)' : 'editor.sql (DuckDB)'}
+          </span>
         </div>
         <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
           <span>
@@ -199,23 +205,27 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
               Alt+F
             </kbd>
           </span>
-          <span>
-            Prev:{' '}
-            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
-              Alt+←
-            </kbd>
-          </span>
-          <span>
-            Next:{' '}
-            <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
-              Alt+→
-            </kbd>
-          </span>
+          {!isPlayground && (
+            <>
+              <span>
+                Prev:{' '}
+                <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+                  Alt+←
+                </kbd>
+              </span>
+              <span>
+                Next:{' '}
+                <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+                  Alt+→
+                </kbd>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
       {/* CodeMirror Surface */}
-      <div className="flex-1 overflow-auto text-sm font-mono min-h-[160px]">
+      <div className="flex-1 overflow-auto text-sm font-mono min-h-[300px]">
         <CodeMirror
           value={value}
           height="100%"
@@ -236,23 +246,29 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       {/* Action Footer Buttons */}
       <div className="p-3 bg-[#131C2E] border-t-2 border-code-border flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {/* Check Answer */}
-          <button
-            onClick={onCheck}
-            disabled={isChecking || isRunning || !value.trim()}
-            title="Check answer (Ctrl+Enter)"
-            className="flex items-center gap-1.5 px-4 py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
-          >
-            <CheckCircle2 size={15} />
-            {isChecking ? 'Checking...' : 'Check Answer'}
-          </button>
+          {/* Check Answer - only in exercise studio when onCheck is passed */}
+          {!isPlayground && onCheck && (
+            <button
+              onClick={onCheck}
+              disabled={isChecking || isRunning || !value.trim()}
+              title="Check answer against exercise solution (Ctrl+Enter)"
+              className="flex items-center gap-1.5 px-4 py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
+            >
+              <CheckCircle2 size={15} />
+              {isChecking ? 'Checking...' : 'Check Answer'}
+            </button>
+          )}
 
           {/* Run Query */}
           <button
             onClick={onRun}
             disabled={isRunning || isChecking || !value.trim()}
-            title="Run query without testing"
-            className="flex items-center gap-1.5 px-3 py-2 bg-surface-card text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-surface-muted active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
+            title={isPlayground ? 'Execute SQL query (Ctrl+Enter)' : 'Run query without validating'}
+            className={`flex items-center gap-1.5 px-4 py-2 font-bold border-2 border-ink shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer ${
+              isPlayground
+                ? 'bg-duck text-ink hover:bg-duck-hover'
+                : 'bg-surface-card text-ink hover:bg-surface-muted'
+            }`}
           >
             <Play size={14} className="fill-ink" />
             {isRunning ? 'Running...' : 'Run Query'}

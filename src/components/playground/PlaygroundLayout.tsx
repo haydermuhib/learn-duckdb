@@ -364,14 +364,9 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             value={editorSql}
             onChange={handleEditorChange}
             onRun={handleRunQuery}
-            onCheck={handleRunQuery}
             onReset={() => handleEditorChange('')}
-            onHint={() => {}}
-            onShowSolution={() => {}}
-            hintCount={0}
-            maxHints={0}
-            isChecking={false}
             isRunning={isRunning}
+            isPlayground={true}
           />
 
           {/* Live Results Table */}

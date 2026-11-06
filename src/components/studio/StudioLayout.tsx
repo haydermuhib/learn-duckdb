@@ -234,6 +234,46 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     }
   };
 
+  // Progress backup & restore handlers
+  const handleExportProgress = () => {
+    const backupData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      completedIds: Array.from(completedIds),
+      assistedIds: Array.from(assistedIds),
+      stats: {
+        total: EXERCISES.length,
+        completed: completedIds.size,
+        mastered: completedIds.size - assistedIds.size,
+        withHints: assistedIds.size,
+      },
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `learn-duckdb-progress-${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportProgress = (completed: string[], assisted: string[]) => {
+    const nextCompleted = new Set(completed);
+    const nextAssisted = new Set(assisted);
+    setCompletedIds(nextCompleted);
+    setAssistedIds(nextAssisted);
+    try {
+      localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
+      localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
+    } catch {}
+    setFeedback({
+      pass: true,
+      message: `Successfully restored progress (${nextCompleted.size} exercises completed)!`,
+    });
+  };
+
   const handleOpenResetConfirm = () => {
     setIsResetConfirmOpen(true);
   };
@@ -442,6 +482,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onResetProgress={handleOpenResetConfirm}
+          onExportProgress={handleExportProgress}
+          onImportProgress={handleImportProgress}
         />
 
         {/* Studio Workspace Content */}

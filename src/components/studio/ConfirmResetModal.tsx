@@ -69,7 +69,7 @@ export const ConfirmResetModal: React.FC<ConfirmResetModalProps> = ({
             </ul>
           </div>
           <p className="text-ink-muted text-[11px]">
-            This action cannot be undone. All completion badges and exercise history will be permanently reset.
+            This action cannot be undone. You can click <strong>Backup</strong> in the syllabus drawer first if you wish to save a copy.
           </p>
         </div>
 

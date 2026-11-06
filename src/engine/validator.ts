@@ -129,9 +129,13 @@ export async function validateUserQuery(
       expectedResult,
     };
   } catch (err: any) {
+    let msg = err.message || 'An unexpected error occurred during execution.';
+    if (/syntax error at or near ["']ANTI["']/i.test(msg) || /LEFT\s+ANTI\s+JOIN/i.test(trimmedSql)) {
+      msg = "DuckDB syntax error: Use 'ANTI JOIN' directly (DuckDB does not use the 'LEFT ANTI JOIN' syntax).";
+    }
     return {
       pass: false,
-      message: err.message || 'An unexpected error occurred during execution.',
+      message: msg,
       error: err.message || String(err),
     };
   }

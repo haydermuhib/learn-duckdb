@@ -113,7 +113,7 @@ export const joins_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "DuckDB Superpower: ANTI JOIN",
     "isDuckDbFeature": true,
-    "concept": "In standard SQL, finding unmatched rows requires a clunky pattern: LEFT JOIN followed by WHERE right_table.id IS NULL. DuckDB provides native ANTI JOIN (or LEFT ANTI JOIN), which directly returns rows from the left table that have NO match in the right table without creating NULL columns or requiring a WHERE filter. DuckDB also supports SEMI JOIN to find rows that DO have a match.",
+    "concept": "In standard SQL, finding unmatched rows requires a clunky pattern: LEFT JOIN followed by WHERE right_table.id IS NULL. DuckDB introduces first-class native ANTI JOIN. Simply write `FROM table_a ANTI JOIN table_b ON ...` to directly return rows from the left table that have NO match in the right table (DuckDB uses the exact keyword ANTI JOIN, without the word LEFT). DuckDB also supports SEMI JOIN to find rows that DO have a match.",
     "example": "SELECT pr.name FROM products pr ANTI JOIN order_items d ON pr.id = d.product_id;",
     "steps": [
       {
@@ -121,7 +121,7 @@ export const joins_exercises: ExerciseDef[] = [
         "solution": "SELECT c.name FROM customers c ANTI JOIN orders o ON c.id = o.customer_id",
         "hints": [
           "Join customers c and orders o using ANTI JOIN on c.id = o.customer_id.",
-          "You can also write LEFT ANTI JOIN. No WHERE or IS NULL clause needed!"
+          "In DuckDB, the keyword is simply ANTI JOIN (DuckDB does not use 'LEFT ANTI JOIN'). No WHERE or IS NULL clause needed!"
         ],
         "requires": [
           "ANTI JOIN"

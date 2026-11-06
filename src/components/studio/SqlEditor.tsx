@@ -42,15 +42,8 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         e.preventDefault();
         onCheck();
       }
-      // Alt+N or (Ctrl+Alt+Right) -> Next Exercise
-      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'ArrowRight')) {
-        e.preventDefault();
-        if (hasNext && onNext) {
-          onNext();
-        }
-      }
     },
-    [onCheck, onNext, hasNext]
+    [onCheck]
   );
 
   return (

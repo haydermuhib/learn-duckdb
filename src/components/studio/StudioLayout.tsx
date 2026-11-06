@@ -203,10 +203,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   // Global window keyboard listener for Alt+N (Next) and Alt+P (Prev)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+      if (e.repeat) return;
+      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'ArrowRight')) {
         e.preventDefault();
         handleNext();
-      } else if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+      } else if (e.altKey && (e.key === 'p' || e.key === 'P' || e.key === 'ArrowLeft')) {
         e.preventDefault();
         handlePrev();
       }
@@ -311,7 +312,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         {/* Studio Workspace Content */}
         <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-3 lg:p-4 gap-4">
           {/* Left Column: Task Description & Schema Explorer */}
-          <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0">
+          <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0 lg:overflow-y-auto lg:max-h-full pr-1.5 custom-scrollbar">
             {/* Task Card */}
             <div className="border-3 border-ink bg-surface-card p-4 shadow-brutal flex flex-col gap-3">
               <div className="flex items-center justify-between border-b border-ink/20 pb-2">

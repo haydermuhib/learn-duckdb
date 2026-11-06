@@ -72,7 +72,7 @@ export async function resetDatabase(dbName: string): Promise<void> {
   currentDbName = dbName;
 }
 
-async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbName: string) {
+export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbName: string) {
   const dbDef = DATABASES[dbName] || DATABASES.store;
 
   for (const table of dbDef.tables) {

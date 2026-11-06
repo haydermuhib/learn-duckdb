@@ -68,4 +68,14 @@ describe('Database Schemas and Seed Integrity', () => {
       expect(name).not.toMatch(/^Al-/i);
     }
   });
+
+  it('should verify default playground table names include ecommerce_sales and store dataset', async () => {
+    const { DEFAULT_TABLE_NAMES } = await import('../src/engine/playgroundDuckdb');
+    expect(DEFAULT_TABLE_NAMES.has('ecommerce_sales')).toBe(true);
+    expect(DEFAULT_TABLE_NAMES.has('customers')).toBe(true);
+    expect(DEFAULT_TABLE_NAMES.has('products')).toBe(true);
+    expect(DEFAULT_TABLE_NAMES.has('orders')).toBe(true);
+    expect(DEFAULT_TABLE_NAMES.has('order_items')).toBe(true);
+    expect(DEFAULT_TABLE_NAMES.has('subscribers')).toBe(true);
+  });
 });

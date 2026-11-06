@@ -1,5 +1,6 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
-import { initDuckDB, QueryResult } from './duckdb';
+import { initDuckDB, QueryResult, loadDatabaseTables } from './duckdb';
+import { DATABASES } from '../data/databases';
 import {
   DEFAULT_DATASET_CSV,
   DEFAULT_DATASET_FILENAME,
@@ -22,12 +23,49 @@ export interface PlaygroundTableSchema {
   isDefault?: boolean;
 }
 
+export const DEFAULT_TABLE_NAMES = new Set<string>([
+  DEFAULT_DATASET_TABLE_NAME,
+  ...DATABASES.store.tables.map(t => t.name),
+]);
+
 let playgroundConn: duckdb.AsyncDuckDBConnection | null = null;
 let playgroundDb: duckdb.AsyncDuckDB | null = null;
 const registeredFiles = new Map<
   string,
   { tableName: string; fileName: string; size: number; isDefault: boolean }
 >();
+
+async function seedDefaultPlaygroundTables(
+  conn: duckdb.AsyncDuckDBConnection,
+  db: duckdb.AsyncDuckDB
+): Promise<void> {
+  // 1. Seed e-commerce sales dataset
+  const encoder = new TextEncoder();
+  const defaultBuffer = encoder.encode(DEFAULT_DATASET_CSV);
+  await db.registerFileBuffer(DEFAULT_DATASET_FILENAME, defaultBuffer);
+
+  await conn.query(
+    `CREATE OR REPLACE TABLE ${DEFAULT_DATASET_TABLE_NAME} AS SELECT * FROM read_csv_auto('${DEFAULT_DATASET_FILENAME}', header=true);`
+  );
+
+  registeredFiles.set(DEFAULT_DATASET_TABLE_NAME, {
+    tableName: DEFAULT_DATASET_TABLE_NAME,
+    fileName: DEFAULT_DATASET_FILENAME,
+    size: defaultBuffer.byteLength,
+    isDefault: true,
+  });
+
+  // 2. Seed default store tables (customers, products, orders, order_items, subscribers)
+  await loadDatabaseTables(conn, 'store');
+  for (const t of DATABASES.store.tables) {
+    registeredFiles.set(t.name, {
+      tableName: t.name,
+      fileName: `${t.name}.sql`,
+      size: 0,
+      isDefault: true,
+    });
+  }
+}
 
 export async function initPlayground(): Promise<duckdb.AsyncDuckDBConnection> {
   if (playgroundConn && playgroundDb) {
@@ -38,21 +76,7 @@ export async function initPlayground(): Promise<duckdb.AsyncDuckDBConnection> {
   playgroundDb = db;
   playgroundConn = await db.connect();
 
-  // Pre-load default e-commerce sales dataset
-  const encoder = new TextEncoder();
-  const defaultBuffer = encoder.encode(DEFAULT_DATASET_CSV);
-  await db.registerFileBuffer(DEFAULT_DATASET_FILENAME, defaultBuffer);
-
-  await playgroundConn.query(
-    `CREATE OR REPLACE TABLE ${DEFAULT_DATASET_TABLE_NAME} AS SELECT * FROM read_csv_auto('${DEFAULT_DATASET_FILENAME}', header=true);`
-  );
-
-  registeredFiles.set(DEFAULT_DATASET_TABLE_NAME, {
-    tableName: DEFAULT_DATASET_TABLE_NAME,
-    fileName: DEFAULT_DATASET_FILENAME,
-    size: defaultBuffer.byteLength,
-    isDefault: true,
-  });
+  await seedDefaultPlaygroundTables(playgroundConn, playgroundDb);
 
   return playgroundConn;
 }
@@ -150,7 +174,7 @@ export async function getPlaygroundTables(): Promise<PlaygroundTableSchema[]> {
       rowCount,
       fileName: fileMeta?.fileName,
       fileSize: fileMeta?.size,
-      isDefault: fileMeta?.isDefault ?? name === DEFAULT_DATASET_TABLE_NAME,
+      isDefault: fileMeta?.isDefault ?? DEFAULT_TABLE_NAMES.has(name),
     });
   }
 
@@ -213,27 +237,14 @@ export async function removePlaygroundTable(
 export async function resetPlayground(): Promise<void> {
   const conn = await initPlayground();
 
-  // Drop all user tables
+  // Drop all current tables
   const tables = await getPlaygroundTables();
   for (const t of tables) {
     await conn.query(`DROP TABLE IF EXISTS ${t.name};`);
   }
   registeredFiles.clear();
 
-  // Re-seed default dataset
-  const encoder = new TextEncoder();
-  const defaultBuffer = encoder.encode(DEFAULT_DATASET_CSV);
-  await playgroundDb!.registerFileBuffer(DEFAULT_DATASET_FILENAME, defaultBuffer);
-
-  await conn.query(
-    `CREATE OR REPLACE TABLE ${DEFAULT_DATASET_TABLE_NAME} AS SELECT * FROM read_csv_auto('${DEFAULT_DATASET_FILENAME}', header=true);`
-  );
-
-  registeredFiles.set(DEFAULT_DATASET_TABLE_NAME, {
-    tableName: DEFAULT_DATASET_TABLE_NAME,
-    fileName: DEFAULT_DATASET_FILENAME,
-    size: defaultBuffer.byteLength,
-    isDefault: true,
-  });
+  // Re-seed all default tables (ecommerce_sales and store dataset)
+  await seedDefaultPlaygroundTables(conn, playgroundDb!);
 }
 

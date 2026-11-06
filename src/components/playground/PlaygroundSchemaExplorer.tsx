@@ -28,7 +28,11 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
 }) => {
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
   const [copiedIdentifier, setCopiedIdentifier] = useState<string | null>(null);
-  const [tableToDelete, setTableToDelete] = useState<{ name: string; fileName?: string } | null>(null);
+  const [tableToDelete, setTableToDelete] = useState<{
+    name: string;
+    fileName?: string;
+    isDefault?: boolean;
+  } | null>(null);
 
   // Auto-expand first table when tables load
   useEffect(() => {
@@ -167,12 +171,16 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                       <span>Preview</span>
                     </button>
 
-                    {!table.isDefault && onDeleteTable && (
+                    {onDeleteTable && (
                       <button
                         type="button"
                         onClick={e => {
                           e.stopPropagation();
-                          setTableToDelete({ name: table.name, fileName: table.fileName });
+                          setTableToDelete({
+                            name: table.name,
+                            fileName: table.fileName,
+                            isDefault: table.isDefault,
+                          });
                         }}
                         title={`Delete table "${table.name}"`}
                         className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -240,7 +248,11 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
             Are you sure you want to delete table <strong className="font-mono bg-slate-100 px-1 py-0.5 border border-slate-300">{tableToDelete?.name}</strong>?
           </span>
         }
-        detail="This table and its loaded data will be dropped from your current DuckDB session. You can re-upload your file at any time."
+        detail={
+          tableToDelete?.isDefault
+            ? 'This is a default table. Deleting it will drop it from your current session. You can restore all default tables anytime by clicking Reset Playground or reloading the page.'
+            : 'This table and its loaded data will be dropped from your current DuckDB session. You can re-upload your file at any time.'
+        }
         confirmLabel="Delete Table"
         cancelLabel="Keep Table"
         variant="danger"

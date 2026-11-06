@@ -195,7 +195,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-ink overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Top Header */}
       <header className="h-14 border-b-3 border-ink bg-surface-card px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -289,8 +289,8 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       </header>
 
       {/* Main Playground Workspace */}
-      <main className="flex-1 overflow-y-auto p-3 lg:p-4 custom-scrollbar">
-        <div className="flex flex-col lg:flex-row gap-4 min-h-full">
+      <main className="flex-1 p-3 lg:p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Left Column: File Uploader & Schema Explorer */}
           <div className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-3 shrink-0">
           {/* File Uploader */}

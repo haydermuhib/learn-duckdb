@@ -68,7 +68,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   return (
     <div
       className={`flex flex-col border-3 border-ink bg-surface-card shadow-brutal overflow-hidden transition-all ${
-        isCollapsed ? 'shrink-0' : 'min-h-[220px]'
+        isCollapsed ? 'shrink-0' : 'min-h-[140px]'
       }`}
     >
       {/* Header bar */}
@@ -211,9 +211,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           )}
 
       {/* Table Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="overflow-auto max-h-[400px] min-h-[140px] custom-scrollbar">
         {!displayResult && !feedback && (
-          <div className="h-full flex flex-col items-center justify-center p-8 text-center text-ink-muted">
+          <div className="py-10 px-4 flex flex-col items-center justify-center text-center text-ink-muted">
             <span className="text-3xl mb-2">⚡</span>
             <p className="font-bold text-sm text-ink">Ready to execute</p>
             <p className="text-xs max-w-xs mt-1">
@@ -231,7 +231,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         {displayResult && displayResult.columns.length > 0 && (
           <table className="w-full text-left border-collapse font-mono text-xs">
             <thead>
-              <tr className="bg-slate-100 border-b-2 border-ink sticky top-0">
+              <tr className="bg-slate-100 border-b-2 border-ink sticky top-0 z-10">
                 <th className="py-2 px-3 text-[10px] uppercase text-ink-muted font-bold border-r border-slate-200 w-10 text-center">
                   #
                 </th>

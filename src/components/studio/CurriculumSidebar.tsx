@@ -92,7 +92,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
       {/* Drawer Container */}
       <aside
-        className={`fixed lg:relative top-14 lg:top-0 bottom-0 left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
+        className={`fixed lg:sticky top-14 bottom-0 lg:h-[calc(100vh-3.5rem)] left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           isOpen
             ? 'w-80 translate-x-0 opacity-100'
             : 'w-0 -translate-x-full lg:translate-x-0 lg:w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none'
@@ -306,36 +306,36 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
               );
             })
           )}
-        </div>
 
-        {/* Progress Summary & Tools Footer */}
-        <div className="border-t-2 border-ink bg-slate-50 p-2.5 space-y-2 text-xs">
-          <div className="flex items-center justify-between text-[11px] font-mono px-1">
-            <span className="text-emerald-700 font-bold" title="Mastered with 0 hints">
-              {masteredCount} Mastered
-            </span>
-            <span className="text-amber-700 font-bold" title="Solved with hints or solution">
-              {assistedCount} With Hints
-            </span>
-            <span className="text-slate-500 font-bold" title="Exercises to complete">
-              {remainingCount} Left
-            </span>
-          </div>
-
-          {onResetProgress && (
-            <div className="pt-1 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={onResetProgress}
-                className="w-full text-center text-[11px] font-bold text-red-600 hover:text-red-800 hover:underline py-1 cursor-pointer"
-              >
-                Reset all progress
-              </button>
+          {/* Progress Summary & Reset - naturally placed at the end of the scrollable syllabus */}
+          <div className="border-2 border-ink bg-slate-50 p-3 space-y-2.5 text-xs mt-4">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-emerald-700 font-bold" title="Mastered with 0 hints">
+                {masteredCount} Mastered
+              </span>
+              <span className="text-amber-700 font-bold" title="Solved with hints or solution">
+                {assistedCount} With Hints
+              </span>
+              <span className="text-slate-500 font-bold" title="Exercises to complete">
+                {remainingCount} Left
+              </span>
             </div>
-          )}
+
+            {onResetProgress && (
+              <div className="pt-2 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={onResetProgress}
+                  className="w-full text-center text-[11px] font-bold text-red-600 hover:text-red-800 hover:underline py-0.5 cursor-pointer"
+                >
+                  Reset all progress
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        </div>
-      </aside>
+      </div>
+    </aside>
     </>
   );
 };

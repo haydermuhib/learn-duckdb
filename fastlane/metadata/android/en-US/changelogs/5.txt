@@ -1,0 +1,3 @@
+• Balanced duck emoji icon sizing with generous margins inside Android squircle launchers
+• Removed black flash during launch with native yellow window background
+• Added neo-brutalist yellow loading screen with Lucide React spinner during webview startup

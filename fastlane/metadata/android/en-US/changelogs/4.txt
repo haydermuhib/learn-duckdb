@@ -1,0 +1,3 @@
+• Unified duck emoji icon across web and Android launcher icons
+• Matched pure DuckDB yellow (#FFF000) for app background and splash screens
+• Permanent release signing for seamless in-place updates

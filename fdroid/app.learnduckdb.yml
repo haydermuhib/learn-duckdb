@@ -1,0 +1,33 @@
+Categories:
+  - Development
+  - Education
+License: MIT
+AuthorName: Hayder Muhib
+SourceCode: https://github.com/haydermuhib/learn-duckdb
+IssueTracker: https://github.com/haydermuhib/learn-duckdb/issues
+Changelog: https://github.com/haydermuhib/learn-duckdb/releases
+
+Summary: Learn modern SQL & DuckDB analytics locally
+Description: |-
+  Learn DuckDB is an interactive, privacy-first SQL learning environment
+  and analytical playground designed to master modern SQL directly on your
+  device. Powered by DuckDB-Wasm running completely locally with zero telemetry.
+
+RepoType: git
+Repo: https://github.com/haydermuhib/learn-duckdb.git
+
+Builds:
+  - versionName: 1.1.0
+    versionCode: 2
+    commit: v1.1.0
+    subdir: android/app
+    nodejs: yes
+    prebuild:
+      - npm ci
+      - npm run build
+      - npx cap sync android
+    gradle:
+      - assembleRelease
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags

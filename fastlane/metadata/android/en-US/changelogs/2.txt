@@ -1,0 +1,4 @@
+• First Android release powered by DuckDB-Wasm and Capacitor
+• Fully responsive mobile layout for smartphones and tablets
+• Complete interactive curriculum from basic SELECT to advanced Window Functions
+• Offline local SQL execution with zero telemetry

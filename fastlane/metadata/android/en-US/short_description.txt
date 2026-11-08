@@ -1,0 +1,1 @@
+Master SQL & modern analytical queries locally with embedded DuckDB-Wasm.

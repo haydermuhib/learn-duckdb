@@ -1,0 +1,9 @@
+Learn DuckDB is an interactive, privacy-first SQL learning environment and analytical playground designed to master modern SQL and analytical database concepts directly on your device.
+
+Features:
+• 100% In-Browser & Local Execution: Powered by DuckDB-Wasm running directly in your device environment. Zero server roundtrips, zero telemetry, and complete privacy.
+• Step-by-Step Interactive Curriculum: Learn SQL from basics (SELECT, WHERE, aggregations) to advanced analytics (Window Functions, CTEs, Anti-Joins, Qualify, and Pivot).
+• Real-time Query Validator: Instant feedback, automatic syntax formatting, and intelligent query hints.
+• Playground Sandbox: Run custom queries on sample datasets or load your own data tables.
+• Clean, Responsive Interface: Optimized for mobile phones, tablets, and desktop displays.
+• Completely Open Source: Licensed under MIT with zero ads or tracking.

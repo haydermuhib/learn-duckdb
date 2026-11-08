@@ -55,11 +55,11 @@ jobs:
           distribution: 'zulu'
           java-version: 21
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Dependencies
         run: npm ci
+
+      - name: Build Web Production Assets
+        run: npm run build
 
       - name: Sync Capacitor Android
         run: npm run cap:sync
@@ -71,6 +71,23 @@ jobs:
         run: |
           cd android
           ./gradlew assembleDebug --stacktrace
+
+      - name: Post-Build APK Sanity & Smoke Check
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::APK was not found at $APK_PATH"
+            exit 1
+          fi
+          SIZE=$(stat -c%s "$APK_PATH")
+          echo "::notice::APK generated successfully: $APK_PATH ($SIZE bytes)"
+          if [ "$SIZE" -lt 500000 ]; then
+            echo "::error::APK size ($SIZE bytes) is suspiciously small!"
+            exit 1
+          fi
+          # Test uncorrupted archive integrity
+          unzip -tq "$APK_PATH"
+          echo "✅ Post-build APK sanity and archive integrity verified!"
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4

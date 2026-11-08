@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '420px',
+      },
       colors: {
         canvas: '#FBF9F1',
         'surface-card': '#FFFFFF',

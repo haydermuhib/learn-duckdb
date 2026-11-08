@@ -62,15 +62,15 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
   return (
     <div className="flex flex-col border-3 border-ink bg-surface-card shadow-brutal overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-surface-muted border-b-2 border-ink">
-        <div className="flex items-center gap-2">
-          <Database size={15} className="text-ink" />
-          <span className="font-extrabold text-xs tracking-wide uppercase">
+      <div className="flex items-center justify-between px-3 py-2 bg-surface-muted border-b-2 border-ink min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Database size={15} className="text-ink shrink-0" />
+          <span className="font-extrabold text-xs tracking-wide uppercase truncate">
             DB: {database.title}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={toggleAll}
@@ -78,7 +78,8 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
             title={allExpanded ? 'Collapse all tables' : 'Expand all tables'}
           >
             <ChevronsUpDown size={11} />
-            <span>{allExpanded ? 'Collapse All' : 'Expand All'}</span>
+            <span className="hidden xs:inline">{allExpanded ? 'Collapse All' : 'Expand All'}</span>
+            <span className="xs:hidden">{allExpanded ? 'Collapse' : 'Expand'}</span>
           </button>
           <span className="text-[10px] bg-duck px-2 py-0.5 font-bold border border-ink">
             {database.tables.length} tables
@@ -97,18 +98,18 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
               {/* Table header row */}
               <div
                 onClick={() => toggleTable(table.name)}
-                className="flex items-center justify-between px-2.5 py-1.5 cursor-pointer hover:bg-duck-light/60 transition-colors select-none group"
+                className="flex items-center justify-between px-2.5 py-2 cursor-pointer hover:bg-duck-light/60 transition-colors select-none group min-h-[38px]"
               >
-                <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-ink">
-                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  <Table size={13} className="text-ink-muted" />
-                  <span>{table.name}</span>
+                <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-ink min-w-0">
+                  {isExpanded ? <ChevronDown size={14} className="shrink-0" /> : <ChevronRight size={14} className="shrink-0" />}
+                  <Table size={13} className="text-ink-muted shrink-0" />
+                  <span className="truncate">{table.name}</span>
 
                   <button
                     type="button"
                     onClick={(e) => handleCopyIdentifier(e, table.name)}
                     title={`Copy "${table.name}" to clipboard`}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-ink-muted hover:text-ink hover:bg-slate-200 transition-opacity ml-1 rounded"
+                    className="opacity-70 sm:opacity-0 group-hover:opacity-100 p-1 text-ink-muted hover:text-ink hover:bg-slate-200 transition-opacity ml-1 rounded shrink-0"
                   >
                     {isTableCopied ? (
                       <Check size={11} className="text-emerald-700" />
@@ -118,7 +119,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-1">
                   <span className="text-[10px] text-ink-subtle font-mono">
                     {table.rows.length} rows
                   </span>
@@ -132,7 +133,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
                     className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 hover:bg-duck hover:text-ink border border-slate-300 hover:border-ink transition-colors cursor-pointer bg-slate-50"
                   >
                     <Eye size={11} />
-                    <span className="hidden sm:inline">Preview</span>
+                    <span className="hidden xs:inline">Preview</span>
                   </button>
                 </div>
               </div>
@@ -164,7 +165,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
                               PK
                             </span>
                           )}
-                          <span className="opacity-0 group-hover:opacity-100 text-[9px] text-ink-muted flex items-center gap-0.5 ml-1">
+                          <span className="opacity-70 sm:opacity-0 group-hover:opacity-100 text-[9px] text-ink-muted flex items-center gap-0.5 ml-1 shrink-0">
                             {isColCopied ? (
                               <span className="text-emerald-700 font-bold flex items-center gap-0.5">
                                 <Check size={10} /> Copied

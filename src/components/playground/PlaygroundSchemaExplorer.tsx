@@ -81,15 +81,15 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
   return (
     <div className="flex flex-col border-3 border-ink bg-surface-card shadow-brutal overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-surface-muted border-b-2 border-ink">
-        <div className="flex items-center gap-2">
-          <Database size={15} className="text-ink" />
-          <span className="font-extrabold text-xs tracking-wide uppercase">
+      <div className="flex items-center justify-between px-3 py-2 bg-surface-muted border-b-2 border-ink min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Database size={15} className="text-ink shrink-0" />
+          <span className="font-extrabold text-xs tracking-wide uppercase truncate">
             Active Tables ({tables.length})
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={toggleAll}
@@ -97,7 +97,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
             title={allExpanded ? 'Collapse all tables' : 'Expand all tables'}
           >
             <ChevronsUpDown size={11} />
-            <span>{allExpanded ? 'Collapse' : 'Expand'}</span>
+            <span className="hidden xs:inline">{allExpanded ? 'Collapse' : 'Expand'}</span>
           </button>
         </div>
       </div>
@@ -120,10 +120,10 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                 {/* Table Header Row */}
                 <div
                   onClick={() => toggleTable(table.name)}
-                  className="flex items-center justify-between px-2.5 py-1.5 cursor-pointer hover:bg-duck-light/60 transition-colors select-none group"
+                  className="flex items-center justify-between px-2.5 py-2 cursor-pointer hover:bg-duck-light/60 transition-colors select-none group min-h-[38px]"
                 >
-                  <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-ink truncate pr-1">
-                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-ink truncate pr-1 min-w-0">
+                    {isExpanded ? <ChevronDown size={14} className="shrink-0" /> : <ChevronRight size={14} className="shrink-0" />}
                     <Table size={13} className="text-ink-muted shrink-0" />
                     <span className="truncate">{table.name}</span>
 
@@ -137,7 +137,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                       type="button"
                       onClick={e => handleCopyIdentifier(e, table.name)}
                       title={`Copy table name "${table.name}"`}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 text-ink-muted hover:text-ink hover:bg-slate-200 transition-opacity ml-1 rounded shrink-0 cursor-pointer"
+                      className="opacity-70 sm:opacity-0 group-hover:opacity-100 p-0.5 text-ink-muted hover:text-ink hover:bg-slate-200 transition-opacity ml-1 rounded shrink-0 cursor-pointer"
                     >
                       {isTableCopied ? (
                         <Check size={11} className="text-emerald-700" />
@@ -168,7 +168,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                       className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 hover:bg-duck hover:text-ink border border-slate-300 hover:border-ink transition-colors cursor-pointer bg-slate-50"
                     >
                       <Eye size={11} />
-                      <span>Preview</span>
+                      <span className="hidden xs:inline">Preview</span>
                     </button>
 
                     {onDeleteTable && (
@@ -216,7 +216,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
                                 PK
                               </span>
                             )}
-                            <span className="opacity-0 group-hover:opacity-100 text-[9px] text-ink-muted flex items-center gap-0.5 ml-1">
+                            <span className="opacity-70 sm:opacity-0 group-hover:opacity-100 text-[9px] text-ink-muted flex items-center gap-0.5 ml-1">
                               {isColCopied ? (
                                 <span className="text-emerald-700 font-bold flex items-center gap-0.5">
                                   <Check size={10} /> Copied

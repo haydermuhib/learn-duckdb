@@ -68,24 +68,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans">
       {/* Top Banner & Header */}
       <header className="border-b-3 border-ink bg-surface-card sticky top-0 z-30 shadow-brutal-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🦆</span>
-            <span className="font-extrabold text-xl tracking-tight">learn-duckdb</span>
-            <span className="hidden sm:inline-block text-[11px] font-mono font-bold bg-duck px-2 py-0.5 border border-ink ml-1">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <span className="text-xl sm:text-2xl">🦆</span>
+            <span className="font-extrabold text-base sm:text-xl tracking-tight">learn-duckdb</span>
+            <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-mono font-bold bg-duck px-1.5 sm:px-2 py-0.5 border border-ink ml-0.5">
               v1.0 WASM
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {onOpenPlayground && (
               <button
                 type="button"
                 onClick={onOpenPlayground}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-duck text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-duck text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
               >
                 <Zap size={14} className="fill-ink" />
-                <span>Playground</span>
+                <span className="hidden xs:inline">Playground</span>
               </button>
             )}
 
@@ -93,49 +93,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
               href="https://github.com/haydermuhib/learn-duckdb"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 bg-surface-card font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-surface-card font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              title="GitHub repository"
             >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                 <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
               </svg>
-              <span>GitHub</span>
+              <span className="hidden xs:inline">GitHub</span>
             </a>
 
             <a
               href="https://buymeacoffee.com/haydermuhib"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FFDD00] text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-[#FFEA4D] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-[#FFDD00] text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-[#FFEA4D] active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <span className="text-sm sm:text-base leading-none">☕</span>
               <span className="hidden sm:inline">Buy Me a Coffee</span>
-              <span className="sm:hidden">Coffee</span>
+              <span className="sm:hidden text-xs">Coffee</span>
             </a>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24 px-6 border-b-3 border-ink relative overflow-hidden bg-gradient-to-b from-canvas to-[#F5EEDD]">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
+      <section className="py-10 sm:py-16 md:py-24 px-4 sm:px-6 border-b-3 border-ink relative overflow-hidden bg-gradient-to-b from-canvas to-[#F5EEDD]">
+        <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-card border-2 border-ink shadow-brutal-sm text-xs font-bold font-mono">
             <Sparkles size={14} className="text-amber-500 fill-amber-400" />
-            <span>100% In-Browser Analytical Database</span>
+            <span className="text-[11px] sm:text-xs">100% In-Browser Analytical Database</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] text-ink uppercase font-sans">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-ink uppercase font-sans break-words">
             Master Modern SQL in Your Browser.
           </h1>
 
-          <p className="text-lg sm:text-xl text-ink-muted max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-xl text-ink-muted max-w-2xl mx-auto leading-relaxed px-1">
             149+ interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>. 
             Zero installation, zero server lag, and zero sign-up required.
           </p>
 
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
             <button
               onClick={() => onStartLearning()}
-              className="px-8 py-4 bg-duck text-ink font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 sm:px-8 py-3.5 sm:py-4 bg-duck text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Start Learning Free</span>
               <ArrowRight size={18} />
@@ -143,7 +144,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
             {onOpenPlayground && (
               <button
                 onClick={onOpenPlayground}
-                className="px-6 py-4 bg-white text-ink font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-5 sm:px-6 py-3.5 sm:py-4 bg-white text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap size={18} />
                 <span>Open SQL Playground</span>
@@ -151,14 +152,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
             )}
             <a
               href="#syllabus"
-              className="px-6 py-4 bg-surface-card text-ink font-bold text-base border-3 border-ink shadow-brutal hover:bg-surface-muted active:translate-x-1 active:translate-y-1 transition-all"
+              className="px-5 sm:px-6 py-3.5 sm:py-4 bg-surface-card text-ink font-bold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-surface-muted active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center"
             >
               Browse 18 Modules
             </a>
           </div>
 
           {/* Proof Strip */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-ink-muted">
+          <div className="pt-4 sm:pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono text-ink-muted">
             <span className="flex items-center gap-1.5">
               <Zap size={14} className="text-amber-500" /> Multi-threaded WASM
             </span>
@@ -174,23 +175,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
         </div>
 
         {/* Live Interactive Hero Sandbox */}
-        <div className="max-w-3xl mx-auto mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border flex items-center justify-between text-white text-xs select-none">
-            <div className="flex items-center gap-2 font-mono">
-              <Terminal size={14} className="text-duck" />
-              <span>Try a live DuckDB query right now:</span>
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
+          <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#1E293B] border-b-2 border-code-border flex items-center justify-between text-white text-xs select-none gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 font-mono truncate">
+              <Terminal size={14} className="text-duck shrink-0" />
+              <span className="truncate">Live DuckDB Query:</span>
             </div>
             <button
               onClick={runDemo}
               disabled={isRunningDemo}
-              className="flex items-center gap-1.5 px-3 py-1 bg-duck text-ink font-bold text-xs border border-ink hover:bg-duck-hover transition-colors"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 bg-duck text-ink font-bold text-xs border border-ink hover:bg-duck-hover transition-colors shrink-0 cursor-pointer"
             >
               <Play size={12} className="fill-ink" />
               {isRunningDemo ? 'Running...' : 'Execute Query'}
             </button>
           </div>
 
-          <div className="p-4 bg-code-bg text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed">
+          <div className="p-3 sm:p-4 bg-code-bg text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed">
             <pre>{demoQuery}</pre>
           </div>
 
@@ -204,7 +205,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 <thead>
                   <tr className="border-b border-slate-700 text-slate-400 text-[10px] uppercase">
                     {demoResult.columns.map((c, i) => (
-                      <th key={i} className="py-1 px-2">{c}</th>
+                      <th key={i} className="py-1 px-2 whitespace-nowrap">{c}</th>
                     ))}
                   </tr>
                 </thead>
@@ -212,7 +213,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                   {demoResult.rows.map((r, ri) => (
                     <tr key={ri} className="border-b border-slate-800/60">
                       {r.map((val, ci) => (
-                        <td key={ci} className="py-1 px-2 text-slate-300">
+                        <td key={ci} className="py-1 px-2 text-slate-300 whitespace-nowrap">
                           {String(val)}
                         </td>
                       ))}
@@ -226,24 +227,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </section>
 
       {/* Feature Value Props */}
-      <section className="py-16 px-6 border-b-3 border-ink bg-surface-card">
+      <section className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-surface-card">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
             <span className="text-xs font-bold uppercase font-mono tracking-wider text-duck-dark bg-duck/20 px-2.5 py-1 border border-duck-dark">
               Why learn with DuckDB?
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-3">
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-3">
               The Analytical SQL Stack of the Future
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-lg mb-4">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
                   01
                 </div>
-                <h3 className="text-xl font-bold mb-2">Modern SQL Dialect</h3>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">Modern SQL Dialect</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
                   Learn game-changing syntax like <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">GROUP BY ALL</code>,{' '}
                   <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">SELECT * EXCLUDE</code>, and{' '}
@@ -252,24 +253,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
               </div>
             </div>
 
-            <div className="p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
+            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-lg mb-4">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
                   02
                 </div>
-                <h3 className="text-xl font-bold mb-2">Instant Wasm Sandbox</h3>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">Instant Wasm Sandbox</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
                   No remote servers or spin-up delays. DuckDB executes in a background Web Worker right inside your browser, completing queries in milliseconds.
                 </p>
               </div>
             </div>
 
-            <div className="p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
+            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-lg mb-4">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
                   03
                 </div>
-                <h3 className="text-xl font-bold mb-2">Interview-Grade Challenges</h3>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">Interview-Grade Challenges</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
                   Progress through 149+ exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
                 </p>
@@ -280,27 +281,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </section>
 
       {/* Curriculum Syllabus Section */}
-      <section id="syllabus" className="py-16 px-6 border-b-3 border-ink bg-canvas">
+      <section id="syllabus" className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-canvas">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
             <div>
               <span className="text-xs font-bold uppercase font-mono tracking-wider text-duck-dark bg-duck/20 px-2.5 py-1 border border-duck-dark">
                 Curriculum Map
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-3">
+              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-3">
                 18 Structured Modules • 149+ Exercises
               </h2>
             </div>
             <button
               onClick={() => onStartLearning()}
-              className="self-start md:self-auto px-4 py-2 bg-duck font-bold text-xs border-2 border-ink shadow-brutal hover:bg-duck-hover transition-all flex items-center gap-1.5"
+              className="w-full sm:w-auto px-4 py-2.5 bg-duck font-bold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Start from Module 1</span>
               <ArrowRight size={14} />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {MODULES.map((mod, index) => {
               const modExercises = EXERCISES.filter(e => e.module === mod.id);
               const hasDuckDb = modExercises.some(e => e.isDuckDbFeature);
@@ -309,7 +310,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 <div
                   key={mod.id}
                   onClick={() => onStartLearning(modExercises[0]?.id)}
-                  className="p-5 border-3 border-ink bg-surface-card shadow-brutal hover:shadow-brutal-lg hover:border-black cursor-pointer group transition-all flex flex-col justify-between"
+                  className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal hover:shadow-brutal-lg hover:border-black cursor-pointer group transition-all flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -348,10 +349,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 px-6 border-b-3 border-ink bg-surface-card">
+      <section className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-surface-card">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-extrabold tracking-tight">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Frequently Asked Questions
             </h2>
             <p className="text-xs text-ink-muted mt-1">
@@ -364,18 +365,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
               <div key={idx} className="border-2 border-ink bg-canvas">
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-4 font-bold text-sm flex items-center justify-between hover:bg-duck-light/60 transition-colors select-none"
+                  className="w-full text-left p-3.5 sm:p-4 font-bold text-xs sm:text-sm flex items-center justify-between hover:bg-duck-light/60 transition-colors select-none"
                 >
-                  <span>{faq.q}</span>
+                  <span className="pr-2 leading-snug">{faq.q}</span>
                   <ChevronDown
                     size={16}
-                    className={`transition-transform duration-200 shrink-0 ml-2 ${
+                    className={`transition-transform duration-200 shrink-0 ml-1 ${
                       openFaq === idx ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
                 {openFaq === idx && (
-                  <div className="px-4 pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans">
+                  <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans">
                     {faq.a}
                   </div>
                 )}
@@ -386,19 +387,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </section>
 
       {/* Final Call to Action */}
-      <section className="py-16 px-6 bg-duck text-center border-b-3 border-ink">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-duck text-center border-b-3 border-ink">
         <div className="max-w-xl mx-auto space-y-4">
           <span className="text-3xl">🦆</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink uppercase">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-ink uppercase">
             Start Writing DuckDB SQL Today
           </h2>
-          <p className="text-sm font-bold text-ink/80">
+          <p className="text-xs sm:text-sm font-bold text-ink/80">
             No signup. No configuration. Runs completely in your browser.
           </p>
           <div className="pt-2">
             <button
               onClick={() => onStartLearning()}
-              className="px-8 py-4 bg-ink text-white font-extrabold text-base border-3 border-ink shadow-brutal hover:bg-slate-800 active:translate-x-1 active:translate-y-1 transition-all inline-flex items-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-ink text-white font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-slate-800 active:translate-x-1 active:translate-y-1 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Start Learning Free</span>
               <ArrowRight size={18} />
@@ -408,9 +409,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </section>
 
       {/* Footer */}
-      <footer className="py-6 px-6 bg-surface-card text-center text-xs text-ink-muted font-mono">
-        <p className="flex flex-wrap items-center justify-center gap-2">
-          <span>learn-duckdb • Open Source MIT License</span>
+      <footer className="py-6 px-4 sm:px-6 bg-surface-card text-center text-[11px] sm:text-xs text-ink-muted font-mono">
+        <p className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 leading-relaxed">
+          <span>learn-duckdb • MIT License</span>
           <span>•</span>
           <a
             href="https://github.com/haydermuhib/learn-duckdb"
@@ -427,7 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
             rel="noreferrer"
             className="underline font-bold text-ink hover:text-amber-600 inline-flex items-center gap-1"
           >
-            <span>☕ Buy Me a Coffee</span>
+            <span>☕ Coffee</span>
           </a>
           <span>•</span>
           <span>

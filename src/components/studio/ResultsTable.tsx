@@ -73,13 +73,16 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     >
       {/* Header bar */}
       <div
-        className={`flex items-center justify-between px-3 py-2 bg-surface-muted text-xs font-bold ${
+        className={`flex flex-wrap items-center justify-between px-3 py-2 bg-surface-muted text-xs font-bold gap-2 ${
           isCollapsed ? '' : 'border-b-2 border-ink'
         }`}
       >
-        <div className="flex items-center gap-2">
-          <Database size={14} className="text-ink-muted" />
-          <span>Results & Output</span>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5">
+            <Database size={14} className="text-ink-muted shrink-0" />
+            <span className="hidden xs:inline">Results & Output</span>
+            <span className="xs:hidden">Results</span>
+          </div>
 
           {/* Compact badge when collapsed */}
           {isCollapsed && feedback && (
@@ -96,36 +99,36 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
           {/* Tabs: Your Output vs Expected Output */}
           {!isCollapsed && hasExpected && (
-            <div className="flex items-center ml-2 border border-ink bg-white p-0.5 text-[11px]">
+            <div className="flex items-center ml-0 sm:ml-2 border border-ink bg-white p-0.5 text-[10px] sm:text-[11px]">
               <button
                 type="button"
                 onClick={() => setActiveTab('user')}
-                className={`px-2 py-0.5 font-bold transition-colors cursor-pointer ${
+                className={`px-1.5 sm:px-2 py-0.5 font-bold transition-colors cursor-pointer ${
                   activeTab === 'user'
                     ? 'bg-ink text-white'
                     : 'text-ink-muted hover:text-ink hover:bg-slate-100'
                 }`}
               >
-                Your Output {result ? `(${result.rowCount})` : ''}
+                <span>Mine {result ? `(${result.rowCount})` : ''}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('expected')}
-                className={`px-2 py-0.5 font-bold transition-colors cursor-pointer ${
+                className={`px-1.5 sm:px-2 py-0.5 font-bold transition-colors cursor-pointer ${
                   activeTab === 'expected'
                     ? 'bg-duck text-ink border border-ink shadow-sm'
                     : 'text-ink-muted hover:text-ink hover:bg-slate-100'
                 }`}
               >
-                Expected Output ({feedback?.expectedResult?.rowCount})
+                <span>Expected ({feedback?.expectedResult?.rowCount})</span>
               </button>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
           {!isCollapsed && displayResult && (
-            <div className="flex items-center gap-2.5 text-ink-muted font-mono text-[11px]">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 text-ink-muted font-mono text-[11px]">
               {activeTab === 'user' && typeof displayResult.executionTimeMs === 'number' && (
                 <span className="hidden sm:flex items-center gap-1">
                   <Clock size={12} /> {displayResult.executionTimeMs} ms
@@ -141,18 +144,18 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                 <button
                   type="button"
                   onClick={handleExportCsv}
-                  className="flex items-center gap-1 text-[11px] font-sans font-bold px-2 py-0.5 bg-white hover:bg-duck border border-ink shadow-brutal-sm transition-colors text-ink cursor-pointer ml-1"
+                  className="flex items-center gap-1 text-[11px] font-sans font-bold px-1.5 sm:px-2 py-0.5 bg-white hover:bg-duck border border-ink shadow-brutal-xs transition-colors text-ink cursor-pointer ml-1"
                   title="Download this table as a CSV file"
                 >
                   {copiedCsv ? (
                     <>
                       <Check size={11} className="text-emerald-700" />
-                      <span>Exported</span>
+                      <span className="hidden xs:inline">Exported</span>
                     </>
                   ) : (
                     <>
                       <Download size={11} />
-                      <span>CSV</span>
+                      <span className="hidden xs:inline">CSV</span>
                     </>
                   )}
                 </button>
@@ -168,7 +171,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             title={isCollapsed ? 'Expand and show query results' : 'Collapse and hide query results'}
           >
             {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
-            <span>{isCollapsed ? 'Show Results' : 'Hide'}</span>
+            <span className="hidden xs:inline">{isCollapsed ? 'Show Results' : 'Hide'}</span>
           </button>
         </div>
       </div>
@@ -178,30 +181,30 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           {/* Validation Banner if available */}
           {feedback && (
             <div
-              className={`px-4 py-3 border-b-2 border-ink flex items-center justify-between transition-all ${
+              className={`px-3 sm:px-4 py-2.5 sm:py-3 border-b-2 border-ink flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-all ${
                 feedback.pass
                   ? 'bg-success-bg text-success-text'
                   : 'bg-failure-bg text-failure-text'
               }`}
             >
-              <div className="flex items-start gap-2.5">
+              <div className="flex items-start gap-2.5 min-w-0">
                 {feedback.pass ? (
                   <CheckCircle2 size={18} className="text-emerald-700 shrink-0 mt-0.5" />
                 ) : (
                   <AlertTriangle size={18} className="text-red-700 shrink-0 mt-0.5" />
                 )}
-                <div>
+                <div className="min-w-0">
                   <p className="font-bold text-sm leading-tight">
                     {feedback.pass ? 'Success!' : 'Not Quite Right'}
                   </p>
-                  <p className="text-xs mt-0.5 opacity-90">{feedback.message}</p>
+                  <p className="text-xs mt-0.5 opacity-90 break-words">{feedback.message}</p>
                 </div>
               </div>
 
               {feedback.pass && hasNextExercise && onNextExercise && (
                 <button
                   onClick={onNextExercise}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-ink text-white font-bold border-2 border-ink shadow-brutal-sm hover:bg-slate-800 text-xs shrink-0 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-ink text-white font-bold border-2 border-ink shadow-brutal-sm hover:bg-slate-800 text-xs shrink-0 cursor-pointer"
                 >
                   <span>Next Exercise</span>
                   <ArrowRight size={14} />
@@ -211,7 +214,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           )}
 
       {/* Table Content */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[600px] min-h-[140px] custom-scrollbar w-full">
+      <div className="overflow-x-auto overflow-y-auto max-h-[400px] sm:max-h-[600px] min-h-[140px] custom-scrollbar w-full">
         {!displayResult && !feedback && (
           <div className="py-10 px-4 flex flex-col items-center justify-center text-center text-ink-muted">
             <span className="text-3xl mb-2">⚡</span>

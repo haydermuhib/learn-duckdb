@@ -83,6 +83,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [isChecking, setIsChecking] = useState(false);
   const [revealedHints, setRevealedHints] = useState<number>(0);
   const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
+  const [mobileTab, setMobileTab] = useState<'editor' | 'task' | 'schema'>('editor');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth >= 1024;
@@ -227,6 +228,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       await switchDatabase(currentExercise.db);
       const res = await executeQuery(previewSql);
       setQueryResult(res);
+      setMobileTab('editor');
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 50);
@@ -235,6 +237,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         pass: false,
         message: `Failed to preview table ${tableName}: ${err.message}`,
       });
+      setMobileTab('editor');
     } finally {
       setIsRunning(false);
     }
@@ -425,11 +428,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Studio Top Navigation Bar */}
-      <header className="h-14 border-b-3 border-ink bg-surface-card px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-30">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={onBackToLanding}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors"
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            title="Back to Home"
           >
             <ArrowLeft size={14} />
             <span className="hidden sm:inline">Home</span>
@@ -438,11 +442,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           <button
             onClick={() => setSidebarOpen(prev => !prev)}
             title="Toggle Curriculum Syllabus (Ctrl+B)"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-duck text-ink text-xs font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-duck text-ink text-xs font-bold border-2 border-ink shadow-brutal-xs hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
           >
-            <BookOpen size={14} />
-            <span>Syllabus</span>
-            <span className="font-mono text-[11px] ml-1 bg-ink text-white px-1.5 py-0.2">
+            <BookOpen size={14} className="shrink-0" />
+            <span className="hidden xs:inline">Syllabus</span>
+            <span className="font-mono text-[10px] sm:text-[11px] ml-0.5 sm:ml-1 bg-ink text-white px-1 sm:px-1.5 py-0.2">
               {completedIds.size}/{EXERCISES.length}
             </span>
           </button>
@@ -452,7 +456,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             <div className="flex items-center border-2 border-ink bg-white p-0.5 text-xs font-bold">
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
+                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
+                title="Interactive Exercises"
               >
                 <BookOpen size={13} />
                 <span className="hidden sm:inline">Exercises</span>
@@ -460,32 +465,32 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               <button
                 type="button"
                 onClick={onSwitchToPlayground}
-                className="flex items-center gap-1.5 px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
                 title="Open DuckDB SQL Playground"
               >
                 <Zap size={13} />
-                <span>Playground</span>
+                <span className="hidden xs:inline">Playground</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Center: Module title & Progress */}
-        <div className="flex items-center gap-2 text-center max-w-md truncate">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[100px] xs:max-w-[150px] sm:max-w-[220px] md:max-w-md truncate px-1">
           <span className="hidden md:inline font-mono text-[11px] font-bold text-ink-muted uppercase">
             {currentModule.title}
           </span>
           <span className="hidden md:inline text-slate-300">•</span>
-          <span className="font-extrabold text-sm truncate">{currentExercise.title}</span>
+          <span className="font-extrabold text-xs sm:text-sm truncate">{currentExercise.title}</span>
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setIsShortcutsOpen(true)}
             title="View keyboard shortcuts (?)"
-            className="p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono flex items-center gap-1 cursor-pointer"
+            className="hidden md:flex p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono items-center gap-1 cursor-pointer"
           >
             <Keyboard size={13} />
             <span className="hidden sm:inline text-[11px] font-bold">Shortcuts</span>
@@ -494,7 +499,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           <button
             onClick={handleResetDb}
             title="Reset database to seed rows"
-            className="p-1.5 border-2 border-ink hover:bg-slate-100 text-xs font-mono flex items-center gap-1"
+            className="p-1.5 border-2 border-ink hover:bg-slate-100 text-xs font-mono flex items-center gap-1 cursor-pointer"
           >
             <RefreshCw size={13} />
             <span className="hidden sm:inline text-[11px]">Reset DB</span>
@@ -504,7 +509,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             <button
               onClick={handlePrev}
               disabled={!hasPrev}
-              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent border-r border-ink"
+              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent border-r border-ink cursor-pointer"
               title="Previous Exercise"
             >
               <ChevronLeft size={15} />
@@ -512,7 +517,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             <button
               onClick={handleNext}
               disabled={!hasNext}
-              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
               title="Next Exercise"
             >
               <ChevronRight size={15} />
@@ -522,7 +527,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       </header>
 
       {/* Main Studio Body */}
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex flex-col lg:flex-row relative">
         {/* Curriculum Drawer */}
         <CurriculumSidebar
           currentExerciseId={currentExercise.id}
@@ -536,112 +541,208 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           onImportProgress={handleImportProgress}
         />
 
+        {/* Mobile View Switcher Tabs (Only on < lg screens) */}
+        <div className="lg:hidden flex items-center border-b-2 border-ink bg-surface-muted sticky top-14 z-20">
+          <button
+            type="button"
+            onClick={() => setMobileTab('editor')}
+            className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 border-r border-ink transition-colors cursor-pointer ${
+              mobileTab === 'editor'
+                ? 'bg-duck text-ink font-black shadow-inner'
+                : 'text-ink-muted hover:bg-slate-100'
+            }`}
+          >
+            <Zap size={13} className="shrink-0" />
+            <span>Code & Results</span>
+            {queryResult && (
+              <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileTab('task')}
+            className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 border-r border-ink transition-colors cursor-pointer ${
+              mobileTab === 'task'
+                ? 'bg-duck text-ink font-black shadow-inner'
+                : 'text-ink-muted hover:bg-slate-100'
+            }`}
+          >
+            <span>📝 Task</span>
+            {revealedHints > 0 && (
+              <span className="text-[10px] bg-amber-200 text-amber-900 px-1 font-mono font-bold">
+                {revealedHints}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileTab('schema')}
+            className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+              mobileTab === 'schema'
+                ? 'bg-duck text-ink font-black shadow-inner'
+                : 'text-ink-muted hover:bg-slate-100'
+            }`}
+          >
+            <span>🗄️ Schema</span>
+            <span className="text-[10px] bg-ink text-white px-1 font-mono">
+              {currentDb.tables.length}
+            </span>
+          </button>
+        </div>
+
         {/* Studio Workspace Content */}
-        <main className="flex-1 p-3 lg:p-4">
+        <main className="flex-1 p-2.5 sm:p-3 lg:p-4 min-w-0">
           <div className="flex flex-col lg:flex-row gap-4 items-start">
             {/* Left Column: Task Description & Schema Explorer */}
-            <div className="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-4 shrink-0">
-            {/* Task Card */}
-            <div className="border-3 border-ink bg-surface-card p-4 shadow-brutal flex flex-col gap-3">
-              <div className="flex items-center justify-between border-b border-ink/20 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🦆</span>
-                  <span className="font-mono text-xs font-bold text-ink-muted uppercase">
-                    Exercise {currentIndex + 1} of {EXERCISES.length}
-                  </span>
-                </div>
-                {currentExercise.isDuckDbFeature && (
-                  <span className="inline-flex items-center gap-1 text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 font-bold border border-amber-400">
-                    <Sparkles size={11} /> DuckDB Feature
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <h2 className="text-xl font-extrabold tracking-tight text-ink">
-                  {currentExercise.title}
-                </h2>
-                <p className="text-xs text-ink-muted mt-2 leading-relaxed font-sans">
-                  {currentExercise.concept}
-                </p>
-              </div>
-
-              {currentExercise.example && (
-                <div className="bg-slate-100 border border-slate-300 p-2 text-xs font-mono text-slate-800">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">
-                    Example Syntax
-                  </span>
-                  <code>{currentExercise.example}</code>
-                </div>
-              )}
-
-              {/* Specific Task Objective */}
-              <div className="p-3 bg-duck-light border-2 border-duck-dark">
-                <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider mb-1">
-                  Your Task:
-                </span>
-                <p className="text-xs font-bold text-ink leading-snug">
-                  {currentStep?.task}
-                </p>
-              </div>
-
-              {/* Hints Box if revealed */}
-              {revealedHints > 0 && currentStep?.hints && (
-                <div className="space-y-1.5 p-3 bg-amber-50 border border-amber-300 text-xs">
-                  <div className="flex items-center gap-1 text-amber-800 font-bold text-[11px]">
-                    <HelpCircle size={13} />
-                    <span>Hints:</span>
+            <div
+              className={`w-full lg:w-[380px] xl:w-[420px] flex-col gap-4 shrink-0 ${
+                mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
+              }`}
+            >
+              {/* Task Card: on mobile only shown if mobileTab === 'task' (on desktop always shown) */}
+              <div
+                className={`border-3 border-ink bg-surface-card p-3.5 sm:p-4 shadow-brutal flex-col gap-3 ${
+                  mobileTab === 'schema' ? 'hidden lg:flex' : 'flex'
+                }`}
+              >
+                <div className="flex items-center justify-between border-b border-ink/20 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🦆</span>
+                    <span className="font-mono text-xs font-bold text-ink-muted uppercase">
+                      Exercise {currentIndex + 1} of {EXERCISES.length}
+                    </span>
                   </div>
-                  {currentStep.hints.slice(0, revealedHints).map((hint, idx) => (
-                    <p key={idx} className="text-amber-900 font-mono text-[11px] pl-3 border-l-2 border-amber-400">
-                      {hint}
-                    </p>
-                  ))}
+                  {currentExercise.isDuckDbFeature && (
+                    <span className="inline-flex items-center gap-1 text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 font-bold border border-amber-400">
+                      <Sparkles size={11} /> DuckDB Feature
+                    </span>
+                  )}
                 </div>
-              )}
+
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-ink">
+                    {currentExercise.title}
+                  </h2>
+                  <p className="text-xs text-ink-muted mt-2 leading-relaxed font-sans">
+                    {currentExercise.concept}
+                  </p>
+                </div>
+
+                {currentExercise.example && (
+                  <div className="bg-slate-100 border border-slate-300 p-2 text-xs font-mono text-slate-800 overflow-x-auto">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">
+                      Example Syntax
+                    </span>
+                    <code>{currentExercise.example}</code>
+                  </div>
+                )}
+
+                {/* Specific Task Objective */}
+                <div className="p-3 bg-duck-light border-2 border-duck-dark">
+                  <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider mb-1">
+                    Your Task:
+                  </span>
+                  <p className="text-xs font-bold text-ink leading-snug">
+                    {currentStep?.task}
+                  </p>
+                </div>
+
+                {/* Hints Box if revealed */}
+                {revealedHints > 0 && currentStep?.hints && (
+                  <div className="space-y-1.5 p-3 bg-amber-50 border border-amber-300 text-xs">
+                    <div className="flex items-center gap-1 text-amber-800 font-bold text-[11px]">
+                      <HelpCircle size={13} />
+                      <span>Hints:</span>
+                    </div>
+                    {currentStep.hints.slice(0, revealedHints).map((hint, idx) => (
+                      <p key={idx} className="text-amber-900 font-mono text-[11px] pl-3 border-l-2 border-amber-400">
+                        {hint}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mobile action button on Task tab to switch back to Editor */}
+                <div className="lg:hidden pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab('editor')}
+                    className="w-full py-2.5 px-4 bg-duck text-ink font-extrabold text-xs border-2 border-ink shadow-brutal-sm flex items-center justify-center gap-1.5 cursor-pointer hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5"
+                  >
+                    <span>Open Code Editor</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Schema Explorer: on mobile only shown if mobileTab === 'schema' (on desktop always shown) */}
+              <div className={mobileTab === 'task' ? 'hidden lg:block' : 'block'}>
+                <SchemaExplorer
+                  database={currentDb}
+                  onPreviewTable={handlePreviewTable}
+                />
+              </div>
             </div>
 
-            {/* Schema Explorer */}
-            <SchemaExplorer
-              database={currentDb}
-              onPreviewTable={handlePreviewTable}
-            />
-          </div>
+            {/* Right Column: Code Editor & Results Grid */}
+            <div
+              className={`flex-1 flex-col gap-3 sm:gap-4 min-w-0 w-full ${
+                mobileTab !== 'editor' ? 'hidden lg:flex' : 'flex'
+              }`}
+            >
+              {/* Quick Task Header banner on mobile */}
+              <div className="lg:hidden p-2.5 bg-duck-light border-2 border-duck-dark shadow-xs flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider mb-0.5">
+                    Your Task:
+                  </span>
+                  <p className="text-xs font-bold text-ink leading-snug line-clamp-3">
+                    {currentStep?.task}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('task')}
+                  className="text-[11px] font-bold text-amber-900 underline shrink-0 hover:text-ink whitespace-nowrap self-center px-1 py-1"
+                >
+                  View Details & Hints
+                </button>
+              </div>
 
-          {/* Right Column: Code Editor & Results Grid */}
-          <div className="flex-1 flex flex-col gap-4 min-w-0">
-            {/* SQL Editor */}
-            <SqlEditor
-              value={editorSql}
-              onChange={handleEditorChange}
-              onRun={handleRunQuery}
-              onCheck={handleCheckAnswer}
-              onNext={handleNext}
-              hasNext={hasNext}
-              onPrev={handlePrev}
-              hasPrev={hasPrev}
-              onToggleSidebar={() => setSidebarOpen(prev => !prev)}
-              onReset={() => handleEditorChange('')}
-              onHint={handleHint}
-              onShowSolution={handleShowSolution}
-              hintCount={revealedHints}
-              maxHints={maxHints}
-              isChecking={isChecking}
-              isRunning={isRunning}
-            />
-
-            {/* Live Results Table & Validation feedback */}
-            <div ref={resultsRef} className="w-full">
-              <ResultsTable
-                result={queryResult}
-                feedback={feedback}
-                onNextExercise={handleNext}
-                hasNextExercise={hasNext}
+              {/* SQL Editor */}
+              <SqlEditor
+                value={editorSql}
+                onChange={handleEditorChange}
+                onRun={handleRunQuery}
+                onCheck={handleCheckAnswer}
+                onNext={handleNext}
+                hasNext={hasNext}
+                onPrev={handlePrev}
+                hasPrev={hasPrev}
+                onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+                onReset={() => handleEditorChange('')}
+                onHint={handleHint}
+                onShowSolution={handleShowSolution}
+                hintCount={revealedHints}
+                maxHints={maxHints}
+                isChecking={isChecking}
+                isRunning={isRunning}
               />
+
+              {/* Live Results Table & Validation feedback */}
+              <div ref={resultsRef} className="w-full">
+                <ResultsTable
+                  result={queryResult}
+                  feedback={feedback}
+                  onNextExercise={handleNext}
+                  hasNextExercise={hasNext}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
       </div>
 
       {/* Keyboard Shortcuts Dialog */}

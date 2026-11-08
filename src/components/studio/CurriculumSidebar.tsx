@@ -123,21 +123,21 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
       <aside
         className={`fixed lg:sticky top-14 bottom-0 lg:h-[calc(100vh-3.5rem)] left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           isOpen
-            ? 'w-80 translate-x-0 opacity-100'
+            ? 'w-[88vw] max-w-[340px] sm:w-80 translate-x-0 opacity-100'
             : 'w-0 -translate-x-full lg:translate-x-0 lg:w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none'
         }`}
       >
-        <div className="w-80 flex-1 flex flex-col h-full overflow-hidden">
+        <div className="w-full sm:w-80 flex-1 flex flex-col h-full overflow-hidden">
           {/* Top Header */}
-        <div className="p-4 border-b-2 border-ink bg-surface-muted flex items-center justify-between min-w-[320px]">
-          <div className="flex items-center gap-2">
-            <BookOpen size={18} className="text-ink" />
-            <span className="font-extrabold text-sm tracking-tight uppercase">
+        <div className="p-3 sm:p-4 border-b-2 border-ink bg-surface-muted flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <BookOpen size={18} className="text-ink shrink-0" />
+            <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
               Curriculum Syllabus
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold px-2 py-0.5 bg-duck border border-ink">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-mono font-bold px-1.5 sm:px-2 py-0.5 bg-duck border border-ink">
               {completedIds.size}/{EXERCISES.length}
             </span>
             <button

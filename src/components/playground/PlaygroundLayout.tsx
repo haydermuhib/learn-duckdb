@@ -55,6 +55,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'editor' | 'tables' | 'tips'>('editor');
   const resultsRef = useRef<HTMLDivElement>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
@@ -119,11 +120,13 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       const res = await executePlaygroundQuery(previewSql);
       setQueryResult(res);
       setStatusMessage(`Previewing "${tableName}" (${res.rowCount} rows). (Your editor query is preserved)`);
+      setMobileTab('editor');
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     } catch (err: any) {
       setErrorMessage(err.message || `Failed to preview table ${tableName}`);
+      setMobileTab('editor');
     } finally {
       setIsRunning(false);
     }
@@ -201,12 +204,13 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Top Header */}
-      <header className="h-14 border-b-3 border-ink bg-surface-card px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-30">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             type="button"
             onClick={onBackToLanding}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            title="Back to Home"
           >
             <ArrowLeft size={14} />
             <span className="hidden sm:inline">Home</span>
@@ -217,39 +221,40 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             <button
               type="button"
               onClick={onSwitchToExercises}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Interactive Exercises"
             >
               <BookOpen size={13} />
-              <span>Exercises</span>
+              <span className="hidden sm:inline">Exercises</span>
             </button>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-3 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
+              className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
             >
               <Zap size={13} />
-              <span>Playground</span>
+              <span className="hidden xs:inline">Playground</span>
             </button>
           </div>
         </div>
 
         {/* Center Title */}
-        <div className="hidden md:flex items-center gap-2 text-center">
-          <span className="text-lg">🦆</span>
-          <span className="font-extrabold text-sm tracking-tight uppercase">
-            DuckDB SQL Playground
+        <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[120px] xs:max-w-[160px] sm:max-w-none truncate px-1">
+          <span className="text-base sm:text-lg">🦆</span>
+          <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
+            DuckDB Playground
           </span>
-          <span className="text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
+          <span className="hidden sm:inline-block text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
             WASM VFS
           </span>
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setIsShortcutsOpen(true)}
             title="View keyboard shortcuts (?)"
-            className="p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono flex items-center gap-1 cursor-pointer"
+            className="hidden md:flex p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono items-center gap-1 cursor-pointer"
           >
             <Keyboard size={13} />
             <span className="hidden sm:inline text-[11px] font-bold">Shortcuts</span>
@@ -292,93 +297,150 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
         </div>
       </header>
 
+      {/* Mobile View Switcher Tabs (Only on < lg screens) */}
+      <div className="lg:hidden flex items-center border-b-2 border-ink bg-surface-muted sticky top-14 z-20">
+        <button
+          type="button"
+          onClick={() => setMobileTab('editor')}
+          className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 border-r border-ink transition-colors cursor-pointer ${
+            mobileTab === 'editor'
+              ? 'bg-duck text-ink font-black shadow-inner'
+              : 'text-ink-muted hover:bg-slate-100'
+          }`}
+        >
+          <Zap size={13} className="shrink-0" />
+          <span>Editor & Results</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('tables')}
+          className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 border-r border-ink transition-colors cursor-pointer ${
+            mobileTab === 'tables'
+              ? 'bg-duck text-ink font-black shadow-inner'
+              : 'text-ink-muted hover:bg-slate-100'
+          }`}
+        >
+          <span>🗄️ Tables ({tables.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('tips')}
+          className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+            mobileTab === 'tips'
+              ? 'bg-duck text-ink font-black shadow-inner'
+              : 'text-ink-muted hover:bg-slate-100'
+          }`}
+        >
+          <span>💡 Tips</span>
+        </button>
+      </div>
+
       {/* Main Playground Workspace */}
-      <main className="flex-1 p-3 lg:p-4">
+      <main className="flex-1 p-2.5 sm:p-3 lg:p-4 min-w-0">
         <div className="flex flex-col lg:flex-row gap-4 items-start">
           {/* Left Column: File Uploader & Schema Explorer */}
-          <div className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-3 shrink-0">
-          {/* File Uploader */}
-          <PlaygroundFileUploader
-            onFilesUploaded={handleFilesUploaded}
-            isUploading={isUploading}
-          />
+          <div
+            className={`w-full lg:w-[360px] xl:w-[400px] flex-col gap-3 shrink-0 ${
+              mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
+            }`}
+          >
+            {/* File Uploader and Schema Explorer shown if mobileTab === 'tables' or on desktop */}
+            <div
+              className={`flex-col gap-3 ${
+                mobileTab === 'tips' ? 'hidden lg:flex' : 'flex'
+              }`}
+            >
+              <PlaygroundFileUploader
+                onFilesUploaded={handleFilesUploaded}
+                isUploading={isUploading}
+              />
 
-          {/* Dynamic Schema Explorer */}
-          <PlaygroundSchemaExplorer
-            tables={tables}
-            onPreviewTable={handlePreviewTable}
-            onDeleteTable={handleDeleteTable}
-          />
+              <PlaygroundSchemaExplorer
+                tables={tables}
+                onPreviewTable={handlePreviewTable}
+                onDeleteTable={handleDeleteTable}
+              />
+            </div>
 
-          {/* Quick Tips */}
-          <div className="p-3 bg-surface-card border-2 border-ink text-xs space-y-1.5 text-ink-muted">
-            <span className="text-[10px] uppercase font-bold text-ink block">
-              💡 DuckDB Quick Syntax
-            </span>
-            <ul className="list-disc pl-4 space-y-1 text-[11px]">
-              <li>
-                Query table directly: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * FROM ecommerce_sales;</code>
-              </li>
-              <li>
-                Query raw file: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * FROM 'ecommerce_sales.csv';</code>
-              </li>
-              <li>
-                DuckDB column projection: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * EXCLUDE (customer_email) FROM ecommerce_sales;</code>
-              </li>
-            </ul>
+            {/* Quick Tips: shown if mobileTab === 'tips' or on desktop */}
+            <div
+              className={`p-3 bg-surface-card border-2 border-ink text-xs space-y-1.5 text-ink-muted ${
+                mobileTab === 'tables' ? 'hidden lg:block' : 'block'
+              }`}
+            >
+              <span className="text-[10px] uppercase font-bold text-ink block">
+                💡 DuckDB Quick Syntax
+              </span>
+              <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                <li>
+                  Query table directly: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * FROM ecommerce_sales;</code>
+                </li>
+                <li>
+                  Query raw file: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * FROM 'ecommerce_sales.csv';</code>
+                </li>
+                <li>
+                  DuckDB column projection: <code className="bg-slate-100 px-1 font-mono text-ink">SELECT * EXCLUDE (customer_email) FROM ecommerce_sales;</code>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
 
-        {/* Right Column: SQL Editor & Query Results */}
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
-          {/* Status / Preview banner */}
-          {statusMessage && (
-            <div className="px-3 py-2 bg-emerald-50 border-2 border-emerald-500 text-emerald-900 text-xs font-semibold flex items-center justify-between animate-in fade-in">
-              <span>{statusMessage}</span>
-              <button
-                type="button"
-                onClick={() => setStatusMessage(null)}
-                className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+          {/* Right Column: SQL Editor & Query Results */}
+          <div
+            className={`flex-1 flex-col gap-3 sm:gap-4 min-w-0 w-full ${
+              mobileTab !== 'editor' ? 'hidden lg:flex' : 'flex'
+            }`}
+          >
+            {/* Status / Preview banner */}
+            {statusMessage && (
+              <div className="px-3 py-2 bg-emerald-50 border-2 border-emerald-500 text-emerald-900 text-xs font-semibold flex items-center justify-between animate-in fade-in">
+                <span>{statusMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setStatusMessage(null)}
+                  className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
 
-          {/* Error banner */}
-          {errorMessage && (
-            <div className="px-3 py-2 bg-rose-50 border-2 border-rose-500 text-rose-900 text-xs font-mono font-medium flex items-center justify-between animate-in fade-in">
-              <span>Error: {errorMessage}</span>
-              <button
-                type="button"
-                onClick={() => setErrorMessage(null)}
-                className="text-rose-700 hover:text-rose-900 font-bold ml-2 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+            {/* Error banner */}
+            {errorMessage && (
+              <div className="px-3 py-2 bg-rose-50 border-2 border-rose-500 text-rose-900 text-xs font-mono font-medium flex items-center justify-between animate-in fade-in">
+                <span>Error: {errorMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setErrorMessage(null)}
+                  className="text-rose-700 hover:text-rose-900 font-bold ml-2 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
 
-          {/* SQL Editor */}
-          <SqlEditor
-            value={editorSql}
-            onChange={handleEditorChange}
-            onRun={handleRunQuery}
-            onReset={() => handleEditorChange('')}
-            isRunning={isRunning}
-            isPlayground={true}
-          />
-
-          {/* Live Results Table */}
-          <div ref={resultsRef} className="w-full">
-            <ResultsTable
-              result={queryResult}
-              feedback={null}
+            {/* SQL Editor */}
+            <SqlEditor
+              value={editorSql}
+              onChange={handleEditorChange}
+              onRun={handleRunQuery}
+              onReset={() => handleEditorChange('')}
+              isRunning={isRunning}
+              isPlayground={true}
             />
+
+            {/* Live Results Table */}
+            <div ref={resultsRef} className="w-full">
+              <ResultsTable
+                result={queryResult}
+                feedback={null}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
 
       {/* Keyboard Shortcuts Dialog */}
       <KeyboardShortcutsModal

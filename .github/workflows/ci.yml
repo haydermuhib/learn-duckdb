@@ -3,8 +3,12 @@ name: CI & Android Build
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
   build-and-test:
@@ -36,7 +40,7 @@ jobs:
   android-build:
     name: Build Android APK
     needs: build-and-test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -96,3 +100,17 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Prepare Release APK Asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk learn-duckdb-${{ github.ref_name }}.apk
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Learn DuckDB ${{ github.ref_name }}
+          files: learn-duckdb-${{ github.ref_name }}.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false

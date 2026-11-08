@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">learn-duckdb</string>
-    <string name="title_activity_main">learn-duckdb</string>
+    <string name="app_name">Learn DuckDB</string>
+    <string name="title_activity_main">Learn DuckDB</string>
     <string name="package_name">app.learnduckdb</string>
     <string name="custom_url_scheme">app.learnduckdb</string>
 </resources>

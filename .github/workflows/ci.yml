@@ -71,14 +71,14 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x android/gradlew
 
-      - name: Build Android APK
+      - name: Build Android Release APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease --stacktrace
 
       - name: Post-Build APK Sanity & Smoke Check
         run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           if [ ! -f "$APK_PATH" ]; then
             echo "::error::APK was not found at $APK_PATH"
             exit 1
@@ -97,13 +97,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LearnDuckDB-Android-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
 
       - name: Prepare Release APK Asset
         if: startsWith(github.ref, 'refs/tags/v')
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk learn-duckdb-${{ github.ref_name }}.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk learn-duckdb-${{ github.ref_name }}.apk
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')

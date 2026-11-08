@@ -1,0 +1,4 @@
+• Full Edge-to-Edge display support extending under camera cutout and status bar
+• High-resolution vector Duck icon on yellow background across all densities
+• Release APK permanently signed for seamless in-place updates from GitHub Releases
+• Integrated safe-area insets for modern notched screens

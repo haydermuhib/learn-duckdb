@@ -86,7 +86,9 @@ describe('Application Sanity & Health Checks', () => {
       expect(fs.existsSync(htmlPath)).toBe(true);
 
       const html = fs.readFileSync(htmlPath, 'utf8');
-      expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1.0" />');
+      expect(html).toContain('name="viewport"');
+      expect(html).toContain('width=device-width');
+      expect(html).toContain('viewport-fit=cover');
       expect(html).toContain('id="root"');
       expect(html).toContain('/src/main.tsx');
     });

@@ -14,6 +14,12 @@
   scrollbar-color: #D1D5DB #F3EFE6;
 }
 
+/* Edge-to-edge camera cutout / notch support */
+header {
+  padding-top: env(safe-area-inset-top, 0px);
+  min-height: calc(3.5rem + env(safe-area-inset-top, 0px));
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

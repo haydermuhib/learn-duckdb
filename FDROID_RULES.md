@@ -1,132 +1,100 @@
 # F-Droid Inclusion Rules & Submission Blueprint
 
-This document outlines the exact rules, standards, and workflow required to successfully publish and maintain an Android app on the official **F-Droid** repository (`fdroid/fdroiddata`).
+This document outlines the exact rules, standards, and workflow required to successfully publish and maintain an Android app on the official **F-Droid** repository (`fdroid/fdroiddata`), based directly on F-Droid's official Inclusion Policy and Quality Control guidelines.
 
 ---
 
-## 1. Upstream Repository Requirements
+## 1. Quality Control & The 3-Month Development Rule
 
-### 1.1 Licensing & Freedom
-- **100% Free and Open Source (FLOSS)**: App and all dependencies must be under an OSI- or FSF-approved license (e.g., MIT, Apache 2.0, GPLv3).
+F-Droid enforces quality gates to prevent abandoned apps from entering the main index:
+
+### 1.1 The 3-Month Rule
+> **"The application should have been actively developed for at least 3 months, unless:**
+> 1. *The application has been proven to have some users.*
+> 2. *The author has been maintaining other apps on F-Droid.*
+> 3. *The application is developed only for an event."*
+
+- **If an app is newer than 3 months**:
+  - Provide evidence of existing active users (web platform traffic, community usage, active discussions/issues) in the MR description.
+  - Or distribute via **IzzyOnDroid** (`apt.izzysoft.de/fdroid`) during the initial 3 months, then graduate to the main F-Droid repository.
+  - Or continue tagging active release commits on GitHub and reopen the MR once 3 months of commits have elapsed.
+
+### 1.2 Quality Standards
+- **Active Maintenance**: The author must commit to ongoing maintenance. Demo applications or abandoned experiments are rejected.
+- **Website Wrappers**: Any app wrapping a web application must provide genuine native enhancements (offline storage, device APIs, native UI integration). A bare web wrapper with no native added value is rejected.
+- **Unique Value**: Minor rebrandings or forks without substantive improvements over existing catalog apps are rejected.
+
+---
+
+## 2. Free Software Requirements (FLOSS)
+
+- **100% FLOSS License**: Must use an OSI- or FSF-approved license (MIT, Apache 2.0, GPL, etc.).
 - **Zero Proprietary Blobs**:
-  - No closed-source SDKs (e.g., Google Play Services, Firebase Analytics, Crashlytics, proprietary ad networks, or tracking SDKs).
-  - No pre-compiled `.jar`, `.aar`, `.so`, or `.dex` binaries checked into git unless built from auditable source or approved srclibs.
-- **Privacy & Telemetry**:
-  - Zero non-consensual tracking or telemetry. Any analytics must be opt-in by default and use free software backends.
+  - Absolutely no Google Play Services, Firebase Analytics, Crashlytics, or proprietary ad/tracking SDKs.
+- **Dependency Toolchain**:
+  - Builds must compile on Debian using OpenJDK and FLOSS toolchains. Proprietary build tools (e.g. Oracle JDK) are strictly forbidden.
+  - Allowed prebuilts: Trusted Maven repositories (Maven Central, Google Maven, JitPack, Clojars), Node.js, PyPI wheels, Rust/Cargo, official Android/Flutter SDKs.
+- **No Dynamic Binary Downloads**: The app must not download additional executable code (plugins, dynamic code, self-updaters) without explicit opt-in user consent warning that F-Droid checks are bypassed.
 
-### 1.2 Fastlane Metadata Structure
-Place metadata in the root under `fastlane/metadata/android/<locale>/`:
+---
+
+## 3. Upstream Fastlane Metadata Structure
+
+Place metadata under `fastlane/metadata/android/<locale>/`:
 ```
 fastlane/metadata/android/en-US/
 ├── title.txt                  # App title (max 30 chars recommended)
 ├── short_description.txt      # Summary displayed in list views (max 80 chars)
 ├── full_description.txt       # Detailed markdown / formatted description
-├── icon.png                   # 512x512 PNG app icon (no transparency around squircle)
-├── featureGraphic.png         # 1024x500 banner (optional but recommended)
+├── icon.png                   # 512x512 PNG app icon (no corner rounding or squircle masks)
+├── featureGraphic.png         # 1024x500 banner (optional)
 ├── changelogs/
 │   ├── 1.txt                  # Changelog for versionCode 1
 │   ├── 5.txt                  # Changelog for versionCode 5
 │   └── 6.txt                  # Changelog for versionCode 6 (latest)
-├── phoneScreenshots/          # 1080x1920 or modern phone aspect ratio PNGs
+├── phoneScreenshots/          # 1080x1920 or modern aspect ratio PNGs
 └── sevenInchScreenshots/      # Tablet screenshots (optional)
 ```
-> **Rule**: When Fastlane metadata exists upstream, **do NOT** add `Summary:` or `Description:` in the F-Droid recipe YAML file (`metadata/<appId>.yml`). F-Droid extracts them directly from Fastlane.
 
-### 1.3 Git Hygiene & Release Tagging
-- **Semantic Version Tags**: Every release must have an annotated or standard git tag matching the version pattern (e.g., `v1.5.0`).
-- **Matching `versionName` & `versionCode`**: The `versionName` in `build.gradle` must match the git tag, and `versionCode` must increment monotonically.
-- **Commit History**: Release commits must be pushed to upstream remotes before triggering F-Droid inclusion or updates.
+> **RULE**: When Fastlane metadata exists upstream, **do NOT** add `Summary:` or `Description:` in the F-Droid recipe YAML file (`metadata/<appId>.yml`). F-Droid extracts them automatically.
 
 ---
 
-## 2. F-Droid Recipe YAML (`metadata/<appId>.yml`)
+## 4. F-Droid Recipe YAML (`metadata/<appId>.yml`)
 
-The recipe lives in `metadata/<applicationId>.yml` in the `fdroid/fdroiddata` repository.
+The recipe lives in `metadata/<applicationId>.yml` in `fdroid/fdroiddata`.
 
-### 2.1 Essential Recipe Structure (Web / Hybrid / Capacitor App Example)
-```yaml
-Categories:
-  - Development
-  - Education
-License: MIT
-AuthorName: Hayder Muhib
-SourceCode: https://github.com/haydermuhib/learn-duckdb
-IssueTracker: https://github.com/haydermuhib/learn-duckdb/issues
-Changelog: https://github.com/haydermuhib/learn-duckdb/releases
-
-RepoType: git
-Repo: https://github.com/haydermuhib/learn-duckdb.git
-
-Builds:
-  - versionName: 1.5.0
-    versionCode: 6
-    commit: 948f0f788144976872be388475fea19435694163
-    subdir: android/app
-    nodejs: yes
-    prebuild:
-      - npm ci
-      - npm run build
-      - npx cap sync android
-    gradle:
-      - assembleRelease
-
-AutoUpdateMode: Version v%v
-UpdateCheckMode: Tags
-```
-
-### 2.2 Strict YAML & Recipe Rules
-1. **Full 40-Character Commit Hash**: The `commit:` field **must** be the full SHA (e.g. `948f0f788144976872be388475fea19435694163`). Never use a tag name, branch name, or short 7-character hash.
-2. **Only the Latest Version**: Before an MR is merged, keep **only one build block** (the latest version). Do not leave older versions in the recipe.
+### 4.1 Strict Recipe Rules
+1. **Full 40-Character Commit Hash**: The `commit:` field **must** be the full SHA (never use tag names or branch names).
+2. **Only the Latest Version Before Merge**: Keep **only one build block** (the latest version). Older versions are added automatically by the update bot after inclusion.
 3. **LF Line Endings**: The file must use UNIX `\n` line endings, never Windows `\r\n`.
-4. **Valid YAML**: Indentation must be exactly 2 spaces. No tab characters.
-5. **No Disabled Builds**: Never submit disabled build entries in a new app recipe.
+4. **Valid YAML**: 2-space indentation. No tab characters.
+5. **No Disabled Builds**: Do not include disabled build blocks in new app recipes.
 
 ---
 
-## 3. GitLab Merge Request Protocol
+## 5. GitLab Merge Request Protocol
 
-### 3.1 Naming & Branching
-- **Fork**: `fdroid/fdroiddata` to your personal GitLab account (make sure the fork is public).
-- **Branch**: Create a descriptive branch (e.g., `app.learnduckdb`).
-- **MR Title**: Must strictly follow:
+### 5.1 Naming & Branching
+- **Fork**: `fdroid/fdroiddata` to your personal GitLab account (ensure the fork is public).
+- **Branch**: Create branch (e.g., `app.<applicationId>`).
+- **MR Title**: Strictly format as:
   ```
   New app: <applicationId> (<App Display Name>)
   ```
-  *Example*: `New app: app.learnduckdb (Learn DuckDB)`
 
-### 3.2 Exact MR Template (`Default.md`)
-F-Droid maintainers will close MRs automatically if the template is stripped.
-The MR description must include:
+### 5.2 Mandatory MR Description Template (`Default.md`)
+The MR description must follow `.gitlab/merge_request_templates/Default.md` without deleting any section:
 - `## Abstract for new app inclusion`
 - `### Please introduce the functions and usage of your app in summary...`
-- `### Please elaborate why you wrote this app...`
+- `### Please elaborate why you wrote this app...` (Highlight user base or 3-month history here)
 - Complete `## Checklist` with:
-  - `### Policy`
+  - `### Policy` (Acknowledge Quality point 6: 3-month development rule)
   - `### Docs`
   - `### Merge Request Setup`
   - `### Metadata`
   - `### Pipeline`
 
-### 3.3 CI Pipeline & Labels
-- **Fork CI Runner Quotas**: Personal GitLab forks often fail CI immediately because GitLab restricts free runner minutes on personal accounts. **Do not enter credit cards or panic.**
-- **Upstream FOSS Runners**: F-Droid runs CI under GitLab's FOSS program on `fdroid/fdroiddata`. Once maintainers review the template and add the **`New App`** label, CI is executed on upstream infrastructure.
-- **Labels Progression**:
-  - `New App`: Added by maintainers after template verification. Means the app is accepted into review and the build queue.
-  - Bot checks: Automated builds will test building from source.
-
----
-
-## 4. Android Build & UI Checklist for Quality
-
-1. **System Bar Insets (Edge-to-Edge)**:
-   - Handle Android 14/15 edge-to-edge enforcement.
-   - Use CSS `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`.
-   - Never let touch targets or status text clip under the camera notch or bottom navigation gesture bar.
-2. **Icon & Squircle Boundaries**:
-   - Adaptive icons must center graphics within the 66dp / 50% safe zone to prevent launcher cutoffs.
-3. **Splash Screen Aspect Ratio**:
-   - Never set a raw bitmap directly as `android:windowBackground`.
-   - Use a `layer-list` with `<bitmap android:gravity="center" />` to prevent vertical or horizontal distortion.
-4. **Signing Configurations**:
-   - Set up standard `signingConfigs.release` in Gradle.
-   - For reproducible builds, reference `f-droid.org/docs/Reproducible_Builds`.
+### 5.3 Runner Quotas & Review Labels
+- **Personal Fork Pipelines**: Personal GitLab forks often fail CI immediately due to GitLab runner minute limits. **Do not enter credit cards.** F-Droid runs CI under their open-source FOSS quota on the upstream repository once reviewers inspect the MR.
+- **Labels**: Maintainers add the `New App` label once the template and initial policy checks pass, routing the MR to the automated build queue.

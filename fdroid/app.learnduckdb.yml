@@ -7,19 +7,13 @@ SourceCode: https://github.com/haydermuhib/learn-duckdb
 IssueTracker: https://github.com/haydermuhib/learn-duckdb/issues
 Changelog: https://github.com/haydermuhib/learn-duckdb/releases
 
-Summary: Learn modern SQL & DuckDB analytics locally
-Description: |-
-  Learn DuckDB is an interactive, privacy-first SQL learning environment
-  and analytical playground designed to master modern SQL directly on your
-  device. Powered by DuckDB-Wasm running completely locally with zero telemetry.
-
 RepoType: git
 Repo: https://github.com/haydermuhib/learn-duckdb.git
 
 Builds:
   - versionName: 1.4.0
     versionCode: 5
-    commit: v1.4.0
+    commit: 06d5c6a05b01962226fcc1416d5e31674ff06531
     subdir: android/app
     nodejs: yes
     prebuild:

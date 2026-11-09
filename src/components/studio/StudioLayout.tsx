@@ -542,7 +542,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         />
 
         {/* Mobile View Switcher Tabs (Only on < lg screens) */}
-        <div className="lg:hidden flex items-center border-b-2 border-ink bg-surface-muted sticky top-14 z-20">
+        <div className="lg:hidden flex items-center border-b-2 border-ink bg-surface-muted sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] z-20">
           <button
             type="button"
             onClick={() => setMobileTab('editor')}

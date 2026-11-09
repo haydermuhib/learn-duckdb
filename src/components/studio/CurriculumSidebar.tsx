@@ -115,19 +115,19 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 top-14 bg-ink/40 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-ink/40 z-30 lg:hidden backdrop-blur-sm"
         />
       )}
 
       {/* Drawer Container */}
       <aside
-        className={`fixed lg:sticky top-14 bottom-0 lg:h-[calc(100vh-3.5rem)] left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
+        className={`fixed lg:sticky top-0 lg:top-[calc(3.5rem+env(safe-area-inset-top,0px))] bottom-0 lg:h-[calc(100vh-3.5rem-env(safe-area-inset-top,0px))] left-0 z-40 bg-surface-card border-r-3 border-ink flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           isOpen
             ? 'w-[88vw] max-w-[340px] sm:w-80 translate-x-0 opacity-100'
             : 'w-0 -translate-x-full lg:translate-x-0 lg:w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none'
         }`}
       >
-        <div className="w-full sm:w-80 flex-1 flex flex-col h-full overflow-hidden">
+        <div className="w-full sm:w-80 flex-1 flex flex-col h-full overflow-hidden pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
           {/* Top Header */}
         <div className="p-3 sm:p-4 border-b-2 border-ink bg-surface-muted flex items-center justify-between min-w-0">
           <div className="flex items-center gap-2 min-w-0">
@@ -191,7 +191,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
         </div>
 
         {/* Exercises list */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-2 space-y-2">
           {filteredExercises ? (
             // Search results view
             <div className="space-y-1">

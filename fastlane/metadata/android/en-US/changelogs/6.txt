@@ -1,0 +1,4 @@
+• Fixed stretched splash screen with centered, aspect-ratio preserved layer-list
+• Fixed mobile syllabus drawer alignment behind Android status bar
+• Fixed Android WebView scrollbar stutter with native overlay touch scrolling
+• Fixed mobile view switcher tab positioning on edge-to-edge displays

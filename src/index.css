@@ -8,30 +8,38 @@
   }
 }
 
-/* Custom scrollbars */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #D1D5DB #F3EFE6;
-}
-
 /* Edge-to-edge camera cutout / notch support */
 header {
   padding-top: env(safe-area-inset-top, 0px);
   min-height: calc(3.5rem + env(safe-area-inset-top, 0px));
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Smooth touch scrolling & momentum on mobile */
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
-::-webkit-scrollbar-track {
-  background: #F3EFE6;
-}
-::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+
+/* Custom scrollbars on desktop (mouse/trackpad), native overlay on touch screens */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #D1D5DB #F3EFE6;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F3EFE6;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+  }
 }
 

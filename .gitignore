@@ -41,3 +41,19 @@ node_modules/
 dist/
 scratch/
 .env.local
+
+# Android & Keystores (private keys & local config)
+*.jks
+*.keystore.private
+*.local.keystore
+local.properties
+.gradle/
+
+# F-Droid Local Build Artifacts
+/repo/
+/archive/
+/tmp/
+*.fdroid*
+fdroid-icon.png
+fdroid-server.pem
+config.yml

@@ -1,0 +1,2 @@
+• Disabled Google Dependency Info metadata block in APK signing block (IzzyOnDroid & F-Droid privacy compliance)
+• Maintained 100% offline, privacy-first DuckDB-Wasm analytical engine

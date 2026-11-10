@@ -40,6 +40,18 @@ This document outlines the exact rules, standards, security audits, and inspecti
 
 ### 2.3 Free Software Requirements (FLOSS)
 - **Zero Proprietary Blobs**: Absolutely no Google Play Services, Firebase Analytics, Crashlytics, or proprietary ad/tracking SDKs.
+- **Google Dependency Info Block (`dependenciesInfo`)**:
+  - Android Gradle Plugin automatically inserts a binary representation of the dependency tree (`0x504B4453`) into the APK signing block, encrypted with Google's public key.
+  - Because it is encrypted and unreadable by open-source scanners, **IzzyOnDroid and F-Droid flag it as an unverified encrypted blob**.
+  - Always disable it in `android/app/build.gradle`:
+    ```groovy
+    android {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
+    }
+    ```
 - **No Dynamic Binary Downloads**: The app must not download executable code, plugins, or auto-updaters without explicit opt-in user consent.
 - **Website Wrappers**: Web-based apps must provide native enhancements (offline storage, device APIs). A bare WebView wrapper with no native added value is rejected.
 

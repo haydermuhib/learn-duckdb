@@ -1,100 +1,143 @@
-# F-Droid Inclusion Rules & Submission Blueprint
+# F-Droid & IzzyOnDroid Comprehensive Inclusion & Inspection Rules
 
-This document outlines the exact rules, standards, and workflow required to successfully publish and maintain an Android app on the official **F-Droid** repository (`fdroid/fdroiddata`), based directly on F-Droid's official Inclusion Policy and Quality Control guidelines.
+This document outlines the exact rules, standards, security audits, and inspection workflows required for publishing and maintaining an Android app on **F-Droid** and **IzzyOnDroid**.
 
 ---
 
-## 1. Quality Control & The 3-Month Development Rule
+## 1. Multi-Level App Inspection Comparison
 
-F-Droid enforces quality gates to prevent abandoned apps from entering the main index:
+| Inspection Phase | Official F-Droid (`fdroiddata`) | IzzyOnDroid (`repodata`) |
+|---|---|---|
+| **Compilation** | Builds 100% from public source code on Debian runners | Pulls pre-built release APK from GitHub Releases |
+| **Malware Audit** | Full source code review & reproducible build verification | Automated **VirusTotal** scan across 60–70+ antivirus engines |
+| **Privacy & Trackers** | Linter verifies zero proprietary telemetry SDKs | **Exodus Privacy** scans compiled bytecode for tracker signatures |
+| **Age Requirement** | **Strict 3-month active development rule** (or proven users) | No 3-month waiting period |
+| **AI / LLM Code** | Evaluated on verifiable FLOSS license, clean source & reproducible build | **Strictly opposes/rejects** apps created with generative AI tools |
+| **Network in Build** | Network is **severed** during the Gradle build step | N/A (downloads pre-built APK) |
+| **Size Limit** | No hard limit (ABI split recommended if large) | **Hard 30 MB maximum APK size** |
 
-### 1.1 The 3-Month Rule
+---
+
+## 2. Policy Requirements & The AI / LLM Distinction
+
+### 2.1 Generative AI Policy Split
+- **IzzyOnDroid**: Maintains an explicit policy prohibiting apps generated fully or in part by generative AI tools, citing copyright training data concerns and license purity guarantees. Disclosing substantial AI generation results in automatic rejection.
+- **Official F-Droid**: Evaluates submissions based on objective, auditable software standards:
+  - 100% FLOSS licensing (MIT, Apache-2.0, GPL, etc.).
+  - Reproducible source compilation in an isolated Debian build environment.
+  - Zero proprietary blobs or closed-source libraries.
+  - Proof of active development and user utility.
+
+### 2.2 F-Droid Quality Control (The 3-Month Rule)
 > **"The application should have been actively developed for at least 3 months, unless:**
 > 1. *The application has been proven to have some users.*
 > 2. *The author has been maintaining other apps on F-Droid.*
 > 3. *The application is developed only for an event."*
 
 - **If an app is newer than 3 months**:
-  - Provide evidence of existing active users (web platform traffic, community usage, active discussions/issues) in the MR description.
-  - Or distribute via **IzzyOnDroid** (`apt.izzysoft.de/fdroid`) during the initial 3 months, then graduate to the main F-Droid repository.
-  - Or continue tagging active release commits on GitHub and reopen the MR once 3 months of commits have elapsed.
+  - The developer must document demonstrable existing users (web traffic, active community, GitHub stars) in the MR description.
+  - Otherwise, maintain steady periodic commits and releases across the 3-month span before opening/reopening the MR.
 
-### 1.2 Quality Standards
-- **Active Maintenance**: The author must commit to ongoing maintenance. Demo applications or abandoned experiments are rejected.
-- **Website Wrappers**: Any app wrapping a web application must provide genuine native enhancements (offline storage, device APIs, native UI integration). A bare web wrapper with no native added value is rejected.
-- **Unique Value**: Minor rebrandings or forks without substantive improvements over existing catalog apps are rejected.
-
----
-
-## 2. Free Software Requirements (FLOSS)
-
-- **100% FLOSS License**: Must use an OSI- or FSF-approved license (MIT, Apache 2.0, GPL, etc.).
-- **Zero Proprietary Blobs**:
-  - Absolutely no Google Play Services, Firebase Analytics, Crashlytics, or proprietary ad/tracking SDKs.
-- **Dependency Toolchain**:
-  - Builds must compile on Debian using OpenJDK and FLOSS toolchains. Proprietary build tools (e.g. Oracle JDK) are strictly forbidden.
-  - Allowed prebuilts: Trusted Maven repositories (Maven Central, Google Maven, JitPack, Clojars), Node.js, PyPI wheels, Rust/Cargo, official Android/Flutter SDKs.
-- **No Dynamic Binary Downloads**: The app must not download additional executable code (plugins, dynamic code, self-updaters) without explicit opt-in user consent warning that F-Droid checks are bypassed.
+### 2.3 Free Software Requirements (FLOSS)
+- **Zero Proprietary Blobs**: Absolutely no Google Play Services, Firebase Analytics, Crashlytics, or proprietary ad/tracking SDKs.
+- **No Dynamic Binary Downloads**: The app must not download executable code, plugins, or auto-updaters without explicit opt-in user consent.
+- **Website Wrappers**: Web-based apps must provide native enhancements (offline storage, device APIs). A bare WebView wrapper with no native added value is rejected.
 
 ---
 
-## 3. Upstream Fastlane Metadata Structure
+## 3. Local Pre-Submission Audit Commands
+
+Run these checks locally to ensure the repository passes all automated and manual inspections:
+
+### 3.1 Git Tree & Source Code Audit
+```bash
+# 1. Verify no compiled binaries are committed into git (Must return empty)
+git ls-files | grep -E '\.(jar|aar|so|dex|class|apk|aab|exe|dll)$'
+
+# 2. Verify no proprietary tracking SDKs are imported (Must return empty)
+grep -rnE "(com\.google\.android\.gms|com\.google\.firebase|com\.crashlytics|appsflyer|adjust\.sdk)" \
+  --exclude-dir={node_modules,dist,build,.gradle} .
+
+# 3. Check for CRLF line endings (F-Droid requires LF only)
+file fdroid/*.yml | grep CRLF && echo "Error: Convert to UNIX LF line endings"
+```
+
+### 3.2 Compiled APK Inspection
+```bash
+# 1. Audit requested permissions (Ensure zero suspicious or unneeded permissions)
+aapt dump badging android/app/build/outputs/apk/release/app-release.apk | grep "uses-permission"
+
+# 2. Verify APK signing scheme
+apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk
+
+# 3. Verify APK file size (< 30MB)
+ls -lh android/app/build/outputs/apk/release/app-release.apk
+```
+
+---
+
+## 4. Upstream Fastlane Metadata Hierarchy
 
 Place metadata under `fastlane/metadata/android/<locale>/`:
 ```
 fastlane/metadata/android/en-US/
-├── title.txt                  # App title (max 30 chars recommended)
-├── short_description.txt      # Summary displayed in list views (max 80 chars)
-├── full_description.txt       # Detailed markdown / formatted description
-├── icon.png                   # 512x512 PNG app icon (no corner rounding or squircle masks)
+├── title.txt                  # App title (max 30 chars)
+├── short_description.txt      # Brief summary (max 80 chars)
+├── full_description.txt       # Detailed markdown description
+├── icon.png                   # 512x512 PNG app icon (square, NO rounded corners or squircle mask)
 ├── featureGraphic.png         # 1024x500 banner (optional)
 ├── changelogs/
-│   ├── 1.txt                  # Changelog for versionCode 1
-│   ├── 5.txt                  # Changelog for versionCode 5
-│   └── 6.txt                  # Changelog for versionCode 6 (latest)
-├── phoneScreenshots/          # 1080x1920 or modern aspect ratio PNGs
-└── sevenInchScreenshots/      # Tablet screenshots (optional)
+│   └── <versionCode>.txt      # Must match current versionCode in build.gradle
+└── phoneScreenshots/          # 1080x1920 or modern aspect ratio PNGs
 ```
 
-> **RULE**: When Fastlane metadata exists upstream, **do NOT** add `Summary:` or `Description:` in the F-Droid recipe YAML file (`metadata/<appId>.yml`). F-Droid extracts them automatically.
+> **CRITICAL RULE**: When Fastlane metadata exists upstream, **do NOT** include `Summary:` or `Description:` in the F-Droid recipe YAML file (`metadata/<appId>.yml`). F-Droid extracts them automatically.
 
 ---
 
-## 4. F-Droid Recipe YAML (`metadata/<appId>.yml`)
+## 5. F-Droid Recipe YAML (`metadata/<appId>.yml`)
 
-The recipe lives in `metadata/<applicationId>.yml` in `fdroid/fdroiddata`.
+```yaml
+Categories:
+  - Development
+  - Education
+License: MIT
+AuthorName: Hayder Muhib
+SourceCode: https://github.com/haydermuhib/learn-duckdb
+IssueTracker: https://github.com/haydermuhib/learn-duckdb/issues
+Changelog: https://github.com/haydermuhib/learn-duckdb/releases
 
-### 4.1 Strict Recipe Rules
-1. **Full 40-Character Commit Hash**: The `commit:` field **must** be the full SHA (never use tag names or branch names).
-2. **Only the Latest Version Before Merge**: Keep **only one build block** (the latest version). Older versions are added automatically by the update bot after inclusion.
-3. **LF Line Endings**: The file must use UNIX `\n` line endings, never Windows `\r\n`.
-4. **Valid YAML**: 2-space indentation. No tab characters.
-5. **No Disabled Builds**: Do not include disabled build blocks in new app recipes.
+RepoType: git
+Repo: https://github.com/haydermuhib/learn-duckdb.git
+
+Builds:
+  - versionName: 1.5.0
+    versionCode: 6
+    commit: 948f0f788144976872be388475fea19435694163
+    subdir: android/app
+    nodejs: yes
+    prebuild:
+      - npm ci
+      - npm run build
+      - npx cap sync android
+    gradle:
+      - assembleRelease
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags
+```
+
+### Recipe Invariants:
+1. **Full 40-Character Commit Hash**: Always use the full SHA. Never use tags or branch names.
+2. **Single Build Block Before Merge**: Only include the latest release version before the MR is merged.
+3. **LF Line Endings**: Unix newlines (`\n`) only.
+4. **Valid YAML**: 2-space indentation. No tabs.
 
 ---
 
-## 5. GitLab Merge Request Protocol
+## 6. GitLab Merge Request Protocol
 
-### 5.1 Naming & Branching
-- **Fork**: `fdroid/fdroiddata` to your personal GitLab account (ensure the fork is public).
-- **Branch**: Create branch (e.g., `app.<applicationId>`).
-- **MR Title**: Strictly format as:
-  ```
-  New app: <applicationId> (<App Display Name>)
-  ```
-
-### 5.2 Mandatory MR Description Template (`Default.md`)
-The MR description must follow `.gitlab/merge_request_templates/Default.md` without deleting any section:
-- `## Abstract for new app inclusion`
-- `### Please introduce the functions and usage of your app in summary...`
-- `### Please elaborate why you wrote this app...` (Highlight user base or 3-month history here)
-- Complete `## Checklist` with:
-  - `### Policy` (Acknowledge Quality point 6: 3-month development rule)
-  - `### Docs`
-  - `### Merge Request Setup`
-  - `### Metadata`
-  - `### Pipeline`
-
-### 5.3 Runner Quotas & Review Labels
-- **Personal Fork Pipelines**: Personal GitLab forks often fail CI immediately due to GitLab runner minute limits. **Do not enter credit cards.** F-Droid runs CI under their open-source FOSS quota on the upstream repository once reviewers inspect the MR.
-- **Labels**: Maintainers add the `New App` label once the template and initial policy checks pass, routing the MR to the automated build queue.
+- **MR Title**: `New app: <applicationId> (<App Display Name>)`
+- **MR Description**: Must follow `.gitlab/merge_request_templates/Default.md` without deleting any section.
+- **Personal Fork Pipelines**: Expected to fail due to GitLab's runner quota on personal forks. Do not pay. F-Droid triggers CI on the upstream repository under their open-source FOSS runner allocation.
+- **Labels Progression**: Maintainers apply the `New App` label once initial template compliance is verified, routing the app into the automated build queue.

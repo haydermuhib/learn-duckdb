@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Learn DuckDB - Monochrome White">
+  <title>Learn DuckDB Logo (White)</title>
+  <!-- Offset Shadow -->
+  <rect x="38" y="38" width="188" height="188" rx="36" fill="#FFFFFF" opacity="0.25"/>
+  <!-- Badge Face (Dark/Transparent with White Border) -->
+  <rect x="30" y="30" width="188" height="188" rx="36" fill="#18181B" stroke="#FFFFFF" stroke-width="12"/>
+  <!-- Duck Head -->
+  <circle cx="106" cy="102" r="38" fill="#FFFFFF"/>
+  <!-- Eye Knockout -->
+  <circle cx="96" cy="94" r="8" fill="#18181B"/>
+  <!-- Beak -->
+  <path fill="#FFFFFF" stroke="#18181B" stroke-width="6" stroke-linejoin="round" d="
+    M 136 94
+    L 174 104
+    L 134 118 Z
+  "/>
+  <!-- Database Rows -->
+  <rect x="58" y="146" width="128" height="18" rx="9" fill="#FFFFFF"/>
+  <rect x="74" y="172" width="96" height="18" rx="9" fill="#FFFFFF"/>
+</svg>

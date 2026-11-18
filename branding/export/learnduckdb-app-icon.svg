@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>Learn DuckDB Logo</title><rect width="256" height="256" rx="57.6" fill="#FFF000"/><g transform="translate(24.32 24.32) scale(0.81)">
+  
+  <!-- Background offset shadow -->
+  <rect x="38" y="38" width="188" height="188" rx="36" fill="#18181B"/>
+  <!-- Main Badge Face (DuckDB Yellow) -->
+  <rect x="30" y="30" width="188" height="188" rx="36" fill="#FFF000" stroke="#18181B" stroke-width="12"/>
+  <!-- Inner Database Grid / Duck Icon -->
+  <!-- Duck Head -->
+  <circle cx="106" cy="102" r="38" fill="#18181B"/>
+  <!-- Eye -->
+  <circle cx="96" cy="94" r="8" fill="#FFF000"/>
+  <!-- Bold Beak (Clean 15 degree slope) -->
+  <path fill="#FF9900" stroke="#18181B" stroke-width="8" stroke-linejoin="round" d="
+    M 136 94
+    L 174 104
+    L 134 118 Z
+  "/>
+  <!-- Body / Waves formed as database rows -->
+  <rect x="58" y="146" width="128" height="18" rx="9" fill="#18181B"/>
+  <rect x="74" y="172" width="96" height="18" rx="9" fill="#18181B"/>
+</g></svg>

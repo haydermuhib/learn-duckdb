@@ -11,7 +11,7 @@
 [![React 18](https://img.shields.io/badge/frontend-React%2018-blue.svg?style=flat-square&logo=react&logoColor=white)](https://react.dev)
 [![TypeScript 5](https://img.shields.io/badge/language-TypeScript%205-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tests Passing](https://img.shields.io/badge/tests-15%2F15%20passed-16A34A.svg?style=flat-square&logo=vitest&logoColor=white)](https://github.com/haydermuhib/learn-duckdb)
-[![License MIT](https://img.shields.io/badge/license-MIT-black.svg?style=flat-square)](LICENSE)
+[![License GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square)](LICENSE)
 
 [**Features**](#-features) • [**Architecture**](#-architecture) • [**DuckDB Superpowers**](#-duckdb-superpowers) • [**Curriculum**](#-curriculum-18-modules) • [**Keyboard Shortcuts**](#-keyboard-shortcuts) • [**Development**](#-local-development)
 
@@ -193,7 +193,8 @@ npm run build
 
 ---
 
-## 📄 License
+## 📄 License & Trademark
 
-This project is licensed under the [MIT License](LICENSE).
-DuckDB is a registered trademark of the DuckDB Foundation.
+- **Code License**: The source code is licensed under the [GNU General Public License v3.0 or later (GPLv3+)](LICENSE). All modifications and derivative works must remain open-source under GPLv3.
+- **Brand & Trademark Protection**: Under GPLv3 Section 7(e), the name **Learn DuckDB** and its custom logo, icon, and brand assets are the exclusive trademarks and intellectual property of **Haider Ali Tariq**. They may not be used for forks, endorsement, or derivative products without prior written permission.
+- **Upstream Notice**: DuckDB is a registered trademark of the DuckDB Foundation. Learn DuckDB is an independent community educational tool and is not affiliated with or endorsed by the DuckDB Foundation.

@@ -101,4 +101,43 @@ describe('Validator Logic & Result Matching', () => {
     expect(isMutation('DELETE FROM order_items WHERE quantity = 0')).toBe(true);
     expect(isMutation('CREATE TABLE summary AS SELECT * FROM products')).toBe(true);
   });
+
+  it('should preserve duplicate column names with distinct values', () => {
+    // Queries like SELECT e.name, d.name produce columns ['name', 'name'] with different cell values
+    const resA: QueryResult = {
+      columns: ['name', 'name'],
+      rows: [
+        ['Ali', 'Engineering'],
+        ['Harun', null],
+        [null, 'HR'],
+      ],
+      executionTimeMs: 1.0,
+      rowCount: 3,
+    };
+    const resB: QueryResult = {
+      columns: ['name', 'name'],
+      rows: [
+        ['Ali', 'Engineering'],
+        ['Harun', null],
+        [null, 'HR'],
+      ],
+      executionTimeMs: 1.5,
+      rowCount: 3,
+    };
+
+    expect(compareResults(resA, resB, false)).toBe(true);
+
+    const resMismatch: QueryResult = {
+      columns: ['name', 'name'],
+      rows: [
+        ['Ali', 'Ali'], // Broken duplicated column value
+        ['Harun', 'Harun'],
+        [null, null],
+      ],
+      executionTimeMs: 1.0,
+      rowCount: 3,
+    };
+
+    expect(compareResults(resA, resMismatch, false)).toBe(false);
+  });
 });

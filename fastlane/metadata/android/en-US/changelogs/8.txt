@@ -1,0 +1,4 @@
+- Adopted Neo-Brutalist Duck Badge logo and brand assets across all densities
+- Fixed column value duplication when query returns multiple columns with the same name
+- Fixed self-join and full outer join exercises (exercises 48 and 51)
+- Switched license to GPL-3.0-or-later with trademark and brand protection

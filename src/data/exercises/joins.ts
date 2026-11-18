@@ -135,11 +135,11 @@ export const joins_exercises: ExerciseDef[] = [
     "db": "company",
     "title": "Joining a table to itself",
     "concept": "manager_id points to another employee in the same table. To see the manager’s name, join employees to employees with two different aliases: one for the employee and one for the manager.",
-    "example": "SELECT e.name, j.role FROM employees e JOIN employees j ON e.manager_id = j.id;",
+    "example": "SELECT e.name, m.role FROM employees e JOIN employees m ON e.manager_id = m.id;",
     "steps": [
       {
         "task": "Show the name of each employee who has a manager next to the manager’s name.",
-        "solution": "SELECT e.name, j.name AS jefe FROM employees e JOIN employees j ON e.manager_id = j.id",
+        "solution": "SELECT e.name, m.name AS manager FROM employees e JOIN employees m ON e.manager_id = m.id",
         "hints": [
           "FROM employees e JOIN employees m",
           "The condition is e.manager_id = m.id."

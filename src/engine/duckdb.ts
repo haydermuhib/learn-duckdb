@@ -122,15 +122,27 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
   const endTime = performance.now();
   const executionTimeMs = Math.round((endTime - startTime) * 100) / 100;
 
+  const numCols = arrowTable.numCols;
+  const numRows = arrowTable.numRows;
   const columns = arrowTable.schema.fields.map(f => f.name);
-  const rows: any[][] = [];
 
-  for (const row of arrowTable) {
-    const rowArr = columns.map(col => {
-      const val = row[col];
-      if (typeof val === 'bigint') return Number(val);
-      return val;
-    });
+  const children: any[] = [];
+  for (let c = 0; c < numCols; c++) {
+    children.push(arrowTable.getChildAt(c));
+  }
+
+  const rows: any[][] = [];
+  for (let r = 0; r < numRows; r++) {
+    const rowArr: any[] = [];
+    for (let c = 0; c < numCols; c++) {
+      let val = children[c]?.get(r);
+      if (typeof val === 'bigint') {
+        val = Number(val);
+      } else if (val instanceof Date) {
+        val = val.toISOString().replace('T', ' ').substring(0, 19);
+      }
+      rowArr.push(val);
+    }
     rows.push(rowArr);
   }
 

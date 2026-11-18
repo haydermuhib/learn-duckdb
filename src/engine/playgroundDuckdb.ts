@@ -191,13 +191,20 @@ export async function executePlaygroundQuery(
   const endTime = performance.now();
   const executionTimeMs = Math.round(endTime - startTime);
 
+  const numCols = arrowResult.numCols;
+  const numRows = arrowResult.numRows;
   const columns = arrowResult.schema.fields.map(f => f.name);
-  const rows: any[][] = [];
 
-  for (const row of arrowResult) {
+  const children: any[] = [];
+  for (let c = 0; c < numCols; c++) {
+    children.push(arrowResult.getChildAt(c));
+  }
+
+  const rows: any[][] = [];
+  for (let r = 0; r < numRows; r++) {
     const rowValues: any[] = [];
-    for (const col of columns) {
-      let val = row[col];
+    for (let c = 0; c < numCols; c++) {
+      let val = children[c]?.get(r);
       if (typeof val === 'bigint') {
         val = Number(val);
       } else if (val instanceof Date) {

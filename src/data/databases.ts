@@ -156,7 +156,7 @@ export const DATABASES: Record<string, DatabaseDef> = {
           [9, "Usman", "Sales Representative", 44000, 3, 4, "2023-06-15"],
           [10, "Layla", "Content Creator", 42000, 4, 6, "2023-07-01"],
           [11, "Bobby", "DevOps Engineer", 70000, 1, 1, "2023-10-10"],
-          [12, "Harun", "HR Specialist", 48000, 5, null, "2022-11-01"],
+          [12, "Harun", "HR Specialist", 48000, null, null, "2022-11-01"],
           [13, "Sunny", "Junior Analyst", 40000, 2, 3, "2024-01-15"],
           [14, "Amina", "QA Engineer", 50000, 1, 1, "2024-02-01"]
         ]

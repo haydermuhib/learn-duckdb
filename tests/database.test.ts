@@ -48,6 +48,16 @@ describe('Database Schemas and Seed Integrity', () => {
     for (const name of empNames) {
       expect(name).not.toMatch(/^Al-/i);
     }
+
+    // Verify presence of unassigned employee (Harun) and empty department (HR) for outer join exercises
+    const harun = employeesTable.rows.find(r => r[1] === 'Harun');
+    expect(harun).toBeDefined();
+    expect(harun![4]).toBeNull(); // department_id is null
+
+    const hrDept = DATABASES.company.tables.find(t => t.name === 'departments')!.rows.find(r => r[1] === 'HR');
+    expect(hrDept).toBeDefined();
+    const employeesInHr = employeesTable.rows.filter(r => r[4] === hrDept![0]);
+    expect(employeesInHr.length).toBe(0);
   });
 
   it('should verify school database tables and students', () => {

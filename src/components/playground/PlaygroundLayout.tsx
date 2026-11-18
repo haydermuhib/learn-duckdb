@@ -30,7 +30,7 @@ interface PlaygroundLayoutProps {
   onSwitchToExercises: () => void;
 }
 
-const DEFAULT_PLAYGROUND_SQL = `-- 🦆 DuckDB Analytical Playground
+const DEFAULT_PLAYGROUND_SQL = `-- DuckDB Analytical Playground
 -- Query pre-loaded or uploaded CSV, Parquet, and JSON files with full SQL power.
 SELECT * FROM ecommerce_sales LIMIT 10;`;
 
@@ -239,7 +239,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
         {/* Center Title */}
         <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[120px] xs:max-w-[160px] sm:max-w-none truncate px-1">
-          <span className="text-base sm:text-lg">🦆</span>
+          <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
           <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
             DuckDB Playground
           </span>

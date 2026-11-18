@@ -70,10 +70,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       <header className="border-b-3 border-ink bg-surface-card sticky top-0 z-30 shadow-brutal-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <span className="text-xl sm:text-2xl">🦆</span>
-            <span className="font-extrabold text-base sm:text-xl tracking-tight">learn-duckdb</span>
+            <img src="/logo.svg" alt="Learn DuckDB" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
+            <span className="font-extrabold text-base sm:text-xl tracking-tight">Learn Duckdb</span>
             <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-mono font-bold bg-duck px-1.5 sm:px-2 py-0.5 border border-ink ml-0.5">
-              v1.0 WASM
+              v1.5 WASM
             </span>
           </div>
 
@@ -388,8 +388,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
 
       {/* Final Call to Action */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 bg-duck text-center border-b-3 border-ink">
-        <div className="max-w-xl mx-auto space-y-4">
-          <span className="text-3xl">🦆</span>
+        <div className="max-w-xl mx-auto space-y-4 flex flex-col items-center">
+          <img src="/logo.svg" alt="Learn DuckDB" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-ink uppercase">
             Start Writing DuckDB SQL Today
           </h2>
@@ -411,7 +411,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       {/* Footer */}
       <footer className="py-6 px-4 sm:px-6 bg-surface-card text-center text-[11px] sm:text-xs text-ink-muted font-mono">
         <p className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 leading-relaxed">
-          <span>learn-duckdb • MIT License</span>
+          <span>Learn Duckdb • GPLv3 License</span>
           <span>•</span>
           <a
             href="https://github.com/haydermuhib/learn-duckdb"

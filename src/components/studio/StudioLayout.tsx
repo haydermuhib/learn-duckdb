@@ -609,7 +609,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               >
                 <div className="flex items-center justify-between border-b border-ink/20 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">🦆</span>
+                    <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 object-contain shrink-0" />
                     <span className="font-mono text-xs font-bold text-ink-muted uppercase">
                       Exercise {currentIndex + 1} of {EXERCISES.length}
                     </span>

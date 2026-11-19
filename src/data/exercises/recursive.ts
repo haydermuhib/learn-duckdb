@@ -31,10 +31,10 @@ export const recursive_exercises: ExerciseDef[] = [
     "example": "WITH RECURSIVE dates(d) AS (SELECT DATE '2025-01-01' UNION ALL SELECT d + INTERVAL 1 DAY FROM dates WHERE d < DATE '2025-01-07') SELECT d FROM dates;",
     "steps": [
       {
-        "task": "Show every day of September 2025 (2025-09-01 to 2025-09-30) with how many orders there were that day, including days with 0 (as total_orders).",
-        "solution": "WITH RECURSIVE dates(d) AS (SELECT DATE '2025-09-01' UNION ALL SELECT d + INTERVAL 1 DAY FROM dates WHERE d < DATE '2025-09-30') SELECT strftime(d, '%Y-%m-%d') AS order_date, COUNT(p.id) AS total_orders FROM dates LEFT JOIN orders p ON p.order_date = strftime(d, '%Y-%m-%d') GROUP BY d ORDER BY d",
+        "task": "Show every day of May 2024 (2024-05-01 to 2024-05-31) with how many orders there were that day, including days with 0 (as total_orders).",
+        "solution": "WITH RECURSIVE dates(d) AS (SELECT DATE '2024-05-01' UNION ALL SELECT d + INTERVAL 1 DAY FROM dates WHERE d < DATE '2024-05-31') SELECT strftime(d, '%Y-%m-%d') AS order_date, COUNT(p.id) AS total_orders FROM dates LEFT JOIN orders p ON p.order_date = strftime(d, '%Y-%m-%d') GROUP BY d ORDER BY d",
         "hints": [
-          "Generate the dates: SELECT DATE '2025-09-01' UNION ALL SELECT d + INTERVAL 1 DAY … WHERE d < DATE '2025-09-30'",
+          "Generate the dates: SELECT DATE '2024-05-01' UNION ALL SELECT d + INTERVAL 1 DAY … WHERE d < DATE '2024-05-31'",
           "LEFT JOIN orders p ON p.order_date = strftime(d, '%Y-%m-%d'), group by d and COUNT(p.id)."
         ],
         "requires": [

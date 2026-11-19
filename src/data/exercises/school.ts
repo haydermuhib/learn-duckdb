@@ -122,10 +122,10 @@ export const school_exercises: ExerciseDef[] = [
     "concept": "SUM(CASE WHEN … THEN 1 ELSE 0 END) counts those that qualify; divided by COUNT(*) it gives the share. Multiply by 100.0 (with a decimal) to avoid integer division.",
     "steps": [
       {
-        "task": "For each subject, show its name and the percentage of passing grades (6 or more), rounded to 1 decimal.",
-        "solution": "SELECT m.name, ROUND(100.0 * SUM(CASE WHEN c.score >= 6 THEN 1 ELSE 0 END) / COUNT(*), 1) AS porcentaje FROM subjects m JOIN grades c ON c.subject_id = m.id GROUP BY m.id, m.name",
+        "task": "For each subject, show its name and the percentage of passing grades (6 or more), rounded to 1 decimal (as pass_pct).",
+        "solution": "SELECT m.name, ROUND(100.0 * SUM(CASE WHEN c.score >= 6 THEN 1 ELSE 0 END) / COUNT(*), 1) AS pass_pct FROM subjects m JOIN grades c ON c.subject_id = m.id GROUP BY m.id, m.name",
         "hints": [
-          "100.0 * SUM(CASE WHEN g.grade >= 6 THEN 1 ELSE 0 END) / COUNT(*)"
+          "100.0 * SUM(CASE WHEN c.score >= 6 THEN 1 ELSE 0 END) / COUNT(*) AS pass_pct"
         ],
         "requires": [
           "CASE"
@@ -141,11 +141,11 @@ export const school_exercises: ExerciseDef[] = [
     "concept": "In a weighted average each grade counts by its weight: add up grade times credits and divide by the sum of credits. An 8-credit subject weighs twice as much as a 4-credit one.",
     "steps": [
       {
-        "task": "Show the name of each student with grades and their credit-weighted average, rounded to 2 decimals.",
-        "solution": "SELECT a.name, ROUND(SUM(c.score * m.credits) / SUM(m.credits), 2) AS promedio_ponderado FROM students a JOIN grades c ON c.student_id = a.id JOIN subjects m ON m.id = c.subject_id GROUP BY a.id, a.name",
+        "task": "Show the name of each student with grades and their credit-weighted average, rounded to 2 decimals (as weighted_avg).",
+        "solution": "SELECT a.name, ROUND(SUM(c.score * m.credits) / SUM(m.credits), 2) AS weighted_avg FROM students a JOIN grades c ON c.student_id = a.id JOIN subjects m ON m.id = c.subject_id GROUP BY a.id, a.name",
         "hints": [
           "You need all three tables: students, grades and subjects.",
-          "SUM(g.grade * sub.credits) / SUM(sub.credits)"
+          "SUM(c.score * m.credits) / SUM(m.credits) AS weighted_avg"
         ],
         "requires": [
           "SUM"
@@ -184,7 +184,7 @@ export const school_exercises: ExerciseDef[] = [
         "solution": "WITH p AS (SELECT a.class_group, a.name, AVG(c.score) AS avg_score FROM students a JOIN grades c ON c.student_id = a.id GROUP BY a.id, a.class_group, a.name), r AS (SELECT class_group, name, avg_score, RANK() OVER (PARTITION BY class_group ORDER BY avg_score DESC) AS rank_num FROM p) SELECT class_group, name, ROUND(avg_score, 2) AS avg_score FROM r WHERE rank_num = 1",
         "hints": [
           "First WITH: average per student, keeping their section.",
-          "Second WITH: RANK() OVER (PARTITION BY section ORDER BY average DESC); outside, WHERE place = 1."
+          "Second WITH: RANK() OVER (PARTITION BY class_group ORDER BY avg_score DESC); outside, WHERE rank_num = 1."
         ],
         "requires": [
           "OVER",

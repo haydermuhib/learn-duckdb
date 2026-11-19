@@ -73,11 +73,33 @@ export async function resetDatabase(dbName: string): Promise<void> {
 }
 
 export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbName: string) {
+  // Drop transient views/tables created by DDL exercises
+  await conn.query(`DROP VIEW IF EXISTS category_sales CASCADE;`);
+  await conn.query(`DROP TABLE IF EXISTS reviews CASCADE;`);
+  await conn.query(`DROP TABLE IF EXISTS suppliers CASCADE;`);
+  await conn.query(`DROP TABLE IF EXISTS summary CASCADE;`);
+  await conn.query(`DROP TABLE IF EXISTS dates CASCADE;`);
+  await conn.query(`DROP TABLE IF EXISTS numbers CASCADE;`);
+
+  // Drop all existing tables & sequences across all datasets to prevent collision or stale state
+  for (const dbKey of Object.keys(DATABASES)) {
+    const dbDef = DATABASES[dbKey];
+    if (dbDef) {
+      for (const table of dbDef.tables) {
+        await conn.query(`DROP TABLE IF EXISTS ${table.name} CASCADE;`);
+        await conn.query(`DROP SEQUENCE IF EXISTS seq_${table.name}_id;`);
+      }
+    }
+  }
+
   const dbDef = DATABASES[dbName] || DATABASES.store;
 
   for (const table of dbDef.tables) {
-    // Drop existing table if any
-    await conn.query(`DROP TABLE IF EXISTS ${table.name};`);
+    // Drop existing table and sequence if any
+    const seqName = `seq_${table.name}_id`;
+    await conn.query(`DROP TABLE IF EXISTS ${table.name} CASCADE;`);
+    await conn.query(`DROP SEQUENCE IF EXISTS ${seqName};`);
+    await conn.query(`CREATE SEQUENCE ${seqName} START 100;`);
 
     // Create table statement
     const colDefs = table.columns
@@ -85,7 +107,7 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
         // Normalize SQLite types to DuckDB
         let dType = type.toUpperCase();
         if (dType.includes('INTEGER PRIMARY KEY')) {
-          dType = 'INTEGER PRIMARY KEY';
+          dType = `INTEGER PRIMARY KEY DEFAULT nextval('${seqName}')`;
         }
         return `${name} ${dType}`;
       })

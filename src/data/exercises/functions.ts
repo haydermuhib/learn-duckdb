@@ -51,10 +51,10 @@ export const functions_exercises: ExerciseDef[] = [
     "example": "SELECT name, CASE WHEN stock = 0 THEN 'Out of Stock' ELSE 'In Stock' END FROM products;",
     "steps": [
       {
-        "task": "Show each product’s name and a price_range column: 'Expensive' if it costs 3000 or more, 'Mid-range' if it costs 500 or more, and 'Budget' otherwise.",
-        "solution": "SELECT name, CASE WHEN price >= 3000 THEN 'Expensive' WHEN price >= 500 THEN 'Mid-range' ELSE 'Budget' END AS price_range FROM products",
+        "task": "Show each product’s name and a price_range column: 'Expensive' if it costs 1000 or more, 'Mid-range' if it costs 200 or more, and 'Budget' otherwise.",
+        "solution": "SELECT name, CASE WHEN price >= 1000 THEN 'Expensive' WHEN price >= 200 THEN 'Mid-range' ELSE 'Budget' END AS price_range FROM products",
         "hints": [
-          "Put the highest condition first: WHEN price >= 3000.",
+          "Put the highest condition first: WHEN price >= 1000.",
           "CASE WHEN … THEN 'Expensive' WHEN … THEN 'Mid-range' ELSE 'Budget' END AS price_range"
         ],
         "requires": [

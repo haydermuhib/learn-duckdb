@@ -224,7 +224,7 @@ export const joins_exercises: ExerciseDef[] = [
         "task": "Show every possible combination of department name and job title (each distinct job title once).",
         "solution": "SELECT d.name, p.role FROM departments d CROSS JOIN (SELECT DISTINCT role FROM employees) p",
         "hints": [
-          "The distinct titles come from (SELECT DISTINCT job_title FROM employees).",
+          "The distinct titles come from (SELECT DISTINCT role FROM employees).",
           "FROM departments d CROSS JOIN (…) t"
         ],
         "requires": [

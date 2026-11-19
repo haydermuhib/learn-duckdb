@@ -10,10 +10,10 @@ export const modify2_exercises: ExerciseDef[] = [
     "example": "INSERT INTO subscribers (email, subscribed_at) SELECT email, date('now') FROM customers WHERE city = 'Leeds';",
     "steps": [
       {
-        "task": "Add to subscribers the customers with an email who are not subscribed yet, using their signup date as subscribed_on.",
+        "task": "Add to subscribers the customers with an email who are not subscribed yet, using their signup date as subscribed_at.",
         "solution": "INSERT INTO subscribers (email, subscribed_at) SELECT email, signup_date FROM customers WHERE email IS NOT NULL AND email NOT IN (SELECT email FROM subscribers)",
         "hints": [
-          "INSERT INTO subscribers (email, subscribed_on) SELECT email, signup_date FROM customers …",
+          "INSERT INTO subscribers (email, subscribed_at) SELECT email, signup_date FROM customers …",
           "Filter with email IS NOT NULL AND email NOT IN (SELECT email FROM subscribers)."
         ],
         "requires": [

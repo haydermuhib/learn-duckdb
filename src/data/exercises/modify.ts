@@ -98,10 +98,10 @@ export const modify_exercises: ExerciseDef[] = [
     "example": "INSERT INTO products (name, price) VALUES ('Pencil', 10), ('Eraser', 8);",
     "steps": [
       {
-        "task": "In a single INSERT, add two customers: Karla Rey, from Leeds, and Luis Mora, from London (just name and city).",
-        "solution": "INSERT INTO customers (name, city) VALUES ('Karla Rey', 'Leeds'), ('Luis Mora', 'London')",
+        "task": "In a single INSERT, add two customers: Jack, from Leeds, and Maya, from London (just name and city).",
+        "solution": "INSERT INTO customers (name, city) VALUES ('Jack', 'Leeds'), ('Maya', 'London')",
         "hints": [
-          "INSERT INTO customers (name, city) VALUES ('Karla Rey', 'Leeds'), (…)"
+          "INSERT INTO customers (name, city) VALUES ('Jack', 'Leeds'), ('Maya', 'London')"
         ],
         "requires": [
           "INSERT"
@@ -118,10 +118,10 @@ export const modify_exercises: ExerciseDef[] = [
     "concept": "An UPDATE’s WHERE works just like a SELECT’s. A good habit: before changing anything, run a SELECT with the same WHERE to see which rows you will touch.",
     "steps": [
       {
-        "task": "The orders shipped before October 1, 2025 have arrived: change their status to delivered.",
-        "solution": "UPDATE orders SET status = 'delivered' WHERE status = 'shipped' AND order_date < '2025-10-01'",
+        "task": "The orders shipped before June 1, 2024 have arrived: change their status to delivered.",
+        "solution": "UPDATE orders SET status = 'delivered' WHERE status = 'shipped' AND order_date < '2024-06-01'",
         "hints": [
-          "SET status = 'delivered' WHERE status = 'shipped' AND order_date < '2025-10-01'"
+          "SET status = 'delivered' WHERE status = 'shipped' AND order_date < '2024-06-01'"
         ],
         "requires": [
           "UPDATE",

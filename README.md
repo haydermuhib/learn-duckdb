@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/haydermuhib/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-1.5.2-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 1.5.2" /></a>
+  <a href="https://github.com/haydermuhib/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-1.5.3-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 1.5.3" /></a>
   <a href="https://duckdb.org"><img src="https://img.shields.io/badge/engine-DuckDB--Wasm-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="DuckDB-Wasm" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat-square&labelColor=18181B" alt="TypeScript 5" /></a>
-  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-51%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="51 Tests Passed" /></a>
+  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-52%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="52 Tests Passed" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPLv3+-blue.svg?style=flat-square&labelColor=18181B" alt="License: GPLv3+" /></a>
 </p>
 

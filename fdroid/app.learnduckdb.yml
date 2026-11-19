@@ -35,6 +35,18 @@ Builds:
     gradle:
       - assembleRelease
 
+  - versionName: 1.5.3
+    versionCode: 9
+    commit: v1.5.3
+    subdir: android/app
+    nodejs: yes
+    prebuild:
+      - npm ci
+      - npm run build
+      - npx cap sync android
+    gradle:
+      - assembleRelease
+
 AutoUpdateMode: Version v%v
 UpdateCheckMode: Tags
 

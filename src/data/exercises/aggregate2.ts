@@ -30,10 +30,10 @@ export const aggregate2_exercises: ExerciseDef[] = [
     "example": "SELECT role, strftime('%Y', hire_date) AS hire_year, COUNT(*) FROM employees GROUP BY role, hire_year;",
     "steps": [
       {
-        "task": "Show how many employees hold each job title within each department (department_id, job_title and the count).",
+        "task": "Show how many employees hold each job title within each department (department_id, role and the count).",
         "solution": "SELECT department_id, role, COUNT(*) FROM employees GROUP BY department_id, role",
         "hints": [
-          "GROUP BY department_id, job_title"
+          "GROUP BY department_id, role"
         ],
         "requires": [
           "GROUP BY"

@@ -1,0 +1,76 @@
+# Curriculum & Exercise Invariants (learn-duckdb)
+
+When creating, updating, or reviewing exercises (`ExerciseDef`) or seed datasets (`src/data/databases.ts`), all agents and contributors MUST adhere to the following strict standards:
+
+---
+
+## 1. Automated Execution & Verification Gate
+- Every exercise's canonical solution MUST execute without errors on the real DuckDB-Wasm engine.
+- Always run the full verification test:
+  ```bash
+  npm test
+  ```
+- The verification suite (`tests/verify_all_149.test.ts` and `tests/database.test.ts`) must report **0 errors** and **0 unintended empty results**.
+- Run `npm run build` (`tsc && vite build`) to ensure type checking and asset bundling pass.
+
+---
+
+## 2. Result Data Quality & Meaningful Testing
+- **No Empty Tables (0 Rows):** Unless specifically teaching an anti-pattern or empty set, queries must return real, populated rows.
+- **No Dead / Unexercised Branches:** If an exercise teaches `CASE WHEN`, every conditional branch must be represented in the result table (e.g., do not set a threshold like `price >= 3000` when the maximum price in the catalog is `1299.99`).
+- **No All-Zero / Redundant Columns:** If teaching conditional aggregation (e.g., `SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END)`), matching rows MUST exist in the database (e.g., `'delivered'`, not `'completed'`).
+- **Outer Join Proof:** When demonstrating `LEFT JOIN`, `FULL OUTER JOIN`, `ANTI JOIN`, or `COALESCE(..., 0)`:
+  - There MUST be at least one unmatched row in the right table (e.g. an unsold product with 0 sales in `order_items`, an unassigned employee with `department_id IS NULL`, an empty department like `HR`, or a student with no grades).
+- **Date Realism:** The `orders` dataset spans **May and June 2024**. All date filters, ranges, and recursive calendars must target this timeframe (e.g. `2024-05-01` to `2024-05-31`), never future or phantom years like 2025 where zero orders exist.
+
+---
+
+## 3. Non-Interference & Regression Guardrails
+- The databases (`store`, `company`, `school`) are shared across all 149+ exercises.
+- **Never modify seed data without testing the entire curriculum.**
+- If you alter a row (e.g. product price, stock, or order item quantity), verify that rankings, tops (`LIMIT 1`), monthly revenues, and grouping counts in existing exercises remain deterministic and valid.
+
+---
+
+## 4. Name Conventions (Strict)
+- Seed entities (customers, employees, students) must use natural, short, single-word first names in Latin script.
+- **Accepted Cultural Mix:** English, Punjabi, and Muslim names:
+  - Examples: `Ali`, `Bilal`, `Maya`, `Navjot`, `Sunny`, `Harun`, `Simran`, `Jack`, `Emma`, `Bobby`, `Chloe`, `Usman`, `Amina`, `Layla`, `Rania`, `Hiba`, `Anas`, `Noor`.
+- **Forbidden:** No Spanish or Latin American legacy names (`Pérez`, `Hernández`, `Guadalajara`, etc.). No prefixes like `Al-` or `El-`.
+
+---
+
+## 5. DuckDB Superpower Badging & Engine Explanations
+In the exercise metadata and explanation area (`concept` and `title`):
+- **DuckDB-Specific Features:**
+  - Set `"isDuckDbFeature": true`.
+  - Include `"DuckDB Superpower:"` in the exercise `title`.
+  - In `concept`, explain why it is a DuckDB superpower and compare it with PostgreSQL/standard SQL:
+    - `GROUP BY ALL` & `ORDER BY ALL`
+    - `SELECT * EXCLUDE (...)` & `SELECT * REPLACE (...)`
+    - First-class native `ANTI JOIN` and `SEMI JOIN`
+    - Windowing filter `QUALIFY`
+    - Dynamic column selection `COLUMNS(...)`
+- **Standard SQL / PostgreSQL Features:**
+  - Set `"isDuckDbFeature": false` (or omit).
+  - Clarify in the concept that the syntax is standard SQL compatible with PostgreSQL and MySQL.
+
+---
+
+## 6. Schema & Type Rigor
+- **Strict Column Types in `databases.ts`:**
+  - Dates must always be typed `DATE` (`signup_date`, `order_date`, `hire_date`, `birth_date`). This avoids DuckDB `strftime(STRING_LITERAL, VARCHAR)` binder ambiguities.
+  - Primary keys must use `INTEGER PRIMARY KEY`. The database loader attaches `DEFAULT nextval('seq_<table>_id')` to support `INSERT` statements with or without an explicit `id`.
+- **Exact Column Names:**
+  - Use `role` (not `job_title`).
+  - Use `status = 'delivered'` (not `'completed'`).
+  - Use `score` (not `grade`).
+  - Use `class_group` (not `section`).
+- In `GROUP BY` queries, DuckDB strictly requires all non-aggregated SELECT columns to be listed in `GROUP BY` (e.g., `GROUP BY c.id, c.name, c.signup_date`).
+
+---
+
+## 7. Clean English Language & Idiomatic Aliases
+- Never use Spanish or legacy placeholder aliases (`jefe`, `porcentaje`, `promedio_ponderado`).
+- All column aliases in tasks, solutions, and hints must be clean, idiomatic English (`manager`, `pass_pct`, `weighted_avg`, `units_sold`, `inventory_value`).
+- When a task prompts the student with `"(as <column_name>)"`, the canonical solution and hint must use the exact same column alias.

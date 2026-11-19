@@ -1,0 +1,4 @@
+- Comprehensive curriculum audit across all 149 exercises (zero empty results or unexercised concepts)
+- Fixed unsold item for LEFT JOIN and COALESCE tests (exercise 54)
+- Fixed order delivery statuses and conditional aggregation queries
+- Robust sequence and date typing in DuckDB-Wasm engine with clean table resets

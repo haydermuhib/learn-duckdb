@@ -132,10 +132,10 @@ export const interview_exercises: ExerciseDef[] = [
     "concept": "To find who stopped buying, get each customer’s last order date with MAX and filter with HAVING. It is the basis of retention analysis.",
     "steps": [
       {
-        "task": "Show the name and last order date of the customers who have not ordered since August 1, 2025.",
-        "solution": "SELECT c.name, MAX(p.order_date) AS last_order_date FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name HAVING MAX(p.order_date) < '2025-08-01'",
+        "task": "Show the name and last order date of the customers who have not ordered since June 1, 2024.",
+        "solution": "SELECT c.name, MAX(p.order_date) AS last_order_date FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name HAVING MAX(p.order_date) < '2024-06-01'",
         "hints": [
-          "Group by customer and use HAVING MAX(o.order_date) < '2025-08-01'."
+          "Group by customer and use HAVING MAX(o.order_date) < '2024-06-01'."
         ],
         "requires": []
       }
@@ -150,9 +150,10 @@ export const interview_exercises: ExerciseDef[] = [
     "steps": [
       {
         "task": "For each customer who has bought, show their name, the date of their first order (as first_order_date) and how many days passed from signup to that order (as days).",
-        "solution": "SELECT c.name, MIN(p.order_date) AS first_order_date, date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name",
+        "solution": "SELECT c.name, MIN(p.order_date) AS first_order_date, date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days FROM customers c JOIN orders p ON p.customer_id = c.id GROUP BY c.id, c.name, c.signup_date",
         "hints": [
-          "MIN(p.order_date) gives the first order; subtract with date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days."
+          "MIN(p.order_date) gives the first order; subtract with date_diff('day', CAST(c.signup_date AS DATE), CAST(MIN(p.order_date) AS DATE)) AS days.",
+          "Group by customer id, name, and signup_date."
         ],
         "requires": []
       }

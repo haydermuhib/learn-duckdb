@@ -111,10 +111,10 @@ export const where_exercises: ExerciseDef[] = [
     "example": "SELECT name, price FROM products WHERE price BETWEEN 400 AND 700;",
     "steps": [
       {
-        "task": "Show id and order_date of the orders placed between May 1 and July 31, 2025.",
-        "solution": "SELECT id, order_date FROM orders WHERE order_date BETWEEN '2025-05-01' AND '2025-07-31'",
+        "task": "Show id and order_date of the orders placed between May 1 and July 31, 2024.",
+        "solution": "SELECT id, order_date FROM orders WHERE order_date BETWEEN '2024-05-01' AND '2024-07-31'",
         "hints": [
-          "Dates go in quotes: '2025-05-01'."
+          "Dates go in quotes: '2024-05-01'."
         ],
         "requires": [
           "BETWEEN"

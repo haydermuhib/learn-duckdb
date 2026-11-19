@@ -33,7 +33,7 @@ export const group_exercises: ExerciseDef[] = [
         "task": "Show each job title and the total salary of the people who hold it.",
         "solution": "SELECT role, SUM(salary) FROM employees GROUP BY role",
         "hints": [
-          "SELECT job_title, SUM(salary) … GROUP BY job_title"
+          "SELECT role, SUM(salary) … GROUP BY role"
         ],
         "requires": [
           "GROUP BY",

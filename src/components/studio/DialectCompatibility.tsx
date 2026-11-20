@@ -17,28 +17,58 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
     return null;
   }
 
-  const renderBadge = (status: 'native' | 'supported' | 'unsupported' | string | undefined) => {
-    if (!status || status === 'unsupported') {
+  const renderBadge = (status: string | undefined) => {
+    if (!status) {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-300 rounded-sm">
-          <X size={10} /> Unsupported
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-300">
+          <X size={10} className="shrink-0" /> Unsupported
         </span>
       );
     }
-    if (status === 'native' || status === 'supported') {
+
+    const lower = status.toLowerCase();
+
+    if (lower.startsWith('native')) {
+      const detail = status.replace(/^native\s*(\((.*)\))?$/i, '$2').trim();
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-sm">
-          <Check size={10} /> Native
-        </span>
+        <div className="flex flex-col gap-0.5">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-300 w-fit">
+            <Check size={10} className="shrink-0" /> Native
+          </span>
+          {detail && (
+            <span className="text-[10px] text-stone-600 font-mono mt-0.5 leading-snug break-words">
+              {detail}
+            </span>
+          )}
+        </div>
       );
     }
-    // Custom note / alternative
+
+    if (lower.startsWith('unsupported')) {
+      const detail = status.replace(/^unsupported\s*(\((.*)\))?$/i, '$2').trim();
+      return (
+        <div className="flex flex-col gap-0.5">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-300 w-fit">
+            <X size={10} className="shrink-0" /> Unsupported
+          </span>
+          {detail && (
+            <span className="text-[10px] text-stone-600 font-mono mt-0.5 leading-snug break-words">
+              {detail}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // Custom alternative / syntax
     return (
       <div className="flex flex-col gap-0.5">
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-300 rounded-sm w-fit">
-          <AlertCircle size={10} /> Alternative
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-300 w-fit">
+          <AlertCircle size={10} className="shrink-0" /> Alternative
         </span>
-        <span className="text-[10px] text-stone-600 font-mono mt-0.5">{status}</span>
+        <span className="text-[10px] text-stone-600 font-mono mt-0.5 leading-snug break-words">
+          {status}
+        </span>
       </div>
     );
   };
@@ -48,43 +78,51 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 text-left bg-stone-100 hover:bg-stone-200/70 transition-colors"
+        aria-expanded={isOpen}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left bg-stone-100 hover:bg-stone-200/80 transition-colors select-none focus:outline-none"
       >
-        <span className="flex items-center gap-2 font-mono text-[11px] font-bold text-ink">
-          <Database size={13} className="text-stone-700" />
-          <span>Engine Portability</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-ink whitespace-nowrap shrink-0">
+            <Database size={13} className="text-stone-700 shrink-0" />
+            <span>Engine Portability</span>
+          </div>
           {isDuckDbFeature ? (
-            <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.2 font-extrabold border border-amber-400 inline-flex items-center gap-0.5">
-              <Sparkles size={9} /> DuckDB exclusive
+            <span className="text-[9px] font-mono font-bold bg-amber-200 text-amber-950 px-1.5 py-0.5 border border-amber-400 inline-flex items-center gap-1 whitespace-nowrap shrink-0">
+              <Sparkles size={9} className="text-amber-800 shrink-0" /> DuckDB exclusive
             </span>
           ) : (
-            <span className="text-[9px] bg-sky-100 text-sky-800 px-1.5 py-0.2 font-bold border border-sky-300">
+            <span className="text-[9px] font-mono font-bold bg-sky-100 text-sky-900 px-1.5 py-0.5 border border-sky-300 whitespace-nowrap shrink-0">
               Postgres & DuckDB
             </span>
           )}
-        </span>
-        <span className="text-[10px] text-stone-600 flex items-center gap-1 font-sans font-semibold">
-          {isOpen ? 'Hide details' : 'Compare dialects'}
-          <ChevronDown size={13} className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </span>
+        </div>
+
+        <div className="flex items-center gap-1 text-[10px] text-stone-600 font-sans font-semibold shrink-0 whitespace-nowrap ml-auto">
+          <span className="hidden sm:inline">{isOpen ? 'Hide details' : 'Compare dialects'}</span>
+          <span className="hidden xs:inline sm:hidden">{isOpen ? 'Hide' : 'Compare'}</span>
+          <ChevronDown
+            size={13}
+            className={`text-stone-600 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        </div>
       </button>
 
       {isOpen && (
         <div className="p-3 border-t border-stone-300 space-y-2.5 bg-white text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* DuckDB */}
-            <div className="p-2 border border-stone-200 bg-amber-50/40 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block">
+            <div className="p-2 border border-amber-300 bg-amber-50/50 space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block font-mono">
                 DuckDB
               </span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-400 rounded-sm">
-                <Check size={10} /> Native analytical engine
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-400">
+                <Check size={10} className="shrink-0" /> Native analytical engine
               </span>
             </div>
 
             {/* PostgreSQL */}
             <div className="p-2 border border-stone-200 bg-stone-50 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block font-mono">
                 PostgreSQL
               </span>
               {renderBadge(compatibility?.postgres ?? (isDuckDbFeature ? 'unsupported' : 'native'))}
@@ -92,7 +130,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 
             {/* MySQL */}
             <div className="p-2 border border-stone-200 bg-stone-50 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block font-mono">
                 MySQL
               </span>
               {renderBadge(compatibility?.mysql ?? (isDuckDbFeature ? 'unsupported' : 'unsupported'))}
@@ -100,7 +138,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 
             {/* SQLite */}
             <div className="p-2 border border-stone-200 bg-stone-50 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block font-mono">
                 SQLite
               </span>
               {renderBadge(compatibility?.sqlite ?? (isDuckDbFeature ? 'unsupported' : 'unsupported'))}
@@ -108,8 +146,8 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
           </div>
 
           {compatibility?.notes && (
-            <div className="flex items-start gap-1.5 text-[11px] text-stone-600 bg-stone-50 border border-stone-200 p-2 leading-relaxed">
-              <Info size={13} className="text-sky-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 text-[11px] text-stone-700 bg-stone-50 border border-stone-200 p-2.5 leading-relaxed">
+              <Info size={14} className="text-sky-600 shrink-0 mt-0.5" />
               <span>{compatibility.notes}</span>
             </div>
           )}

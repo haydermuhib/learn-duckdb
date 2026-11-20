@@ -194,6 +194,7 @@ export const functions_exercises: ExerciseDef[] = [
   },
   {
     "id": "case-order",
+    "version": 2,
     "module": "functions",
     "db": "store",
     "title": "Custom order with CASE",
@@ -201,10 +202,11 @@ export const functions_exercises: ExerciseDef[] = [
     "example": "SELECT name, category FROM products ORDER BY CASE category WHEN 'Sports' THEN 1 ELSE 2 END, name;",
     "steps": [
       {
-        "task": "Show id, order_date and status of the orders: shipped first, then delivered, then cancelled; within each status, oldest first.",
-        "solution": "SELECT id, order_date, status FROM orders ORDER BY CASE status WHEN 'shipped' THEN 1 WHEN 'delivered' THEN 2 ELSE 3 END, order_date",
+        "task": "Show id, order_date and status of the orders: shipped first, then delivered, then cancelled, and finally pending; within each status, oldest first.",
+        "solution": "SELECT id, order_date, status FROM orders ORDER BY CASE status WHEN 'shipped' THEN 1 WHEN 'delivered' THEN 2 WHEN 'cancelled' THEN 3 ELSE 4 END, order_date",
         "hints": [
-          "ORDER BY CASE status WHEN 'shipped' THEN 1 WHEN 'delivered' THEN 2 ELSE 3 END, order_date"
+          "ORDER BY CASE status WHEN 'shipped' THEN 1 WHEN 'delivered' THEN 2 WHEN 'cancelled' THEN 3 ELSE 4 END, order_date",
+          "SELECT id, order_date, status FROM orders ORDER BY CASE status WHEN 'shipped' THEN 1 WHEN 'delivered' THEN 2 WHEN 'cancelled' THEN 3 ELSE 4 END, order_date"
         ],
         "requires": [
           "CASE",

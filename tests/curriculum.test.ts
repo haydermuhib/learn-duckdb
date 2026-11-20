@@ -127,4 +127,49 @@ describe('Curriculum Data Integrity', () => {
       expect(ex.compatibility?.sqlite).toBeDefined();
     }
   });
+
+  it('should verify case-order exercise requirements, solution, and versioning', () => {
+    const caseOrderEx = getExerciseById('case-order');
+    expect(caseOrderEx).toBeDefined();
+    expect(caseOrderEx?.version).toBe(2);
+
+    const step = caseOrderEx!.steps[0];
+    // Must explicitly include cancelled before pending
+    expect(step.task.toLowerCase()).toContain('cancelled');
+    expect(step.task.toLowerCase()).toContain('pending');
+    expect(step.solution).toContain("WHEN 'shipped' THEN 1");
+    expect(step.solution).toContain("WHEN 'delivered' THEN 2");
+    expect(step.solution).toContain("WHEN 'cancelled' THEN 3");
+    expect(step.solution).toContain("ELSE 4");
+  });
+
+  it('should verify all 151 exercises have complete engine portability classification', () => {
+    expect(EXERCISES).toHaveLength(151);
+
+    let allEnginesCount = 0;
+    let duckDbOnlyCount = 0;
+    let dialectSpecificCount = 0;
+
+    for (const ex of EXERCISES) {
+      if (ex.isDuckDbFeature) {
+        duckDbOnlyCount++;
+      } else if (ex.compatibility) {
+        dialectSpecificCount++;
+      } else {
+        // Universal ANSI SQL
+        allEnginesCount++;
+      }
+
+      // Check version invariant if defined
+      if (ex.version !== undefined) {
+        expect(typeof ex.version).toBe('number');
+        expect(ex.version).toBeGreaterThanOrEqual(1);
+      }
+    }
+
+    expect(duckDbOnlyCount).toBe(6);
+    expect(dialectSpecificCount).toBe(14);
+    expect(allEnginesCount).toBe(131);
+    expect(duckDbOnlyCount + dialectSpecificCount + allEnginesCount).toBe(151);
+  });
 });

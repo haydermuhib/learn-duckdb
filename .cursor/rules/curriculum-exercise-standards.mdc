@@ -90,3 +90,40 @@ In the exercise metadata and explanation area (`concept` and `title`):
   - When an exercise teaches multiple syntaxes in a single challenge (e.g. `requires: ["CAST", "::"]` or `requires: ["DATE_TRUNC", "EXTRACT"]`), the validator enforces that **all** elements are present in active executable SQL.
   - The validator reports clear, unambiguous error messages using `"and"` (e.g. `"Your query must include each of the following required elements: CAST and ::"` or `"Your query must include the required syntax: ::"` when one is missing), never ambiguous "or" phrasing.
   - Authors designing multi-clause exercises must ensure the canonical solution and hints explicitly demonstrate both requirements and that tasks clearly explain the purpose of each column.
+
+---
+
+## 9. Engine Portability & Group Alignment Standard
+- **Pedagogical Alignment:**
+  - Every exercise must teach SQL capabilities that belong to the same portability group. Do not intermix divergent portability requirements into a single exercise unless the explicit goal of the exercise is comparing dialects (e.g. Exercise 72 `cast`, which compares standard ANSI `CAST` with the DuckDB/PostgreSQL `::` shorthand).
+- **Classification Categories:**
+  - **All Engines (Universal SQL):** Standard ANSI SQL syntax (`SELECT`, `WHERE`, `ORDER BY`, `GROUP BY`, `COUNT`, `SUM`, `INNER JOIN`, `LEFT JOIN`, `CASE`, `UPPER`, `LOWER`, CTEs, window functions). Supported natively across DuckDB, PostgreSQL, MySQL, and SQLite. Tagged with the green `[✓ All Engines]` badge.
+  - **DuckDB Superpower / Exclusive:** Dialect features exclusive to DuckDB (`SELECT * EXCLUDE`, `SELECT * REPLACE`, `QUALIFY`, `GROUP BY ALL`, `ORDER BY ALL`, `COLUMNS(*)`, list comprehension, JSON arrow operators). Set `"isDuckDbFeature": true`. Tagged with the amber `[✨ DuckDB Only]` badge.
+  - **Postgres & DuckDB:** Syntax native to PostgreSQL and DuckDB (e.g. `::` typecast shorthand, `ILIKE`, `FILTER (WHERE ...)`, `DISTINCT ON`). Tagged with the sky-blue `[Postgres & DuckDB]` badge.
+  - **Multi-Engine / Dialect Nuances:** Features supported across specific subsets of engines (e.g. `FULL OUTER JOIN`, `||` string concatenation). Explicitly define `"compatibility"` with details for `postgres`, `mysql`, and `sqlite`.
+- **At-a-Glance 4-Engine Matrix:**
+  - Every exercise renders the 4-engine compatibility strip (`DuckDB`, `Postgres`, `MySQL`, `SQLite`) with clear status chips (`✓ Native`, `✗ No`, `⚠ Alt`) so learners immediately understand cross-engine portability without needing to click.
+
+---
+
+## 10. Exercise Versioning & Update Governance
+- **Version Increment on Revision:**
+  - Whenever an exercise's task prompt, canonical solution, dataset bindings, or `requires` validation rules are updated, ALWAYS increment its `"version"` number (e.g. `"version": 2`).
+  - This automatically surfaces the warm amber `[🔄 Updated]` pill badge in both the Curriculum Syllabus sidebar and the Studio Task Card for learners who completed an older version.
+- **No Raw Version Numbers in UI:**
+  - Never expose raw version numbers (like `v1`, `v2`, or `v1.2`) to the end-user. Rely strictly on the clean amber `[🔄 Updated]` pill.
+  - Solving and passing the revised exercise automatically updates the user's completed version in `localStorage` and restores the green mastered checkmark.
+- **Backward-Compatible Export/Import:**
+  - Progress export/import stores `completedVersions: Record<string, number>` while maintaining 100% backward compatibility with legacy progress JSON backups.
+
+---
+
+## 11. Studio Layout & Visual Hierarchy Invariants
+- **Header Supremacy (`z-40`):**
+  - The Studio Top Navigation Bar (`<header>`) is the root navigation frame and MUST maintain `z-40` (or higher) and `sticky top-0`.
+- **Drawer Mounting (`top-14` / `z-35`):**
+  - The Curriculum Syllabus Drawer (`CurriculumSidebar`) must mount cleanly beneath the header (`top-[calc(3.5rem+env(safe-area-inset-top,0px))]`, `h-[calc(100vh-3.5rem-env(safe-area-inset-top,0px))]`, `z-35`).
+  - The drawer's right border (`border-r-3 border-ink`) must NEVER pierce, overlap, or extend above the top navigation bar.
+- **Neo-Brutal Styling Tokens:**
+  - Standard borders use `border-2 border-ink` or `border-3 border-ink` with `#111827` ink.
+  - Shadows use brutal elevation tokens (`shadow-brutal-xs`, `shadow-brutal-sm`, `shadow-brutal`).

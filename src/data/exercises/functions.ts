@@ -145,18 +145,26 @@ export const functions_exercises: ExerciseDef[] = [
     "id": "cast",
     "module": "functions",
     "db": "store",
-    "title": "Converting types with CAST",
-    "concept": "CAST(value AS INTEGER) converts to a whole number by dropping decimals (it does not round); CAST(x AS TEXT) or AS REAL convert to text or decimal. ROUND rounds, CAST truncates.",
-    "example": "SELECT CAST(2.9 AS INTEGER), ROUND(2.9);",
+    "title": "Converting types with CAST and ::",
+    "concept": "In standard SQL, CAST(value AS INTEGER) converts types by truncating decimals (unlike ROUND which rounds). DuckDB and PostgreSQL also support the concise shorthand :: operator: (x)::INTEGER or '2026-01-01'::DATE.",
+    "example": "SELECT CAST(2.9 AS INTEGER) AS cast_val, 2.9::INTEGER AS colon_val;",
+    "compatibility": {
+      "postgres": "native (the :: shorthand originated in PostgreSQL)",
+      "mysql": "unsupported (:: throws syntax error; must use CAST)",
+      "sqlite": "unsupported (:: throws syntax error; must use CAST)",
+      "notes": "CAST(x AS type) is standard ANSI SQL supported across all engines. The :: shorthand is native to DuckDB and PostgreSQL (plus Snowflake and Redshift)."
+    },
     "steps": [
       {
-        "task": "Show each product name and its price with tax (price times 1.16) as a whole number, dropping the cents (no rounding).",
-        "solution": "SELECT name, CAST(price * 1.16 AS INTEGER) AS int_price FROM products",
+        "task": "Show each product name, its price with 16% tax as an integer using CAST (as cast_price), and the same integer using DuckDB's :: shorthand (as colon_price).",
+        "solution": "SELECT name, CAST(price * 1.16 AS INTEGER) AS cast_price, (price * 1.16)::INTEGER AS colon_price FROM products",
         "hints": [
-          "CAST(price * 1.16 AS INTEGER) AS int_price"
+          "CAST(price * 1.16 AS INTEGER) AS cast_price, (price * 1.16)::INTEGER AS colon_price",
+          "SELECT name, CAST(price * 1.16 AS INTEGER) AS cast_price, (price * 1.16)::INTEGER AS colon_price FROM products"
         ],
         "requires": [
-          "CAST"
+          "CAST",
+          "::"
         ]
       }
     ]

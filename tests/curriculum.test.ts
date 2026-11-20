@@ -33,6 +33,12 @@ describe('Curriculum Data Integrity', () => {
     expect(dateTruncEx).toBeDefined();
     expect(dateTruncEx?.steps[0].solution).toContain('date_trunc(');
     expect(dateTruncEx?.steps[0].solution).toContain('EXTRACT(');
+
+    const castEx = getExerciseById('cast');
+    expect(castEx).toBeDefined();
+    expect(castEx?.steps[0].solution).toContain('CAST(');
+    expect(castEx?.steps[0].solution).toContain('::');
+    expect(castEx?.compatibility).toBeDefined();
   });
 
   it('should ensure every exercise has unique id and valid properties', () => {

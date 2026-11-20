@@ -34,30 +34,32 @@ describe('Run ALL Canonical Solutions against Real DuckDB', () => {
 
     for (let i = 0; i < EXERCISES.length; i++) {
       const ex = EXERCISES[i];
-      const step = ex.steps[0];
-      const sql = step.solution;
-
       await loadDatabase(ex.db);
 
-      try {
-        const isMutation = /^(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i.test(sql.trim());
-        if (isMutation) {
-          await conn.query(sql);
-          const checkSql = step.check || `SELECT * FROM ${ex.db === 'school' ? 'students' : 'products'}`;
-          const checkRes = await conn.query(checkSql);
-          const rows = checkRes.toArray();
-          if (rows.length === 0) {
-            emptyResults.push({ index: i + 1, id: ex.id, task: step.task, sql: checkSql });
+      for (let s = 0; s < ex.steps.length; s++) {
+        const step = ex.steps[s];
+        const sql = step.solution;
+
+        try {
+          const isMutation = /^(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i.test(sql.trim());
+          if (isMutation) {
+            await conn.query(sql);
+            const checkSql = step.check || `SELECT * FROM ${ex.db === 'school' ? 'students' : 'products'}`;
+            const checkRes = await conn.query(checkSql);
+            const rows = checkRes.toArray();
+            if (rows.length === 0) {
+              emptyResults.push({ index: i + 1, id: `${ex.id} (step ${s + 1})`, task: step.task, sql: checkSql });
+            }
+          } else {
+            const res = await conn.query(sql);
+            const rows = res.toArray();
+            if (rows.length === 0) {
+              emptyResults.push({ index: i + 1, id: `${ex.id} (step ${s + 1})`, task: step.task, sql });
+            }
           }
-        } else {
-          const res = await conn.query(sql);
-          const rows = res.toArray();
-          if (rows.length === 0) {
-            emptyResults.push({ index: i + 1, id: ex.id, task: step.task, sql });
-          }
+        } catch (err: any) {
+          errors.push({ index: i + 1, id: `${ex.id} (step ${s + 1})`, error: err.message || String(err), sql });
         }
-      } catch (err: any) {
-        errors.push({ index: i + 1, id: ex.id, error: err.message || String(err), sql });
       }
     }
 

@@ -28,6 +28,11 @@ describe('Curriculum Data Integrity', () => {
     const concatWsEx = getExerciseById('concat-ws');
     expect(concatWsEx).toBeDefined();
     expect(concatWsEx?.steps[0].solution).toContain('CONCAT_WS(');
+
+    const dateTruncEx = getExerciseById('date-trunc-extract');
+    expect(dateTruncEx).toBeDefined();
+    expect(dateTruncEx?.steps[0].solution).toContain('date_trunc(');
+    expect(dateTruncEx?.steps[0].solution).toContain('EXTRACT(');
   });
 
   it('should ensure every exercise has unique id and valid properties', () => {

@@ -105,21 +105,23 @@ export const text2_exercises: ExerciseDef[] = [
     ]
   },
   {
-    "id": "hire-year",
+    "id": "date-trunc-extract",
     "module": "text2",
-    "db": "company",
-    "title": "Grouping by year",
-    "concept": "strftime('%Y', date) pulls the year out of a date. Grouping by that value gives a count per year, the basis of almost any trend chart.",
+    "db": "store",
+    "title": "Date components: DATE_TRUNC, EXTRACT, and EPOCH",
+    "concept": "Modern analytical SQL (DuckDB and PostgreSQL) provides powerful date tools: DATE_TRUNC('month', date) rounds down to the beginning of the period (preserving date format for time-series aggregation), EXTRACT(part FROM date) pulls out an integer component like month (1–12) or year, and EXTRACT(epoch FROM date) converts the date into Unix timestamp seconds since 1970.",
+    "example": "SELECT date_trunc('month', order_date), EXTRACT(month FROM order_date), EXTRACT(epoch FROM order_date) FROM orders;",
     "steps": [
       {
-        "task": "Show how many people joined the company each year (as hire_year and total), from the oldest year to the newest.",
-        "solution": "SELECT strftime('%Y', hire_date) AS hire_year, COUNT(*) AS total FROM employees GROUP BY hire_year ORDER BY hire_year",
+        "task": "For each order, show its id, the first day of its month as month_start (using DATE_TRUNC), its calendar month as order_month (using EXTRACT), and its Unix timestamp in seconds as order_epoch (using EXTRACT).",
+        "solution": "SELECT id, date_trunc('month', order_date) AS month_start, EXTRACT(month FROM order_date) AS order_month, EXTRACT(epoch FROM order_date) AS order_epoch FROM orders",
         "hints": [
-          "strftime('%Y', hire_date) AS hire_year, then group and sort by hire_year."
+          "date_trunc('month', order_date) AS month_start",
+          "EXTRACT(month FROM order_date) AS order_month, EXTRACT(epoch FROM order_date) AS order_epoch"
         ],
         "requires": [
-          "STRFTIME",
-          "GROUP BY"
+          "DATE_TRUNC",
+          "EXTRACT"
         ]
       }
     ]

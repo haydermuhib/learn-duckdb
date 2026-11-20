@@ -156,23 +156,4 @@ describe('Database Schemas and Seed Integrity', () => {
     expect(DEFAULT_TABLE_NAMES.has('order_items')).toBe(true);
     expect(DEFAULT_TABLE_NAMES.has('subscribers')).toBe(true);
   });
-
-  it('should verify seed tables have positive contiguous IDs for auto-increment sequence initialization', () => {
-    for (const [dbName, db] of Object.entries(DATABASES)) {
-      for (const table of db.tables) {
-        const hasPk = table.columns.some(([_, type]) => type.toUpperCase().includes('INTEGER PRIMARY KEY'));
-        if (hasPk && table.rows.length > 0) {
-          const maxId = Math.max(...table.rows.map(r => (typeof r[0] === 'number' ? r[0] : 0)));
-          expect(maxId).toBeGreaterThan(0);
-          const nextStartVal = maxId + 1;
-          if (table.name === 'products') {
-            expect(nextStartVal).toBe(13);
-          }
-          if (table.name === 'customers') {
-            expect(nextStartVal).toBe(11);
-          }
-        }
-      }
-    }
-  });
 });

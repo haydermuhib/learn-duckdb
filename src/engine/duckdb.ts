@@ -100,13 +100,7 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
     const seqName = `seq_${table.name}_id`;
     await conn.query(`DROP TABLE IF EXISTS ${table.name} CASCADE;`);
     await conn.query(`DROP SEQUENCE IF EXISTS ${seqName};`);
-    
-    // Calculate next available ID from initial seed rows so auto-increment is clean and contiguous
-    const maxId = table.rows && table.rows.length > 0
-      ? Math.max(...table.rows.map(r => (typeof r[0] === 'number' ? r[0] : 0)))
-      : 0;
-    const startVal = maxId > 0 ? maxId + 1 : 1;
-    await conn.query(`CREATE SEQUENCE ${seqName} START ${startVal};`);
+    await conn.query(`CREATE SEQUENCE ${seqName} START 100;`);
 
     // Create table statement
     const colDefs = table.columns

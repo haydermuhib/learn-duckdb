@@ -31,7 +31,7 @@
 
 ## Overview
 
-Learn Duckdb runs 149 analytical SQL exercises directly inside your browser. Because the engine runs as WebAssembly inside a dedicated Web Worker, queries execute locally without network roundtrips, backend servers, or account registration. Your queries and local database state never leave your machine.
+Learn Duckdb runs 151 analytical SQL exercises directly inside your browser. Because the engine runs as WebAssembly inside a dedicated Web Worker, queries execute locally without network roundtrips, backend servers, or account registration. Your queries and local database state never leave your machine.
 
 > Looking for the terminal version? The Python Textual TUI edition is maintained on the [`cli`](https://github.com/haydermuhib/learn-duckdb/tree/cli) branch.
 
@@ -39,7 +39,7 @@ Learn Duckdb runs 149 analytical SQL exercises directly inside your browser. Bec
 
 ## Features
 
-- **149 exercises across 18 modules:** Covers basic projections, joins, aggregation, subqueries, window functions, and recursive CTEs.
+- **151 exercises across 18 modules:** Covers basic projections, joins, aggregation, subqueries, window functions, and recursive CTEs.
 - **Modern analytical SQL:** Practice modern clauses native to DuckDB, including `GROUP BY ALL`, `SELECT * EXCLUDE`, `SELECT * REPLACE`, and `QUALIFY`.
 - **Sub-millisecond local validation:** Compares query output against reference tables using typed comparisons, floating-point tolerance, and sorted row matching.
 - **Interactive schema inspector:** Browse database tables, column data types, and primary key constraints with one-click data previews.
@@ -153,7 +153,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) = 1;
 
 ## Curriculum
 
-The curriculum spans 18 progressive modules containing 149 practical exercises.
+The curriculum spans 18 progressive modules containing 151 practical exercises.
 
 <details open>
 <summary><b>View complete syllabus breakdown</b></summary>
@@ -168,7 +168,7 @@ The curriculum spans 18 progressive modules containing 149 practical exercises.
 | 05 | Grouping with GROUP BY | Group metrics, multi-column grouping, HAVING vs WHERE, GROUP BY ALL | 9 |
 | 06 | Joining Tables (JOIN) | INNER JOIN, multi-table joins, LEFT JOIN, finding missing records, ANTI JOIN | 14 |
 | 07 | Subqueries and CTEs | WHERE subqueries, IN subqueries, scalar expressions, WITH common table expressions | 10 |
-| 08 | Text, Dates, and CASE | String manipulation, COALESCE, conditional CASE statements, date math | 9 |
+| 08 | Text, Dates, and CASE | String manipulation, COALESCE, conditional CASE statements, date math | 11 |
 | 09 | Changing Data (DML) | Single and batch INSERT, targeted UPDATE, safe DELETE operations | 6 |
 | 10 | Advanced Aggregation | Conditional sums, ratio calculations, COUNT DISTINCT, distribution metrics | 5 |
 | 11 | Set Operations | Cross joins, UNION, UNION ALL, NOT EXISTS anti-joins | 4 |
@@ -179,7 +179,7 @@ The curriculum spans 18 progressive modules containing 149 practical exercises.
 | 16 | Case Study: School | Student GPAs, passing rates, course performance comparisons | 10 |
 | 17 | Practical Reporting | Business metrics, sales reporting, and analytical aggregations | 4 |
 | 18 | Interview Problems | Retention cohorts, top department earners, month-over-month growth rates | 14 |
-| **Total** | | | **149** |
+| **Total** | | | **151** |
 
 </details>
 

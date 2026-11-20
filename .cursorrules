@@ -34,7 +34,7 @@ When creating, updating, or reviewing exercises (`ExerciseDef`) or seed datasets
 
 ## 1. Automated Execution & Verification Gate
 - Every exercise's canonical solution MUST execute without errors on the real DuckDB-Wasm engine.
-- Always run the full verification test: `npm test` (`tests/verify_all_149.test.ts` and `tests/database.test.ts` must report **0 errors** and **0 unintended empty results**).
+- Always run the full verification test: `npm test` (`tests/verify_all_exercises.test.ts` and `tests/database.test.ts` must report **0 errors** and **0 unintended empty results**).
 - Run `npm run build` (`tsc && vite build`) to ensure type checking and asset bundling pass.
 
 ## 2. Result Data Quality & Meaningful Testing

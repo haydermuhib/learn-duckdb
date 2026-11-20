@@ -14,8 +14,20 @@ describe('Curriculum Data Integrity', () => {
     expect(moduleIds).toContain('interview');
   });
 
-  it('should contain exactly 149 interactive exercises', () => {
-    expect(EXERCISES.length).toBe(149);
+  it('should contain exactly 151 interactive exercises', () => {
+    expect(EXERCISES.length).toBe(151);
+
+    const concatPipeEx = getExerciseById('concat-pipe');
+    expect(concatPipeEx).toBeDefined();
+    expect(concatPipeEx?.steps[0].solution).toContain('||');
+
+    const concatEx = getExerciseById('concat');
+    expect(concatEx).toBeDefined();
+    expect(concatEx?.steps[0].solution).toContain('CONCAT(');
+
+    const concatWsEx = getExerciseById('concat-ws');
+    expect(concatWsEx).toBeDefined();
+    expect(concatWsEx?.steps[0].solution).toContain('CONCAT_WS(');
   });
 
   it('should ensure every exercise has unique id and valid properties', () => {

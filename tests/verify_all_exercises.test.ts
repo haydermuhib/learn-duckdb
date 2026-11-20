@@ -4,7 +4,7 @@ import * as path from 'path';
 import { EXERCISES, DATABASES } from '../src/data/curriculum';
 import { loadDatabaseTables } from '../src/engine/duckdb';
 
-describe('Run ALL 149 Canonical Solutions against Real DuckDB', () => {
+describe('Run ALL Canonical Solutions against Real DuckDB', () => {
   it('should initialize DuckDB and execute every exercise canonical solution', async () => {
     const DUCKDB_BUNDLES = {
       mvp: {

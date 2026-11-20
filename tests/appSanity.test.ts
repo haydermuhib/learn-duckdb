@@ -101,7 +101,7 @@ describe('Application Sanity & Health Checks', () => {
   });
 
   describe('Curriculum & Exercise Quality Sanity', () => {
-    it('should have all 149 exercises mapped to valid modules', () => {
+    it('should have all exercises mapped to valid modules', () => {
       const moduleMap = new Set(MODULES.map(m => m.id));
       for (const ex of EXERCISES) {
         expect(moduleMap.has(ex.module)).toBe(true);

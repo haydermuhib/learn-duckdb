@@ -2,11 +2,11 @@ import { ExerciseDef } from "../../types/curriculum";
 
 export const functions_exercises: ExerciseDef[] = [
   {
-    "id": "concat",
+    "id": "concat-pipe",
     "module": "functions",
     "db": "store",
     "title": "Joining text with ||",
-    "concept": "In DuckDB, PostgreSQL, and SQLite, || concatenates strings: name || ' - ' || city. DuckDB also supports CONCAT(name, ' - ', city).",
+    "concept": "In DuckDB, PostgreSQL, and SQLite, the || operator concatenates strings: name || ' - ' || city. Note that in standard SQL, if any operand is NULL, the entire expression evaluates to NULL.",
     "example": "SELECT name || ' (' || category || ')' FROM products;",
     "steps": [
       {
@@ -17,6 +17,46 @@ export const functions_exercises: ExerciseDef[] = [
         ],
         "requires": [
           "||"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "concat",
+    "module": "functions",
+    "db": "store",
+    "title": "Joining text with CONCAT",
+    "concept": "CONCAT(str1, str2, …) is a standard SQL function supported by DuckDB, PostgreSQL, and MySQL. Unlike the || operator, CONCAT() safely ignores NULL values instead of turning the whole result into NULL.",
+    "example": "SELECT CONCAT(name, ' (', category, ')') FROM products;",
+    "steps": [
+      {
+        "task": "Combine each customer’s name and city into a single column called contact using CONCAT, formatted like: Bilal - London.",
+        "solution": "SELECT CONCAT(name, ' - ', city) AS contact FROM customers",
+        "hints": [
+          "CONCAT(name, ' - ', city) AS contact"
+        ],
+        "requires": [
+          "CONCAT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "concat-ws",
+    "module": "functions",
+    "db": "store",
+    "title": "Joining text with separator: CONCAT_WS",
+    "concept": "CONCAT_WS(separator, str1, str2, …) stands for \"Concat With Separator\". The first argument is the separator placed between all non-NULL values. If a field is NULL (like a customer without an email), CONCAT_WS skips it cleanly without creating double delimiters.",
+    "example": "SELECT CONCAT_WS(' / ', name, category) FROM products;",
+    "steps": [
+      {
+        "task": "For each customer, combine their name, email, and city separated by ' - ' into a single column called contact_info.",
+        "solution": "SELECT CONCAT_WS(' - ', name, email, city) AS contact_info FROM customers",
+        "hints": [
+          "CONCAT_WS(' - ', name, email, city) AS contact_info"
+        ],
+        "requires": [
+          "CONCAT_WS"
         ]
       }
     ]

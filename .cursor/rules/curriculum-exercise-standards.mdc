@@ -15,7 +15,7 @@ When creating, updating, or reviewing exercises (`ExerciseDef`) or seed datasets
   ```bash
   npm test
   ```
-- The verification suite (`tests/verify_all_149.test.ts` and `tests/database.test.ts`) must report **0 errors** and **0 unintended empty results**.
+- The verification suite (`tests/verify_all_exercises.test.ts` and `tests/database.test.ts`) must report **0 errors** and **0 unintended empty results**.
 - Run `npm run build` (`tsc && vite build`) to ensure type checking and asset bundling pass.
 
 ---

@@ -143,6 +143,7 @@ export const functions_exercises: ExerciseDef[] = [
   },
   {
     "id": "cast",
+    "version": 2,
     "module": "functions",
     "db": "store",
     "title": "Converting types with CAST and ::",

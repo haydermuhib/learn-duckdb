@@ -11,7 +11,7 @@ import { CurriculumSidebar } from './CurriculumSidebar';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ConfirmResetModal } from './ConfirmResetModal';
 import { DialectCompatibility } from './DialectCompatibility';
-import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap, RotateCcw } from 'lucide-react';
 
 interface StudioLayoutProps {
   onBackToLanding: () => void;
@@ -20,6 +20,7 @@ interface StudioLayoutProps {
 }
 
 const STORAGE_KEY_COMPLETED = 'learn_duckdb_completed_exercises';
+const STORAGE_KEY_COMPLETED_VERSIONS = 'learn_duckdb_completed_versions';
 const STORAGE_KEY_ASSISTED = 'learn_duckdb_assisted_exercises';
 const STORAGE_KEY_CURRENT = 'learn_duckdb_current_id';
 const STORAGE_KEY_DRAFTS = 'learn_duckdb_drafts';
@@ -37,6 +38,15 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
+    }
+  });
+
+  const [completedVersions, setCompletedVersions] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_COMPLETED_VERSIONS);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
     }
   });
 
@@ -189,6 +199,16 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           return next;
         });
 
+        // Track completion version (for update detection)
+        const exerciseVersion = currentExercise.version || 1;
+        setCompletedVersions(prev => {
+          const next = { ...prev, [currentExercise.id]: exerciseVersion };
+          try {
+            localStorage.setItem(STORAGE_KEY_COMPLETED_VERSIONS, JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+
         // Track assisted status
         setAssistedIds(prev => {
           const next = new Set(prev);
@@ -272,6 +292,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       version: 1,
       exportedAt: new Date().toISOString(),
       completedIds: Array.from(completedIds),
+      completedVersions,
       assistedIds: Array.from(assistedIds),
       drafts,
       stats: {
@@ -296,15 +317,19 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const handleImportProgress = (
     completed: string[],
     assisted: string[],
-    importedDrafts?: Record<string, string>
+    importedDrafts?: Record<string, string>,
+    importedVersions?: Record<string, number>
   ) => {
     const nextCompleted = new Set(completed);
     const nextAssisted = new Set(assisted);
+    const nextVersions = importedVersions || {};
     setCompletedIds(nextCompleted);
     setAssistedIds(nextAssisted);
+    setCompletedVersions(nextVersions);
     try {
       localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
       localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
+      localStorage.setItem(STORAGE_KEY_COMPLETED_VERSIONS, JSON.stringify(nextVersions));
     } catch {}
 
     if (importedDrafts && typeof importedDrafts === 'object') {
@@ -333,10 +358,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const handleConfirmReset = () => {
     setCompletedIds(new Set());
     setAssistedIds(new Set());
+    setCompletedVersions({});
     setDrafts({});
     try {
       localStorage.removeItem(STORAGE_KEY_COMPLETED);
       localStorage.removeItem(STORAGE_KEY_ASSISTED);
+      localStorage.removeItem(STORAGE_KEY_COMPLETED_VERSIONS);
       localStorage.removeItem(STORAGE_KEY_DRAFTS);
     } catch {}
     setIsResetConfirmOpen(false);
@@ -370,6 +397,9 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   // Hints
   const currentStep = currentExercise.steps[0];
   const maxHints = currentStep?.hints?.length || 0;
+  const isExerciseUpdated =
+    completedIds.has(currentExercise.id) &&
+    (completedVersions[currentExercise.id] || 1) < (currentExercise.version || 1);
 
   const handleHint = useCallback(() => {
     setRevealedHints(prev => Math.min(prev + 1, maxHints));
@@ -534,6 +564,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           currentExerciseId={currentExercise.id}
           onSelectExercise={id => setCurrentId(id)}
           completedIds={completedIds}
+          completedVersions={completedVersions}
           assistedIds={assistedIds}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -648,9 +679,19 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
                 {/* Specific Task Objective */}
                 <div className="p-3 bg-duck-light border-2 border-duck-dark">
-                  <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider mb-1">
-                    Your Task:
-                  </span>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider">
+                      Your Task:
+                    </span>
+                    {isExerciseUpdated && (
+                      <span
+                        className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 bg-amber-200 border border-amber-400 text-amber-950 shrink-0"
+                        title="Updated with new requirements since you completed it"
+                      >
+                        <RotateCcw size={9} className="text-amber-800 shrink-0" /> Updated
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs font-bold text-ink leading-snug">
                     {currentStep?.task}
                   </p>
@@ -702,9 +743,16 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               {/* Quick Task Header banner on mobile */}
               <div className="lg:hidden p-2.5 bg-duck-light border-2 border-duck-dark shadow-xs flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider mb-0.5">
-                    Your Task:
-                  </span>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[10px] uppercase font-extrabold text-amber-900 block tracking-wider">
+                      Your Task:
+                    </span>
+                    {isExerciseUpdated && (
+                      <span className="inline-flex items-center gap-0.5 text-[8px] font-bold px-1 py-0.2 bg-amber-200 border border-amber-400 text-amber-950">
+                        <RotateCcw size={8} className="shrink-0" /> Updated
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs font-bold text-ink leading-snug line-clamp-3">
                     {currentStep?.task}
                   </p>

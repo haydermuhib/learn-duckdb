@@ -42,6 +42,7 @@ export interface ExerciseDef {
   steps: ExerciseStep[];
   isDuckDbFeature?: boolean;
   compatibility?: EngineCompatibility;
+  version?: number;
 }
 
 export interface ModuleDef {

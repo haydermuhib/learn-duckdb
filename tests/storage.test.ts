@@ -53,6 +53,29 @@ describe('Progress Backup & Draft Eviction Logic', () => {
     expect(importedDrafts).toBeUndefined();
   });
 
+  it('detects when an exercise was updated since the user completed it using content versions', () => {
+    // User completed cast at version 1
+    const completedIds = new Set(['cast', 'select-all']);
+    const completedVersions: Record<string, number> = { 'cast': 1, 'select-all': 1 };
+
+    // Exercise cast is updated to version 2 in curriculum
+    const exercises = [
+      { id: 'select-all', version: 1 },
+      { id: 'cast', version: 2 },
+    ];
+
+    const isSelectAllUpdated = completedIds.has('select-all') && (completedVersions['select-all'] || 1) < (exercises[0].version || 1);
+    const isCastUpdated = completedIds.has('cast') && (completedVersions['cast'] || 1) < (exercises[1].version || 1);
+
+    expect(isSelectAllUpdated).toBe(false);
+    expect(isCastUpdated).toBe(true);
+
+    // After re-solving, version is updated
+    completedVersions['cast'] = 2;
+    const isCastUpdatedAfterSolve = completedIds.has('cast') && (completedVersions['cast'] || 1) < (exercises[1].version || 1);
+    expect(isCastUpdatedAfterSolve).toBe(false);
+  });
+
   it('evicts oldest drafts when count exceeds the maximum limit (LRU)', () => {
     const MAX_SAVED_DRAFTS = 5;
     let drafts: Record<string, string> = {};

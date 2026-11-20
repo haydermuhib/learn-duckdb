@@ -11,24 +11,32 @@ import {
   X,
   Download,
   Upload,
+  RotateCcw,
 } from 'lucide-react';
 
 interface CurriculumSidebarProps {
   currentExerciseId: string;
   onSelectExercise: (id: string) => void;
   completedIds: Set<string>;
+  completedVersions?: Record<string, number>;
   assistedIds?: Set<string>;
   isOpen: boolean;
   onClose: () => void;
   onResetProgress?: () => void;
   onExportProgress?: () => void;
-  onImportProgress?: (completed: string[], assisted: string[], drafts?: Record<string, string>) => void;
+  onImportProgress?: (
+    completed: string[],
+    assisted: string[],
+    drafts?: Record<string, string>,
+    versions?: Record<string, number>
+  ) => void;
 }
 
 export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   currentExerciseId,
   onSelectExercise,
   completedIds,
+  completedVersions = {},
   assistedIds = new Set(),
   isOpen,
   onClose,
@@ -73,7 +81,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
           onImportProgress(
             data.completedIds,
             Array.isArray(data.assistedIds) ? data.assistedIds : [],
-            data.drafts && typeof data.drafts === 'object' ? data.drafts : undefined
+            data.drafts && typeof data.drafts === 'object' ? data.drafts : undefined,
+            data.completedVersions && typeof data.completedVersions === 'object'
+              ? data.completedVersions
+              : undefined
           );
         }
       } catch (err) {
@@ -215,7 +226,15 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                     <span className="truncate">{ex.title}</span>
                   </div>
                   {completedIds.has(ex.id) &&
-                    (assistedIds.has(ex.id) ? (
+                    ((completedVersions[ex.id] || 1) < (ex.version || 1) ? (
+                      <div
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-[9px] font-bold shrink-0 shadow-xs"
+                        title="Updated with new requirements since you completed it (Solve again to re-verify)"
+                      >
+                        <RotateCcw size={9} className="text-amber-800 shrink-0" />
+                        <span>Updated</span>
+                      </div>
+                    ) : assistedIds.has(ex.id) ? (
                       <div
                         className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
                         title="Completed with hints (Solve independently to earn mastery)"
@@ -311,7 +330,15 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                             </div>
 
                             {isDone &&
-                              (isAssisted ? (
+                              ((completedVersions[ex.id] || 1) < (ex.version || 1) ? (
+                                <div
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-[9px] font-bold shrink-0 shadow-xs"
+                                  title="Updated with new requirements since you completed it (Solve again to re-verify)"
+                                >
+                                  <RotateCcw size={9} className="text-amber-800 shrink-0" />
+                                  <span>Updated</span>
+                                </div>
+                              ) : isAssisted ? (
                                 <div
                                   className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
                                   title="Completed with hints (Solve independently to earn mastery)"

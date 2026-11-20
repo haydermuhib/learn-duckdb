@@ -39,6 +39,7 @@ describe('Curriculum Data Integrity', () => {
     expect(castEx?.steps[0].solution).toContain('CAST(');
     expect(castEx?.steps[0].solution).toContain('::');
     expect(castEx?.compatibility).toBeDefined();
+    expect(castEx?.version).toBe(2);
   });
 
   it('should ensure every exercise has unique id and valid properties', () => {

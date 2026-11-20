@@ -59,6 +59,20 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
     return Prec.highest(
       keymap.of([
         {
+          key: 'Shift-Enter',
+          run: () => {
+            onRun();
+            return true;
+          },
+        },
+        {
+          key: 'Escape',
+          run: (view) => {
+            view.contentDOM.blur();
+            return true;
+          },
+        },
+        {
           key: 'Ctrl-Enter',
           run: () => {
             handleExecute();
@@ -137,14 +151,19 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         },
       ])
     );
-  }, [handleExecute, onNext, onPrev, onToggleSidebar, onHint, handleFormat]);
+  }, [handleExecute, onRun, onNext, onPrev, onToggleSidebar, onHint, handleFormat]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Fallback for container-level key events
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if (e.shiftKey && e.key === 'Enter') {
+        e.preventDefault();
+        onRun();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         handleExecute();
+      } else if (e.key === 'Escape') {
+        (document.activeElement as HTMLElement)?.blur();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB')) {
         e.preventDefault();
         if (onToggleSidebar) onToggleSidebar();
@@ -192,13 +211,21 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             {isPlayground ? 'playground.sql (DuckDB)' : 'editor.sql (DuckDB)'}
           </span>
         </div>
-        <div className="hidden md:flex items-center gap-3 text-slate-400 font-mono text-[11px]">
+        <div className="hidden md:flex items-center gap-2.5 text-slate-400 font-mono text-[11px]">
           <span>
             Run:{' '}
             <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
-              Ctrl+Enter
+              Shift+Enter
             </kbd>
           </span>
+          {!isPlayground && (
+            <span>
+              Check:{' '}
+              <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">
+                Ctrl+Enter
+              </kbd>
+            </span>
+          )}
           <span>
             Format:{' '}
             <kbd className="bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded border border-slate-600">

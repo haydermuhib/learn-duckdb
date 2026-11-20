@@ -7,14 +7,15 @@ interface KeyboardShortcutsModalProps {
 }
 
 const SHORTCUTS = [
-  { keys: ['Ctrl', 'Enter'], desc: 'Run SQL & Check Answer (Mac: ⌘ + Enter)' },
+  { keys: ['Shift', 'Enter'], desc: 'Run SQL query without checking answer' },
+  { keys: ['Ctrl', 'Enter'], desc: 'Run SQL & Check Answer against solution (Mac: ⌘ + Enter)' },
+  { keys: ['Esc'], desc: 'Unfocus code editor / Close dialogs' },
   { keys: ['Alt', '→'], desc: 'Go to Next Exercise' },
   { keys: ['Alt', '←'], desc: 'Go to Previous Exercise' },
   { keys: ['Ctrl', 'B'], desc: 'Toggle Curriculum Sidebar (Mac: ⌘ + B)' },
   { keys: ['Alt', 'Shift', 'F'], desc: 'Prettify & Format SQL Query (or Alt + F)' },
   { keys: ['Alt', 'H'], desc: 'Reveal Next Hint' },
   { keys: ['?'], desc: 'Toggle this Shortcuts Guide' },
-  { keys: ['Esc'], desc: 'Close dialogs or drawers' },
 ];
 
 export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ isOpen, onClose }) => {

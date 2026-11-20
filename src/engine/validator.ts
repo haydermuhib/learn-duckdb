@@ -9,6 +9,59 @@ export interface ValidationFeedback {
   error?: string;
 }
 
+/**
+ * Strips SQL comments (both line comments -- and block comments /* ... *\/)
+ * and string literal contents ('...') so that keywords or syntax operators
+ * hidden inside comments or string literals cannot bypass requirements.
+ */
+export function stripSqlCommentsAndStrings(sql: string): string {
+  let result = '';
+  let i = 0;
+  const len = sql.length;
+  let inString = false;
+
+  while (i < len) {
+    const ch = sql[i];
+    const next = sql[i + 1];
+
+    if (inString) {
+      if (ch === "'") {
+        if (next === "'") {
+          i += 2;
+          continue;
+        }
+        inString = false;
+        result += "''"; // preserve empty quote boundaries
+      }
+      i++;
+    } else {
+      if (ch === "'") {
+        inString = true;
+        i++;
+      } else if (ch === '-' && next === '-') {
+        // Line comment: skip until newline
+        i += 2;
+        while (i < len && sql[i] !== '\n' && sql[i] !== '\r') {
+          i++;
+        }
+        result += ' ';
+      } else if (ch === '/' && next === '*') {
+        // Block comment: skip until */
+        i += 2;
+        while (i < len && !(sql[i] === '*' && sql[i + 1] === '/')) {
+          i++;
+        }
+        i += 2; // skip */
+        result += ' ';
+      } else {
+        result += ch;
+        i++;
+      }
+    }
+  }
+  return result;
+}
+
 export async function validateUserQuery(
   exercise: ExerciseDef,
   stepIndex: number,
@@ -24,16 +77,28 @@ export async function validateUserQuery(
     };
   }
 
-  // 1. Check keyword requirements if specified
+  // 1. Check keyword requirements if specified (ignoring comments and string literals)
   if (step.requires && step.requires.length > 0) {
-    const upperSql = trimmedSql.toUpperCase();
+    const cleanSql = stripSqlCommentsAndStrings(trimmedSql).toUpperCase();
+    const missing: string[] = [];
+
     for (const req of step.requires) {
-      if (!upperSql.includes(req.toUpperCase())) {
+      if (!cleanSql.includes(req.toUpperCase())) {
+        missing.push(req);
+      }
+    }
+
+    if (missing.length > 0) {
+      if (missing.length === 1) {
         return {
           pass: false,
-          message: `Your query should use the keyword or clause: ${req}`,
+          message: `Your query must include the required syntax: ${missing[0]}`,
         };
       }
+      return {
+        pass: false,
+        message: `Your query must include each of the following required elements: ${missing.join(' and ')}`,
+      };
     }
   }
 

@@ -74,3 +74,14 @@ In the exercise metadata and explanation area (`concept` and `title`):
 - Never use Spanish or legacy placeholder aliases (`jefe`, `porcentaje`, `promedio_ponderado`).
 - All column aliases in tasks, solutions, and hints must be clean, idiomatic English (`manager`, `pass_pct`, `weighted_avg`, `units_sold`, `inventory_value`).
 - When a task prompts the student with `"(as <column_name>)"`, the canonical solution and hint must use the exact same column alias.
+
+---
+
+## 8. Anti-Bypass Guardrails & Keyword Requirements (`requires`)
+- **Anti-Cheat Validation:**
+  - The validator automatically strips SQL comments (`-- line comment` and `/* block comment */`) as well as string literals (`'...'`) before inspecting `step.requires`.
+  - Hiding required keywords or operators in comments (e.g. `--::` or `/* CAST */`) or inside string literals will not satisfy validation.
+- **Multi-Keyword Enforcement:**
+  - When an exercise teaches multiple syntaxes in a single challenge (e.g. `requires: ["CAST", "::"]` or `requires: ["DATE_TRUNC", "EXTRACT"]`), the validator enforces that **all** elements are present in active executable SQL.
+  - The validator reports clear, unambiguous error messages using `"and"` (e.g. `"Your query must include each of the following required elements: CAST and ::"` or `"Your query must include the required syntax: ::"` when one is missing), never ambiguous "or" phrasing.
+  - Authors designing multi-clause exercises must ensure the canonical solution and hints explicitly demonstrate both requirements and that tasks clearly explain the purpose of each column.

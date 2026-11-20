@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { QueryResult } from '../src/engine/duckdb';
-import { compareResults } from '../src/engine/validator';
+import { compareResults, stripSqlCommentsAndStrings } from '../src/engine/validator';
 
 describe('Validator Logic & Result Matching', () => {
 
@@ -156,5 +156,16 @@ describe('Validator Logic & Result Matching', () => {
     };
 
     expect(compareResults(resA, resMismatch, false)).toBe(false);
+  });
+
+  it('should strip comments and string literal contents to prevent keyword cheat bypasses', () => {
+    // Line comments
+    expect(stripSqlCommentsAndStrings('SELECT name FROM products --:: cheat')).toBe('SELECT name FROM products  ');
+    // Block comments
+    expect(stripSqlCommentsAndStrings('SELECT name /* :: cheat */ FROM products')).toBe('SELECT name   FROM products');
+    // String literals
+    expect(stripSqlCommentsAndStrings("SELECT name, '::' AS op FROM products")).toBe("SELECT name, '' AS op FROM products");
+    // Preserves legitimate SQL code
+    expect(stripSqlCommentsAndStrings('SELECT name, (price * 1.16)::INTEGER FROM products')).toBe('SELECT name, (price * 1.16)::INTEGER FROM products');
   });
 });

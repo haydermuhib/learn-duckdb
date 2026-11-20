@@ -1,4 +1,5 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
+import * as arrow from 'apache-arrow';
 import { initDuckDB, QueryResult, loadDatabaseTables } from './duckdb';
 import { DATABASES } from '../data/databases';
 import {
@@ -196,8 +197,14 @@ export async function executePlaygroundQuery(
   const columns = arrowResult.schema.fields.map(f => f.name);
 
   const children: any[] = [];
+  const colTypes: { isDate: boolean; isTimestamp: boolean }[] = [];
   for (let c = 0; c < numCols; c++) {
     children.push(arrowResult.getChildAt(c));
+    const fieldType = arrowResult.schema.fields[c]?.type;
+    colTypes.push({
+      isDate: Boolean(fieldType && arrow.DataType.isDate(fieldType)),
+      isTimestamp: Boolean(fieldType && arrow.DataType.isTimestamp(fieldType)),
+    });
   }
 
   const rows: any[][] = [];
@@ -205,8 +212,17 @@ export async function executePlaygroundQuery(
     const rowValues: any[] = [];
     for (let c = 0; c < numCols; c++) {
       let val = children[c]?.get(r);
+      if (val === null || val === undefined) {
+        rowValues.push(null);
+        continue;
+      }
       if (typeof val === 'bigint') {
         val = Number(val);
+      }
+      if (colTypes[c]?.isDate) {
+        val = new Date(val).toISOString().substring(0, 10);
+      } else if (colTypes[c]?.isTimestamp) {
+        val = new Date(val).toISOString().replace('T', ' ').substring(0, 19);
       } else if (val instanceof Date) {
         val = val.toISOString().replace('T', ' ').substring(0, 19);
       } else if (typeof val === 'object' && val !== null) {

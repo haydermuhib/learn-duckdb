@@ -13,15 +13,11 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!compatibility && !isDuckDbFeature) {
-    return null;
-  }
-
   // Derive engine status
   const duckStatus = 'native';
   const pgStatus = compatibility?.postgres ?? (isDuckDbFeature ? 'unsupported' : 'native');
-  const myStatus = compatibility?.mysql ?? (isDuckDbFeature ? 'unsupported' : 'unsupported');
-  const sqStatus = compatibility?.sqlite ?? (isDuckDbFeature ? 'unsupported' : 'unsupported');
+  const myStatus = compatibility?.mysql ?? (isDuckDbFeature ? 'unsupported' : 'native');
+  const sqStatus = compatibility?.sqlite ?? (isDuckDbFeature ? 'unsupported' : 'native');
 
   const getStatusType = (status: string | undefined): 'native' | 'unsupported' | 'alt' => {
     if (!status) return 'unsupported';
@@ -29,6 +25,42 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
     if (lower.startsWith('native')) return 'native';
     if (lower.startsWith('unsupported')) return 'unsupported';
     return 'alt';
+  };
+
+  const isAllNative =
+    !isDuckDbFeature &&
+    getStatusType(duckStatus) === 'native' &&
+    getStatusType(pgStatus) === 'native' &&
+    getStatusType(myStatus) === 'native' &&
+    getStatusType(sqStatus) === 'native';
+
+  const renderCategoryBadge = () => {
+    if (isDuckDbFeature) {
+      return (
+        <span className="text-[9px] font-mono font-extrabold bg-amber-200 text-amber-950 px-1.5 py-0.2 border border-amber-400 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
+          <Sparkles size={8} className="text-amber-800 shrink-0" /> DuckDB Only
+        </span>
+      );
+    }
+    if (isAllNative) {
+      return (
+        <span className="text-[9px] font-mono font-extrabold bg-emerald-100 text-emerald-950 px-1.5 py-0.2 border border-emerald-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
+          <Check size={8} strokeWidth={3} className="text-emerald-800 shrink-0" /> All Engines
+        </span>
+      );
+    }
+    if (getStatusType(pgStatus) === 'native' && (getStatusType(myStatus) !== 'native' || getStatusType(sqStatus) !== 'native')) {
+      return (
+        <span className="text-[9px] font-mono font-extrabold bg-sky-100 text-sky-950 px-1.5 py-0.2 border border-sky-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
+          Postgres & DuckDB
+        </span>
+      );
+    }
+    return (
+      <span className="text-[9px] font-mono font-extrabold bg-stone-100 text-stone-900 px-1.5 py-0.2 border border-stone-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
+        Multi-Engine
+      </span>
+    );
   };
 
   const renderMicroChip = (status: string | undefined) => {
@@ -67,14 +99,15 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 
     if (type === 'native') {
       const detail = status.replace(/^native\s*(\((.*)\))?$/i, '$2').trim();
+      const displayDetail = detail || (isAllNative ? 'ANSI standard SQL' : undefined);
       return (
         <div className="flex flex-col gap-0.5">
           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-300 w-fit">
             <Check size={10} className="shrink-0" /> Native
           </span>
-          {detail && (
+          {displayDetail && (
             <span className="text-[10px] text-stone-600 font-mono mt-0.5 leading-snug break-words">
-              {detail}
+              {displayDetail}
             </span>
           )}
         </div>
@@ -109,6 +142,14 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
     );
   };
 
+  const defaultNotes = isAllNative
+    ? 'Standard ANSI SQL syntax supported identically across DuckDB, PostgreSQL, MySQL, and SQLite.'
+    : isDuckDbFeature
+    ? 'DuckDB analytical extension. Standard SQL engines (Postgres, MySQL, SQLite) require traditional ANSI syntax (e.g. explicit column lists, subqueries, or CTEs).'
+    : undefined;
+
+  const notesToDisplay = compatibility?.notes || defaultNotes;
+
   return (
     <div className="border-2 border-ink bg-white my-2.5 shadow-brutal-xs overflow-hidden">
       {/* Clickable Header Bar */}
@@ -123,15 +164,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
           <span className="font-mono text-[11px] font-extrabold text-ink uppercase tracking-wide whitespace-nowrap">
             Engine Portability
           </span>
-          {isDuckDbFeature ? (
-            <span className="text-[9px] font-mono font-extrabold bg-amber-200 text-amber-950 px-1.5 py-0.2 border border-amber-400 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
-              <Sparkles size={8} className="text-amber-800 shrink-0" /> DuckDB Only
-            </span>
-          ) : (
-            <span className="text-[9px] font-mono font-extrabold bg-sky-100 text-sky-950 px-1.5 py-0.2 border border-sky-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
-              Postgres & DuckDB
-            </span>
-          )}
+          {renderCategoryBadge()}
         </div>
 
         <div className="flex items-center shrink-0">
@@ -204,10 +237,10 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
             </div>
           </div>
 
-          {compatibility?.notes && (
+          {notesToDisplay && (
             <div className="flex items-start gap-1.5 text-[11px] text-sky-950 bg-sky-50 border border-sky-300 p-2 leading-relaxed">
               <Info size={13} className="text-sky-700 shrink-0 mt-0.5" />
-              <span>{compatibility.notes}</span>
+              <span>{notesToDisplay}</span>
             </div>
           )}
         </div>

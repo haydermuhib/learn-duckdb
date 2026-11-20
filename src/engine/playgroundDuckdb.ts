@@ -1,6 +1,6 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
 import * as arrow from 'apache-arrow';
-import { initDuckDB, QueryResult, loadDatabaseTables } from './duckdb';
+import { initDuckDB, QueryResult, loadDatabaseTables, extractArrowTable } from './duckdb';
 import { DATABASES } from '../data/databases';
 import {
   DEFAULT_DATASET_CSV,
@@ -192,62 +192,7 @@ export async function executePlaygroundQuery(
   const endTime = performance.now();
   const executionTimeMs = Math.round(endTime - startTime);
 
-  const numCols = arrowResult.numCols;
-  const numRows = arrowResult.numRows;
-  const columns = arrowResult.schema.fields.map(f => f.name);
-
-  const children: any[] = [];
-  const colTypes: { isDate: boolean; isTimestamp: boolean; isDecimal: boolean; scale: number }[] = [];
-  for (let c = 0; c < numCols; c++) {
-    children.push(arrowResult.getChildAt(c));
-    const fieldType = arrowResult.schema.fields[c]?.type;
-    const isDecimal = Boolean(fieldType && arrow.DataType.isDecimal(fieldType));
-    colTypes.push({
-      isDate: Boolean(fieldType && arrow.DataType.isDate(fieldType)),
-      isTimestamp: Boolean(fieldType && arrow.DataType.isTimestamp(fieldType)),
-      isDecimal,
-      scale: isDecimal ? (fieldType as any).scale || 0 : 0,
-    });
-  }
-
-  const rows: any[][] = [];
-  for (let r = 0; r < numRows; r++) {
-    const rowValues: any[] = [];
-    for (let c = 0; c < numCols; c++) {
-      let val = children[c]?.get(r);
-      if (val === null || val === undefined) {
-        rowValues.push(null);
-        continue;
-      }
-      if (typeof val === 'bigint') {
-        val = Number(val);
-      }
-      if (colTypes[c]?.isDecimal) {
-        const scale = colTypes[c].scale;
-        const unscaledStr = String(val);
-        if (scale > 0) {
-          const isNegative = unscaledStr.startsWith('-');
-          const digits = isNegative ? unscaledStr.slice(1) : unscaledStr;
-          const padded = digits.padStart(scale + 1, '0');
-          const integerPart = padded.slice(0, padded.length - scale);
-          const fractionalPart = padded.slice(padded.length - scale);
-          val = Number((isNegative ? '-' : '') + integerPart + '.' + fractionalPart);
-        } else {
-          val = Number(unscaledStr);
-        }
-      } else if (colTypes[c]?.isDate) {
-        val = new Date(val).toISOString().substring(0, 10);
-      } else if (colTypes[c]?.isTimestamp) {
-        val = new Date(val).toISOString().replace('T', ' ').substring(0, 19);
-      } else if (val instanceof Date) {
-        val = val.toISOString().replace('T', ' ').substring(0, 19);
-      } else if (typeof val === 'object' && val !== null) {
-        val = JSON.stringify(val);
-      }
-      rowValues.push(val);
-    }
-    rows.push(rowValues);
-  }
+  const { columns, rows } = extractArrowTable(arrowResult);
 
   return {
     columns,

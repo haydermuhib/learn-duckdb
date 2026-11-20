@@ -156,7 +156,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Fallback for container-level key events
-      if (e.shiftKey && e.key === 'Enter') {
+      if (e.shiftKey && !e.metaKey && !e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         onRun();
       } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {

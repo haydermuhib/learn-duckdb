@@ -137,17 +137,10 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
   }
 }
 
-export async function executeQuery(sql: string): Promise<QueryResult> {
-  const { conn } = await initDuckDB();
-  const startTime = performance.now();
-
-  const arrowTable = await conn.query(sql);
-  const endTime = performance.now();
-  const executionTimeMs = Math.round((endTime - startTime) * 100) / 100;
-
+export function extractArrowTable(arrowTable: any): { columns: string[]; rows: any[][] } {
   const numCols = arrowTable.numCols;
   const numRows = arrowTable.numRows;
-  const columns = arrowTable.schema.fields.map(f => f.name);
+  const columns = arrowTable.schema.fields.map((f: any) => f.name);
 
   const children: any[] = [];
   const colTypes: { isDate: boolean; isTimestamp: boolean; isDecimal: boolean; scale: number }[] = [];
@@ -172,9 +165,6 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
         rowArr.push(null);
         continue;
       }
-      if (typeof val === 'bigint') {
-        val = Number(val);
-      }
       if (colTypes[c]?.isDecimal) {
         const scale = colTypes[c].scale;
         const unscaledStr = String(val);
@@ -188,17 +178,34 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
         } else {
           val = Number(unscaledStr);
         }
+      } else if (typeof val === 'bigint') {
+        val = Number(val);
       } else if (colTypes[c]?.isDate) {
         val = new Date(val).toISOString().substring(0, 10);
       } else if (colTypes[c]?.isTimestamp) {
         val = new Date(val).toISOString().replace('T', ' ').substring(0, 19);
       } else if (val instanceof Date) {
         val = val.toISOString().replace('T', ' ').substring(0, 19);
+      } else if (typeof val === 'object' && val !== null) {
+        val = JSON.stringify(val);
       }
       rowArr.push(val);
     }
     rows.push(rowArr);
   }
+
+  return { columns, rows };
+}
+
+export async function executeQuery(sql: string): Promise<QueryResult> {
+  const { conn } = await initDuckDB();
+  const startTime = performance.now();
+
+  const arrowTable = await conn.query(sql);
+  const endTime = performance.now();
+  const executionTimeMs = Math.round((endTime - startTime) * 100) / 100;
+
+  const { columns, rows } = extractArrowTable(arrowTable);
 
   return {
     columns,

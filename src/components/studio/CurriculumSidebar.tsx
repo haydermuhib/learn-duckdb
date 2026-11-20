@@ -126,7 +126,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] bg-ink/40 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] bg-ink/50 z-30 lg:hidden"
         />
       )}
 
@@ -171,7 +171,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             />
             <input
               type="text"
-              placeholder="Search 149+ exercises..."
+              placeholder="Search 151 exercises..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 text-xs font-sans border-2 border-ink focus:outline-none focus:bg-duck-light/40"

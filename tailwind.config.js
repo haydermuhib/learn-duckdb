@@ -9,6 +9,9 @@ export default {
       screens: {
         'xs': '420px',
       },
+      zIndex: {
+        '35': '35',
+      },
       colors: {
         canvas: '#FBF9F1',
         'surface-card': '#FFFFFF',

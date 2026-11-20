@@ -204,7 +204,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Top Header */}
-      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-30">
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             type="button"

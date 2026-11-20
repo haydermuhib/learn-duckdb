@@ -146,7 +146,7 @@ export const functions_exercises: ExerciseDef[] = [
     "module": "functions",
     "db": "store",
     "title": "Converting types with CAST and ::",
-    "concept": "In standard SQL, CAST(value AS INTEGER) converts types by truncating decimals (unlike ROUND which rounds). DuckDB and PostgreSQL also support the concise shorthand :: operator: (x)::INTEGER or '2026-01-01'::DATE.",
+    "concept": "In SQL, CAST(value AS INTEGER) converts a decimal or string to an integer (rounding to the nearest whole number in DuckDB and PostgreSQL). DuckDB and PostgreSQL also support the concise shorthand :: operator: (x)::INTEGER or '2026-01-01'::DATE.",
     "example": "SELECT CAST(2.9 AS INTEGER) AS cast_val, 2.9::INTEGER AS colon_val;",
     "compatibility": {
       "postgres": "native (the :: shorthand originated in PostgreSQL)",

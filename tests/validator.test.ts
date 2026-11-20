@@ -57,6 +57,23 @@ describe('Validator Logic & Result Matching', () => {
     expect(compareResults(resA, resB, false)).toBe(true);
   });
 
+  it('should match decimals and formatted currency results accurately', () => {
+    const resA: QueryResult = {
+      columns: ['price', 'taxed'],
+      rows: [[29.99, 34.7884], [1299.99, 1507.9884]],
+      executionTimeMs: 1.0,
+      rowCount: 2,
+    };
+    const resB: QueryResult = {
+      columns: ['price', 'taxed'],
+      rows: [[29.99, 34.7884], [1299.99, 1507.9884]],
+      executionTimeMs: 1.0,
+      rowCount: 2,
+    };
+
+    expect(compareResults(resA, resB, true)).toBe(true);
+  });
+
   it('should fail when row counts or columns mismatch', () => {
     const resA: QueryResult = {
       columns: ['name'],

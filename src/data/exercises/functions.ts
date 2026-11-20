@@ -8,6 +8,12 @@ export const functions_exercises: ExerciseDef[] = [
     "title": "Joining text with ||",
     "concept": "In DuckDB, PostgreSQL, and SQLite, the || operator concatenates strings: name || ' - ' || city. Note that in standard SQL, if any operand is NULL, the entire expression evaluates to NULL.",
     "example": "SELECT name || ' (' || category || ')' FROM products;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "CONCAT() preferred (|| is logical OR in standard MySQL mode)",
+      "sqlite": "native",
+      "notes": "In standard ANSI SQL and PostgreSQL, || produces NULL if any operand is NULL. In MySQL, || defaults to boolean OR unless PIPES_AS_CONCAT mode is enabled."
+    },
     "steps": [
       {
         "task": "Show one column called contact with each customer’s name and city like this: Bilal - London.",
@@ -28,6 +34,12 @@ export const functions_exercises: ExerciseDef[] = [
     "title": "Joining text with CONCAT",
     "concept": "CONCAT(str1, str2, …) is a standard SQL function supported by DuckDB, PostgreSQL, and MySQL. Unlike the || operator, CONCAT() safely ignores NULL values instead of turning the whole result into NULL.",
     "example": "SELECT CONCAT(name, ' (', category, ')') FROM products;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "native",
+      "sqlite": "Unsupported (use || operator instead)",
+      "notes": "CONCAT() safely ignores NULL values across DuckDB, PostgreSQL, and MySQL. SQLite does not have a built-in CONCAT() function."
+    },
     "steps": [
       {
         "task": "Combine each customer’s name and city into a single column called contact using CONCAT, formatted like: Bilal - London.",
@@ -48,6 +60,12 @@ export const functions_exercises: ExerciseDef[] = [
     "title": "Joining text with separator: CONCAT_WS",
     "concept": "CONCAT_WS(separator, str1, str2, …) stands for \"Concat With Separator\". The first argument is the separator placed between all non-NULL values. If a field is NULL (like a customer without an email), CONCAT_WS skips it cleanly without creating double delimiters.",
     "example": "SELECT CONCAT_WS(' / ', name, category) FROM products;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "native",
+      "sqlite": "Unsupported (requires custom CASE / || expressions)",
+      "notes": "CONCAT_WS is supported identically in DuckDB, PostgreSQL, and MySQL. It automatically skips NULL values without leaving duplicate delimiters."
+    },
     "steps": [
       {
         "task": "For each customer, combine their name, email, and city separated by ' - ' into a single column called contact_info.",

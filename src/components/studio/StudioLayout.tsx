@@ -10,6 +10,7 @@ import { SchemaExplorer } from './SchemaExplorer';
 import { CurriculumSidebar } from './CurriculumSidebar';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ConfirmResetModal } from './ConfirmResetModal';
+import { DialectCompatibility } from './DialectCompatibility';
 import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap } from 'lucide-react';
 
 interface StudioLayoutProps {
@@ -638,6 +639,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
                     <code>{currentExercise.example}</code>
                   </div>
                 )}
+
+                {/* Engine Portability & Dialect Compatibility */}
+                <DialectCompatibility
+                  compatibility={currentExercise.compatibility}
+                  isDuckDbFeature={currentExercise.isDuckDbFeature}
+                />
 
                 {/* Specific Task Objective */}
                 <div className="p-3 bg-duck-light border-2 border-duck-dark">

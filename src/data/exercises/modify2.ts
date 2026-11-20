@@ -119,6 +119,12 @@ export const modify2_exercises: ExerciseDef[] = [
     "title": "Insert or update: ON CONFLICT",
     "concept": "Inserting a row whose key already exists is an error. ON CONFLICT (column) DO UPDATE SET … updates the existing row instead; excluded.column is the value you tried to insert. This is called an upsert. MySQL writes it ON DUPLICATE KEY UPDATE.",
     "example": "INSERT INTO products (id, name, stock) VALUES (8, 'Notebook', 5) ON CONFLICT (id) DO NOTHING;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "ON DUPLICATE KEY UPDATE stock = stock + VALUES(stock)",
+      "sqlite": "native (SQLite 3.24+)",
+      "notes": "ON CONFLICT (...) DO UPDATE is standard in PostgreSQL, DuckDB, and modern SQLite. MySQL uses ON DUPLICATE KEY UPDATE."
+    },
     "steps": [
       {
         "task": "Ten Headphones arrived (id 4, Electronics, price 899). Insert them with an INSERT that, since the id already exists, adds those 10 units to the current stock.",

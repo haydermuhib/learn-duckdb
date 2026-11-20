@@ -115,6 +115,12 @@ export const joins_exercises: ExerciseDef[] = [
     "isDuckDbFeature": true,
     "concept": "In standard SQL, finding unmatched rows requires a clunky pattern: LEFT JOIN followed by WHERE right_table.id IS NULL. DuckDB introduces first-class native ANTI JOIN. Simply write `FROM table_a ANTI JOIN table_b ON ...` to directly return rows from the left table that have NO match in the right table (DuckDB uses the exact keyword ANTI JOIN, without the word LEFT). DuckDB also supports SEMI JOIN to find rows that DO have a match.",
     "example": "SELECT pr.name FROM products pr ANTI JOIN order_items d ON pr.id = d.product_id;",
+    "compatibility": {
+      "postgres": "Use NOT EXISTS or LEFT JOIN ... WHERE right.id IS NULL",
+      "mysql": "Use NOT EXISTS or LEFT JOIN ... WHERE right.id IS NULL",
+      "sqlite": "Use NOT EXISTS or LEFT JOIN ... WHERE right.id IS NULL",
+      "notes": "DuckDB elevates ANTI JOIN and SEMI JOIN into first-class SQL keywords. Standard PostgreSQL, MySQL, and SQLite use NOT EXISTS or an unmatched LEFT JOIN."
+    },
     "steps": [
       {
         "task": "Show the names of the customers who have never placed an order using DuckDB's native ANTI JOIN.",
@@ -199,6 +205,12 @@ export const joins_exercises: ExerciseDef[] = [
     "title": "RIGHT JOIN and FULL OUTER JOIN",
     "concept": "RIGHT JOIN is a LEFT JOIN reversed: it keeps every row of the right table. FULL OUTER JOIN keeps both sides and fills unmatched columns with NULL. MySQL has no FULL JOIN; it is simulated there with a UNION of two LEFT JOINs.",
     "example": "SELECT e.name, d.name FROM employees e RIGHT JOIN departments d ON e.department_id = d.id;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "unsupported (simulated via LEFT JOIN UNION RIGHT JOIN)",
+      "sqlite": "unsupported (simulated via LEFT JOIN UNION ALL)",
+      "notes": "FULL OUTER JOIN is standard in PostgreSQL and DuckDB. In MySQL and SQLite, it must be simulated using set operations."
+    },
     "steps": [
       {
         "task": "Show each employee’s name next to their department name, including the employee with no department and the department with no employees.",

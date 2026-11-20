@@ -8,6 +8,12 @@ export const recursive_exercises: ExerciseDef[] = [
     "title": "Generating a series with WITH RECURSIVE",
     "concept": "WITH RECURSIVE has two parts joined by UNION ALL: a starting case and a query that refers to the CTE itself to produce the next row. It repeats until that query returns nothing, so it needs a stop condition.",
     "example": "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 2 FROM n WHERE x < 9) SELECT x FROM n;",
+    "compatibility": {
+      "postgres": "native (also supports GENERATE_SERIES)",
+      "mysql": "native (MySQL 8.0+)",
+      "sqlite": "native (SQLite 3.8.3+)",
+      "notes": "WITH RECURSIVE is standard across modern SQL engines. DuckDB and PostgreSQL also feature a built-in generate_series(start, stop) table function."
+    },
     "steps": [
       {
         "task": "Generate the numbers 1 to 10 and, in another column, their square.",

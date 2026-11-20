@@ -128,6 +128,12 @@ export const order_exercises: ExerciseDef[] = [
     "title": "DuckDB Superpower: ORDER BY ALL",
     "concept": "Just like GROUP BY ALL, DuckDB lets you order by all selected columns in left-to-right order using ORDER BY ALL.",
     "example": "SELECT category, name, price FROM products ORDER BY ALL DESC;",
+    "compatibility": {
+      "postgres": "unsupported (must write ORDER BY 1, 2, 3 or column names)",
+      "mysql": "unsupported",
+      "sqlite": "unsupported",
+      "notes": "ORDER BY ALL automatically orders by all selected columns left-to-right. Also supported in Snowflake."
+    },
     "steps": [
       {
         "task": "Show category, name, and price from products, ordered by all columns using ORDER BY ALL.",

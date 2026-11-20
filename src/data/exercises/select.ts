@@ -106,6 +106,12 @@ export const select_exercises: ExerciseDef[] = [
     "title": "DuckDB Superpower: SELECT * EXCLUDE",
     "concept": "In standard SQL, if you want all columns except one, you must type every column name manually. DuckDB gives you EXCLUDE (column), keeping every column except the ones you specify!",
     "example": "SELECT * EXCLUDE (email) FROM customers;",
+    "compatibility": {
+      "postgres": "unsupported (must list remaining columns explicitly)",
+      "mysql": "unsupported",
+      "sqlite": "unsupported",
+      "notes": "SELECT * EXCLUDE is a DuckDB analytical superpower. Also supported in Snowflake and Google BigQuery."
+    },
     "steps": [
       {
         "task": "Select all columns from products except the stock column using DuckDB's EXCLUDE clause.",
@@ -125,6 +131,12 @@ export const select_exercises: ExerciseDef[] = [
     "title": "DuckDB Superpower: SELECT * REPLACE",
     "concept": "DuckDB allows you to modify specific columns on the fly without rewriting the entire column list using REPLACE (expression AS column_name).",
     "example": "SELECT * REPLACE (price * 1.1 AS price) FROM products;",
+    "compatibility": {
+      "postgres": "unsupported (must write full SELECT list)",
+      "mysql": "unsupported",
+      "sqlite": "unsupported",
+      "notes": "SELECT * REPLACE allows inline transformations without rewriting schemas. Also supported in Google BigQuery and Snowflake."
+    },
     "steps": [
       {
         "task": "Select all columns from products, but replace the price with price * 1.2 using the REPLACE clause.",

@@ -113,6 +113,12 @@ export const group_exercises: ExerciseDef[] = [
     "title": "Joining a group’s values: STRING_AGG",
     "concept": "STRING_AGG(column, ', ') joins each group's values into a single text string separated by a delimiter. You can add ORDER BY inside the parentheses to control the order. (While SQLite used GROUP_CONCAT, modern SQL standards and DuckDB use STRING_AGG).",
     "example": "SELECT city, STRING_AGG(name, ', ') FROM customers GROUP BY city;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "GROUP_CONCAT(name ORDER BY name SEPARATOR ', ')",
+      "sqlite": "GROUP_CONCAT(name, ', ')",
+      "notes": "STRING_AGG is the modern SQL standard supported by PostgreSQL and DuckDB. Older engines (MySQL & SQLite) use GROUP_CONCAT."
+    },
     "steps": [
       {
         "task": "Show each category with the list of its products in alphabetical order, separated by comma and space (', '). Name the column product_list.",
@@ -174,6 +180,12 @@ export const group_exercises: ExerciseDef[] = [
     "title": "DuckDB Superpower: GROUP BY ALL",
     "concept": "DuckDB eliminates the tedious repetition of GROUP BY column1, column2... with GROUP BY ALL. DuckDB automatically infers all non-aggregated columns and groups by them!",
     "example": "SELECT category, COUNT(*), AVG(price) FROM products GROUP BY ALL;",
+    "compatibility": {
+      "postgres": "unsupported (must list all non-aggregated columns)",
+      "mysql": "unsupported",
+      "sqlite": "unsupported",
+      "notes": "GROUP BY ALL inspects the SELECT list and groups by all non-aggregate columns automatically. Also supported in Snowflake."
+    },
     "steps": [
       {
         "task": "Show category and total stock per category (SUM(stock)) using GROUP BY ALL.",

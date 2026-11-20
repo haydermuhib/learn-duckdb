@@ -284,6 +284,12 @@ export const window_exercises: ExerciseDef[] = [
     "title": "DuckDB Superpower: The QUALIFY Clause",
     "concept": "In Postgres or MySQL, filtering by a window function requires nesting your query inside a CTE or subquery. DuckDB supports QUALIFY, which works like HAVING but for window functions!",
     "example": "SELECT name, category, price FROM products QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) <= 1;",
+    "compatibility": {
+      "postgres": "unsupported (requires wrapper CTE or subquery)",
+      "mysql": "unsupported (requires wrapper subquery)",
+      "sqlite": "unsupported (requires wrapper subquery)",
+      "notes": "QUALIFY is a modern analytical clause that eliminates wrapper subqueries for window functions. Also supported natively in Snowflake, Google BigQuery, and Databricks."
+    },
     "steps": [
       {
         "task": "Find the single most expensive product in each category using QUALIFY with ROW_NUMBER() <= 1.",

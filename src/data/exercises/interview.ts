@@ -245,6 +245,12 @@ export const interview_exercises: ExerciseDef[] = [
     "db": "store",
     "title": "A pivot table in SQL",
     "concept": "To turn values into columns (one per status, for example), group by the row you want and sum one CASE per column. It is what an Excel pivot table does.",
+    "compatibility": {
+      "postgres": "SUM(CASE WHEN ...) or tablefunc crosstab() extension",
+      "mysql": "SUM(CASE WHEN ...)",
+      "sqlite": "SUM(CASE WHEN ...)",
+      "notes": "DuckDB also supports a native PIVOT SQL statement. In standard PostgreSQL, MySQL, and SQLite, pivoting is implemented via conditional SUM(CASE) aggregation."
+    },
     "steps": [
       {
         "task": "Show one row per month (formatted like 2025-03), in order, with three columns: how many orders were delivered (as delivered_orders), how many are shipped (as shipped_orders) and how many were cancelled (as cancelled_orders).",

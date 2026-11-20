@@ -109,4 +109,15 @@ describe('Curriculum Data Integrity', () => {
       }
     }
   });
+
+  it('should ensure engine compatibility definitions are well-formed', () => {
+    const withCompat = EXERCISES.filter(e => e.compatibility);
+    expect(withCompat.length).toBeGreaterThan(10);
+
+    for (const ex of withCompat) {
+      expect(ex.compatibility?.postgres).toBeDefined();
+      expect(ex.compatibility?.mysql).toBeDefined();
+      expect(ex.compatibility?.sqlite).toBeDefined();
+    }
+  });
 });

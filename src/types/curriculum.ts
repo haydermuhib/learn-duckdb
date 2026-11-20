@@ -25,6 +25,13 @@ export interface ExerciseStep {
   check?: string;
 }
 
+export interface EngineCompatibility {
+  postgres: 'native' | 'supported' | 'unsupported' | string;
+  mysql: 'native' | 'supported' | 'unsupported' | string;
+  sqlite: 'native' | 'supported' | 'unsupported' | string;
+  notes?: string;
+}
+
 export interface ExerciseDef {
   id: string;
   module: string;
@@ -34,6 +41,7 @@ export interface ExerciseDef {
   example?: string;
   steps: ExerciseStep[];
   isDuckDbFeature?: boolean;
+  compatibility?: EngineCompatibility;
 }
 
 export interface ModuleDef {

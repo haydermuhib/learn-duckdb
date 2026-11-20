@@ -129,6 +129,12 @@ export const where_exercises: ExerciseDef[] = [
     "title": "Searching text with LIKE",
     "concept": "LIKE matches patterns: % stands for any number of characters and _ for exactly one. 'A%' starts with A, '%ez' ends in ez and '%sol%' contains \"sol\".",
     "example": "SELECT name FROM customers WHERE name LIKE '%z';",
+    "compatibility": {
+      "postgres": "native (also supports ILIKE for case-insensitivity)",
+      "mysql": "native (LIKE is case-insensitive by default in standard collations)",
+      "sqlite": "native (LIKE is case-insensitive for ASCII characters)",
+      "notes": "LIKE is standard SQL. DuckDB and PostgreSQL also provide the ILIKE operator for explicit case-insensitive matching."
+    },
     "steps": [
       {
         "task": "Show name and email of the customers with a gmail.com address.",

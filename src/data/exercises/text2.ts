@@ -8,6 +8,12 @@ export const text2_exercises: ExerciseDef[] = [
     "title": "Cutting text: SUBSTR and STRPOS",
     "concept": "SUBSTR(text, start, length) extracts a substring (1-indexed). In DuckDB and PostgreSQL, STRPOS(string, search) finds the 1-based index of a substring (standard SQL also supports POSITION(search IN string)).",
     "example": "SELECT name, SUBSTR(name, 1, 3), STRPOS(name, 'a') FROM products;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "INSTR(string, search) (order reversed)",
+      "sqlite": "INSTR(string, search)",
+      "notes": "STRPOS(haystack, needle) is native to DuckDB and PostgreSQL. MySQL and SQLite use INSTR() with arguments reversed."
+    },
     "steps": [
       {
         "task": "Show the name of each customer with an email and their email domain (what comes after the @, e.g. gmail.com) as domain.",
@@ -50,6 +56,12 @@ export const text2_exercises: ExerciseDef[] = [
     "title": "Days between dates: DATE_DIFF",
     "concept": "In DuckDB, date_diff('day', start_date, end_date) calculates the number of days between two dates. You can also subtract dates directly: CAST(date2 AS DATE) - CAST(date1 AS DATE).",
     "example": "SELECT name, date_diff('day', CAST(hire_date AS DATE), DATE '2026-01-01') FROM employees;",
+    "compatibility": {
+      "postgres": "date2 - date1 (or age())",
+      "mysql": "DATEDIFF(date2, date1)",
+      "sqlite": "julianday(date2) - julianday(date1)",
+      "notes": "DuckDB date_diff() matches cloud analytical engines. In PostgreSQL, subtracting two DATE values directly yields an integer day count."
+    },
     "steps": [
       {
         "task": "Show each employee’s name and how many days passed from their hire date to 2026-01-01 (as days).",
@@ -71,6 +83,12 @@ export const text2_exercises: ExerciseDef[] = [
     "title": "Adding days: Date arithmetic with INTERVAL",
     "concept": "In DuckDB and standard SQL, you add intervals directly to dates: date_col + INTERVAL 30 DAY. You can also subtract: CURRENT_DATE - INTERVAL 30 DAY.",
     "example": "SELECT name, CAST(signup_date AS DATE) + INTERVAL 1 YEAR FROM customers;",
+    "compatibility": {
+      "postgres": "date + INTERVAL '30 days'",
+      "mysql": "date + INTERVAL 30 DAY",
+      "sqlite": "date(d, '+30 days')",
+      "notes": "DuckDB and MySQL allow bare intervals like INTERVAL 30 DAY, whereas PostgreSQL requires single quotes like INTERVAL '30 days'."
+    },
     "steps": [
       {
         "task": "Show id, order_date and each order’s return deadline: 30 days after the order date (as return_deadline).",
@@ -111,6 +129,12 @@ export const text2_exercises: ExerciseDef[] = [
     "title": "Date components: DATE_TRUNC, EXTRACT, and EPOCH",
     "concept": "Modern analytical SQL (DuckDB and PostgreSQL) provides powerful date tools: DATE_TRUNC('month', date) rounds down to the beginning of the period (preserving date format for time-series aggregation), EXTRACT(part FROM date) pulls out an integer component like month (1–12) or year, and EXTRACT(epoch FROM date) converts the date into Unix timestamp seconds since 1970.",
     "example": "SELECT date_trunc('month', order_date), EXTRACT(month FROM order_date), EXTRACT(epoch FROM order_date) FROM orders;",
+    "compatibility": {
+      "postgres": "native",
+      "mysql": "Use DATE_FORMAT(d, '%Y-%m-01') for truncating",
+      "sqlite": "Use strftime('%Y-%m-01', d) for truncating",
+      "notes": "PostgreSQL and DuckDB share identical EXTRACT and DATE_TRUNC syntax. In MySQL and SQLite, use date formatting functions instead."
+    },
     "steps": [
       {
         "task": "For each order, show its id, the first day of its month as month_start (using DATE_TRUNC), its calendar month as order_month (using EXTRACT), and its Unix timestamp in seconds as order_epoch (using EXTRACT).",

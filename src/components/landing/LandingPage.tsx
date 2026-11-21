@@ -190,7 +190,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
             {onOpenPlayground && (
               <button
-                onClick={onOpenPlayground}
+                onClick={() => onOpenPlayground?.()}
                 className="px-5 sm:px-6 py-3.5 sm:py-4 bg-white text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap size={18} className="fill-duck" />

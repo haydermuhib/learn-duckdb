@@ -40,8 +40,9 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenPlayground = (initialQuery?: string) => {
-    setPlaygroundInitialQuery(initialQuery);
+  const handleOpenPlayground = (queryOrEvent?: unknown) => {
+    const safeQuery = typeof queryOrEvent === 'string' ? queryOrEvent : undefined;
+    setPlaygroundInitialQuery(safeQuery);
     setView('playground');
     window.location.hash = '#playground';
     window.scrollTo({ top: 0, behavior: 'smooth' });

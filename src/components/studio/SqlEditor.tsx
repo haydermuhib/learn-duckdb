@@ -46,11 +46,13 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   isRunning,
   isPlayground = false,
 }) => {
+  const safeValue = typeof value === 'string' ? value : '';
+
   const handleFormat = useCallback(() => {
-    if (!value.trim()) return;
-    const formatted = formatSql(value);
+    if (!safeValue.trim()) return;
+    const formatted = formatSql(safeValue);
     onChange(formatted);
-  }, [value, onChange]);
+  }, [safeValue, onChange]);
 
   const handleExecute = onCheck || onRun;
 
@@ -254,7 +256,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       {/* CodeMirror Surface */}
       <div className="flex-1 overflow-auto text-xs sm:text-sm font-mono min-h-[160px]">
         <CodeMirror
-          value={value}
+          value={safeValue}
           height="100%"
           theme={oneDark}
           extensions={[sql(), keymapExtension]}
@@ -277,7 +279,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           {!isPlayground && onCheck && (
             <button
               onClick={onCheck}
-              disabled={isChecking || isRunning || !value.trim()}
+              disabled={isChecking || isRunning || !safeValue.trim()}
               title="Check answer against exercise solution (Ctrl+Enter)"
               className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-duck text-ink font-bold border-2 border-ink shadow-brutal-sm hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer"
             >
@@ -289,7 +291,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           {/* Run Query */}
           <button
             onClick={onRun}
-            disabled={isRunning || isChecking || !value.trim()}
+            disabled={isRunning || isChecking || !safeValue.trim()}
             title={isPlayground ? 'Execute SQL query (Ctrl+Enter)' : 'Run query without validating'}
             className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 font-bold border-2 border-ink shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs disabled:opacity-50 cursor-pointer ${
               isPlayground
@@ -341,7 +343,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <button
             type="button"
             onClick={handleFormat}
-            disabled={!value.trim()}
+            disabled={!safeValue.trim()}
             title="Prettify SQL (Alt+Shift+F or Alt+F)"
             className="p-1.5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
           >

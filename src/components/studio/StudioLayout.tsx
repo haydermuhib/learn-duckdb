@@ -495,7 +495,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               </button>
               <button
                 type="button"
-                onClick={onSwitchToPlayground}
+                onClick={() => onSwitchToPlayground?.()}
                 className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
                 title="Open DuckDB SQL Playground"
               >

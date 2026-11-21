@@ -41,17 +41,17 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   initialQuery,
 }) => {
   const [editorSql, setEditorSql] = useState<string>(() => {
-    if (initialQuery) return initialQuery;
+    if (typeof initialQuery === 'string' && initialQuery.trim()) return initialQuery;
     try {
       const saved = localStorage.getItem('learn_duckdb_playground_sql');
-      return saved || DEFAULT_PLAYGROUND_SQL;
+      return typeof saved === 'string' && saved.trim() ? saved : DEFAULT_PLAYGROUND_SQL;
     } catch {
       return DEFAULT_PLAYGROUND_SQL;
     }
   });
 
   useEffect(() => {
-    if (initialQuery) {
+    if (typeof initialQuery === 'string' && initialQuery.trim()) {
       setEditorSql(initialQuery);
     }
   }, [initialQuery]);

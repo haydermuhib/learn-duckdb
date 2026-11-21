@@ -20,14 +20,75 @@ interface LandingPageProps {
   onOpenPlayground?: () => void;
 }
 
+interface SandboxPreset {
+  id: 'enterprise' | 'modern' | 'python';
+  label: string;
+  badge: string;
+  dialectTag: string;
+  subtitle: string;
+  sql: string;
+}
+
+const SANDBOX_PRESETS: SandboxPreset[] = [
+  {
+    id: 'enterprise',
+    label: 'Enterprise (QUALIFY)',
+    badge: 'Snowflake & BigQuery 1:1',
+    dialectTag: 'Snowflake • BigQuery • DuckDB',
+    subtitle: 'Filter window functions directly without nested subqueries (native in Snowflake & DuckDB).',
+    sql: `SELECT category, name, price,
+       DENSE_RANK() OVER (PARTITION BY category ORDER BY price DESC) AS rank
+FROM products
+QUALIFY rank <= 2;`,
+  },
+  {
+    id: 'modern',
+    label: 'Modern SQL (GROUP BY ALL)',
+    badge: 'Auto-Grouping Standard',
+    dialectTag: 'DuckDB & Snowflake Standard',
+    subtitle: 'No more repeating 10 non-aggregated column names. Let the database infer them automatically.',
+    sql: `SELECT category, COUNT(*) AS items, ROUND(AVG(price), 2) AS avg_price
+FROM products
+GROUP BY ALL
+ORDER BY items DESC;`,
+  },
+  {
+    id: 'python',
+    label: 'Python & Analytics (Revenue)',
+    badge: 'Zero-Copy Analytics',
+    dialectTag: 'Pandas • Polars • Arrow Native',
+    subtitle: 'Run fast vectorized aggregations across relational tables and Arrow dataframes in milliseconds.',
+    sql: `SELECT p.category, SUM(o.quantity * p.price) AS total_revenue
+FROM products p
+JOIN order_items o ON p.id = o.product_id
+GROUP BY ALL
+ORDER BY total_revenue DESC;`,
+  },
+];
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpenPlayground }) => {
-  // Interactive Sandbox Teaser on Hero
-  const [demoQuery, setDemoQuery] = useState(
-    "SELECT category, COUNT(*) AS items, ROUND(AVG(price), 2) AS avg_price\nFROM products\nGROUP BY ALL\nORDER BY items DESC;"
-  );
+  // Interactive Sandbox Teaser on Hero with Dialect Presets
+  const [activePresetId, setActivePresetId] = useState<'enterprise' | 'modern' | 'python'>('enterprise');
+  const [demoQuery, setDemoQuery] = useState(SANDBOX_PRESETS[0].sql);
   const [demoResult, setDemoResult] = useState<QueryResult | null>(null);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const activePreset = SANDBOX_PRESETS.find(p => p.id === activePresetId) || SANDBOX_PRESETS[0];
+
+  const handleSelectPreset = async (preset: SandboxPreset) => {
+    setActivePresetId(preset.id);
+    setDemoQuery(preset.sql);
+    setIsRunningDemo(true);
+    try {
+      const res = await executeQuery(preset.sql);
+      setDemoResult(res);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsRunningDemo(false);
+    }
+  };
 
   const runDemo = async () => {
     setIsRunningDemo(true);
@@ -44,7 +105,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
   const faqs = [
     {
       q: 'Why DuckDB instead of SQLite or PostgreSQL for learning SQL?',
-      a: 'DuckDB is the modern standard for fast analytical queries (OLAP). It supports clean modern SQL features like `GROUP BY ALL`, `SELECT * EXCLUDE`, `QUALIFY`, and native window functions that traditional databases make painful or lack entirely.',
+      a: 'DuckDB is the modern standard for fast analytical queries (OLAP) and enterprise data stack parity. It supports game-changing features like `QUALIFY`, `GROUP BY ALL`, `SELECT * EXCLUDE / REPLACE`, and complex window frames that are identical to Snowflake and BigQuery, while traditional databases lack them or require cumbersome workarounds.',
+    },
+    {
+      q: 'How does DuckDB help Data Analysts and Python practitioners?',
+      a: 'DuckDB directly queries Pandas DataFrames, Polars, and local/remote Parquet files with zero memory duplication via Apache Arrow. It replaces multi-step 20-line Pandas wrangling scripts with clean, declarative, millisecond SQL.',
     },
     {
       q: 'Do I need to install anything or sign up?',
@@ -56,7 +121,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
     },
     {
       q: 'How many exercises are included?',
-      a: '149+ exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.',
+      a: `${EXERCISES.length} exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.`,
     },
     {
       q: 'What if I am already comfortable with basic SQL?',
@@ -117,22 +182,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
       </header>
 
       {/* Hero Section */}
-      <section className="py-10 sm:py-16 md:py-24 px-4 sm:px-6 border-b-3 border-ink relative overflow-hidden bg-gradient-to-b from-canvas to-[#F5EEDD]">
-        <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-card border-2 border-ink shadow-brutal-sm text-xs font-bold font-mono">
-            <Sparkles size={14} className="text-amber-500 fill-amber-400" />
-            <span className="text-[11px] sm:text-xs">100% In-Browser Analytical Database</span>
+      <section className="py-10 sm:py-16 md:py-20 px-4 sm:px-6 border-b-3 border-ink relative overflow-hidden bg-gradient-to-b from-canvas via-[#FAF6E9] to-[#F5EEDD]">
+        <div className="max-w-5xl mx-auto text-center space-y-5 sm:space-y-6">
+          
+          {/* Multi-Pill Strategic Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 font-mono">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-card border-2 border-ink shadow-brutal-sm text-xs font-bold">
+              <Zap size={13} className="text-amber-500 fill-amber-400" />
+              <span>100% In-Browser WASM</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border-2 border-ink shadow-brutal-sm text-xs font-bold text-blue-900">
+              <span className="text-sm leading-none">❄️</span>
+              <span>Snowflake & BigQuery Parity</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border-2 border-ink shadow-brutal-sm text-xs font-bold text-emerald-900">
+              <span className="text-sm leading-none">🐍</span>
+              <span>Python & Pandas Native</span>
+            </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-ink uppercase font-sans break-words">
-            Master Modern SQL in Your Browser.
+          {/* Main Hero Headline */}
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.06] text-ink uppercase font-sans break-words max-w-4xl mx-auto">
+            Enterprise SQL for Modern Data Analysts.
           </h1>
 
-          <p className="text-base sm:text-xl text-ink-muted max-w-2xl mx-auto leading-relaxed px-1">
-            149+ interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>. 
-            Zero installation, zero server lag, and zero sign-up required.
+          {/* Subheadline */}
+          <p className="text-base sm:text-xl text-ink-muted max-w-3xl mx-auto leading-relaxed px-1">
+            Master the advanced analytical SQL used in <strong className="text-ink font-bold">Snowflake, BigQuery, and Databricks</strong>. 
+            {' '}{EXERCISES.length} interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>—zero cloud bills, zero setup, and native Python data stack portability.
           </p>
 
+          {/* Primary Action Buttons */}
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
             <button
               onClick={() => onStartLearning()}
@@ -146,7 +226,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 onClick={onOpenPlayground}
                 className="px-5 sm:px-6 py-3.5 sm:py-4 bg-white text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Zap size={18} />
+                <Zap size={18} className="fill-duck" />
                 <span>Open SQL Playground</span>
               </button>
             )}
@@ -158,10 +238,83 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
             </a>
           </div>
 
+          {/* Dual Pillar Value Grid (Enterprise Cloud + Python Analyst) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mt-6 text-left">
+            {/* Pillar 1: Enterprise Cloud Warehouse */}
+            <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 bg-blue-100 border-2 border-ink flex items-center justify-center text-sm shadow-brutal-xs">❄️</span>
+                    <span className="font-extrabold text-xs uppercase tracking-tight">Enterprise Warehouse Parity</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-900 border border-blue-400 px-1.5 py-0.5">
+                    Snowflake • BigQuery
+                  </span>
+                </div>
+                <p className="text-xs text-ink-muted leading-relaxed">
+                  Learn the exact modern analytical SQL that cloud warehouses rely on—without paying for cloud compute or waiting for cluster cold starts:
+                </p>
+                <div className="mt-3 space-y-1.5 font-mono text-[11px]">
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span><code className="font-bold text-ink">QUALIFY</code> window filtering</span>
+                    <span className="text-emerald-700 font-bold">Snowflake 1:1</span>
+                  </div>
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span><code className="font-bold text-ink">GROUP BY ALL</code></span>
+                    <span className="text-emerald-700 font-bold">Snowflake & DuckDB</span>
+                  </div>
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span><code className="font-bold text-ink">SELECT * EXCLUDE / REPLACE</code></span>
+                    <span className="text-emerald-700 font-bold">BigQuery & Snowflake</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-200 text-[11px] font-bold text-blue-800 flex items-center gap-1">
+                <span>Build muscle memory that transfers directly to enterprise jobs</span>
+              </div>
+            </div>
+
+            {/* Pillar 2: Python & Data Analyst Superpower */}
+            <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 bg-emerald-100 border-2 border-ink flex items-center justify-center text-sm shadow-brutal-xs">🐍</span>
+                    <span className="font-extrabold text-xs uppercase tracking-tight">Data Analyst & Python Native</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-400 px-1.5 py-0.5">
+                    Pandas • Arrow • Polars
+                  </span>
+                </div>
+                <p className="text-xs text-ink-muted leading-relaxed">
+                  DuckDB is the analyst's secret weapon for Python. Query DataFrames and local Parquet files directly with blazing speed and zero memory bloat:
+                </p>
+                <div className="mt-3 space-y-1.5 font-mono text-[11px]">
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span>Query Pandas & Polars DataFrames</span>
+                    <span className="text-emerald-700 font-bold">Zero-Copy Arrow</span>
+                  </div>
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span>Query 10M+ Parquet / CSV rows</span>
+                    <span className="text-emerald-700 font-bold">No DB Import Needed</span>
+                  </div>
+                  <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
+                    <span>Speed vs Pandas aggregations</span>
+                    <span className="text-emerald-700 font-bold">10x - 75x Faster</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-200 text-[11px] font-bold text-emerald-800 flex items-center gap-1">
+                <span>Replace 20 lines of pandas wrangling with declarative SQL</span>
+              </div>
+            </div>
+          </div>
+
           {/* Proof Strip */}
-          <div className="pt-4 sm:pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono text-ink-muted">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono text-ink-muted">
             <span className="flex items-center gap-1.5">
-              <Zap size={14} className="text-amber-500" /> Multi-threaded WASM
+              <Zap size={14} className="text-amber-500 fill-amber-400" /> Multi-threaded WASM
             </span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
@@ -171,35 +324,79 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
             <span className="flex items-center gap-1.5">
               <Cpu size={14} className="text-blue-600" /> Vectorized Columnar Engine
             </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 size={14} className="text-ink" /> {EXERCISES.length} Interactive Challenges
+            </span>
           </div>
         </div>
 
         {/* Live Interactive Hero Sandbox */}
-        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
-          <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#1E293B] border-b-2 border-code-border flex items-center justify-between text-white text-xs select-none gap-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 font-mono truncate">
-              <Terminal size={14} className="text-duck shrink-0" />
-              <span className="truncate">Live DuckDB Query:</span>
+        <div className="max-w-4xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
+          
+          {/* Top Bar with Dialect Presets */}
+          <div className="px-3 sm:px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border flex flex-wrap items-center justify-between text-white text-xs select-none gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1.5 font-mono text-duck font-bold mr-1">
+                <Terminal size={14} className="shrink-0" />
+                <span className="hidden sm:inline">Interactive SQL:</span>
+              </div>
+              
+              {/* Presets */}
+              <div className="flex flex-wrap items-center gap-1">
+                {SANDBOX_PRESETS.map(preset => {
+                  const isActive = preset.id === activePresetId;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(preset)}
+                      className={`px-2 py-1 text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-duck text-ink border border-ink shadow-brutal-xs'
+                          : 'bg-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-600'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
             <button
               onClick={runDemo}
               disabled={isRunningDemo}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 bg-duck text-ink font-bold text-xs border border-ink hover:bg-duck-hover transition-colors shrink-0 cursor-pointer"
+              className="flex items-center gap-1 sm:gap-1.5 px-3 py-1 bg-duck text-ink font-bold text-xs border border-ink hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 cursor-pointer"
             >
               <Play size={12} className="fill-ink" />
               {isRunningDemo ? 'Running...' : 'Execute Query'}
             </button>
           </div>
 
-          <div className="p-3 sm:p-4 bg-code-bg text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed">
-            <pre>{demoQuery}</pre>
+          {/* Preset Context Info */}
+          <div className="px-3 sm:px-4 py-1.5 bg-[#172234] border-b border-slate-800 flex items-center justify-between text-[11px] font-mono">
+            <span className="text-slate-300 truncate pr-2">{activePreset.subtitle}</span>
+            <span className="text-duck font-bold shrink-0">{activePreset.dialectTag}</span>
           </div>
 
+          {/* Editable Query Textarea */}
+          <div className="p-3 sm:p-4 bg-code-bg font-mono text-xs leading-relaxed">
+            <textarea
+              value={demoQuery}
+              onChange={e => setDemoQuery(e.target.value)}
+              rows={demoQuery.split('\n').length || 4}
+              className="w-full bg-transparent text-emerald-400 font-mono text-xs focus:outline-none resize-none selection:bg-duck selection:text-ink leading-relaxed"
+              spellCheck={false}
+            />
+          </div>
+
+          {/* Live Execution Output */}
           {demoResult && (
             <div className="border-t-2 border-code-border bg-[#0B1120] p-3 text-xs font-mono text-slate-200 overflow-x-auto">
               <div className="flex items-center justify-between mb-2 text-[11px] text-slate-400">
-                <span>Output ({demoResult.rowCount} rows)</span>
-                <span>⚡ {demoResult.executionTimeMs} ms</span>
+                <span className="text-emerald-400 font-bold">✓ Executed in DuckDB-Wasm ({demoResult.rowCount} rows)</span>
+                <span className="bg-slate-800 text-duck px-2 py-0.5 border border-slate-700">⚡ {demoResult.executionTimeMs} ms</span>
               </div>
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -211,7 +408,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 </thead>
                 <tbody>
                   {demoResult.rows.map((r, ri) => (
-                    <tr key={ri} className="border-b border-slate-800/60">
+                    <tr key={ri} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                       {r.map((val, ci) => (
                         <td key={ci} className="py-1 px-2 text-slate-300 whitespace-nowrap">
                           {String(val)}
@@ -272,7 +469,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold mb-2">Interview-Grade Challenges</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
-                  Progress through 149+ exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
+                  Progress through {EXERCISES.length} exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
                 </p>
               </div>
             </div>
@@ -289,7 +486,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                 Curriculum Map
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-3">
-                18 Structured Modules • 149+ Exercises
+                18 Structured Modules • {EXERCISES.length} Exercises
               </h2>
             </div>
             <button

@@ -11,9 +11,9 @@ RepoType: git
 Repo: https://github.com/haydermuhib/learn-duckdb.git
 
 Builds:
-  - versionName: 1.5.3
-    versionCode: 9
-    commit: v1.5.3
+  - versionName: 1.6.0
+    versionCode: 10
+    commit: v1.6.0
     subdir: android/app
     nodejs: yes
     prebuild:

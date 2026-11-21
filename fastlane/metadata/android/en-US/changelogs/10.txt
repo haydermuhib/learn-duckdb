@@ -1,0 +1,4 @@
+- Comprehensive DuckDB Cheat Sheet: Searchable catalog of SQL superpowers, Data Types, CLI commands, Pragmas, and Extensions
+- Direct Playground integration for instant SQL query execution from cheat sheet examples
+- New analytical superpower references: bar() ASCII charts, List Comprehension, regex COLUMNS(), LATERAL joins, and MERGE INTO
+- Smooth scrolling optimizations across code blocks and reference modals

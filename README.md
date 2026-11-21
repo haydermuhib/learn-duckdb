@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/haydermuhib/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-1.5.3-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 1.5.3" /></a>
+  <a href="https://github.com/haydermuhib/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-1.6.0-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 1.6.0" /></a>
   <a href="https://duckdb.org"><img src="https://img.shields.io/badge/engine-DuckDB--Wasm-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="DuckDB-Wasm" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat-square&labelColor=18181B" alt="TypeScript 5" /></a>
-  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-52%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="52 Tests Passed" /></a>
+  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-69%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="69 Tests Passed" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPLv3+-blue.svg?style=flat-square&labelColor=18181B" alt="License: GPLv3+" /></a>
 </p>
 
@@ -40,6 +40,7 @@ Learn Duckdb runs 151 analytical SQL exercises directly inside your browser. Bec
 ## Features
 
 - **151 exercises across 18 modules:** Covers basic projections, joins, aggregation, subqueries, window functions, and recursive CTEs.
+- **Interactive DuckDB Cheat Sheet:** Searchable reference for DuckDB superpowers (`COLUMNS()`, `LATERAL`, `bar()`, List Comprehension, `MERGE INTO`, `ASOF JOIN`), Data Types, CLI commands, Pragmas, and official Extensions with one-click sandbox testing.
 - **Modern analytical SQL:** Practice modern clauses native to DuckDB, including `GROUP BY ALL`, `SELECT * EXCLUDE`, `SELECT * REPLACE`, and `QUALIFY`.
 - **Sub-millisecond local validation:** Compares query output against reference tables using typed comparisons, floating-point tolerance, and sorted row matching.
 - **Interactive schema inspector:** Browse database tables, column data types, and primary key constraints with one-click data previews.

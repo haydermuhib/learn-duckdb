@@ -28,6 +28,7 @@ import {
 interface PlaygroundLayoutProps {
   onBackToLanding: () => void;
   onSwitchToExercises: () => void;
+  initialQuery?: string;
 }
 
 const DEFAULT_PLAYGROUND_SQL = `-- DuckDB Analytical Playground
@@ -37,8 +38,10 @@ SELECT * FROM ecommerce_sales LIMIT 10;`;
 export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   onBackToLanding,
   onSwitchToExercises,
+  initialQuery,
 }) => {
   const [editorSql, setEditorSql] = useState<string>(() => {
+    if (initialQuery) return initialQuery;
     try {
       const saved = localStorage.getItem('learn_duckdb_playground_sql');
       return saved || DEFAULT_PLAYGROUND_SQL;
@@ -46,6 +49,12 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       return DEFAULT_PLAYGROUND_SQL;
     }
   });
+
+  useEffect(() => {
+    if (initialQuery) {
+      setEditorSql(initialQuery);
+    }
+  }, [initialQuery]);
 
   const [tables, setTables] = useState<PlaygroundTableSchema[]>([]);
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);

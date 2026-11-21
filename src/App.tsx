@@ -2,21 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';
+import { CheatSheetPage } from './components/cheatsheet/CheatSheetPage';
 
 export function App() {
-  const [view, setView] = useState<'landing' | 'studio' | 'playground'>(() => {
+  const [view, setView] = useState<'landing' | 'studio' | 'playground' | 'cheatsheet'>(() => {
     if (typeof window !== 'undefined') {
+      if (window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet') return 'cheatsheet';
       if (window.location.hash === '#playground') return 'playground';
       if (window.location.hash === '#studio') return 'studio';
     }
     return 'landing';
   });
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(undefined);
+  const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
 
   // Sync hash changes
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#playground') {
+      if (window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet') {
+        setView('cheatsheet');
+      } else if (window.location.hash === '#playground') {
         setView('playground');
       } else if (window.location.hash === '#studio') {
         setView('studio');
@@ -35,9 +40,16 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenPlayground = () => {
+  const handleOpenPlayground = (initialQuery?: string) => {
+    setPlaygroundInitialQuery(initialQuery);
     setView('playground');
     window.location.hash = '#playground';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenCheatSheet = () => {
+    setView('cheatsheet');
+    window.location.hash = '#cheatsheet';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -53,6 +65,7 @@ export function App() {
         <LandingPage
           onStartLearning={handleStartLearning}
           onOpenPlayground={handleOpenPlayground}
+          onOpenCheatSheet={handleOpenCheatSheet}
         />
       )}
       {view === 'studio' && (
@@ -66,6 +79,14 @@ export function App() {
         <PlaygroundLayout
           onBackToLanding={handleBackToLanding}
           onSwitchToExercises={() => handleStartLearning()}
+          initialQuery={playgroundInitialQuery}
+        />
+      )}
+      {view === 'cheatsheet' && (
+        <CheatSheetPage
+          onBackToHome={handleBackToLanding}
+          onOpenPlayground={handleOpenPlayground}
+          onStartLearning={() => handleStartLearning()}
         />
       )}
     </div>

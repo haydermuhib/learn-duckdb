@@ -16,11 +16,13 @@ import {
   Play,
   HelpCircle,
   ChevronDown,
+  FileText,
 } from 'lucide-react';
 
 interface LandingPageProps {
   onStartLearning: (moduleId?: string) => void;
   onOpenPlayground?: () => void;
+  onOpenCheatSheet?: () => void;
 }
 
 const SIMPLE_HERO_QUERY = `SELECT 
@@ -43,7 +45,11 @@ const INITIAL_DEMO_RESULT: QueryResult = {
   executionTimeMs: 4.8,
 };
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpenPlayground }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onStartLearning,
+  onOpenPlayground,
+  onOpenCheatSheet,
+}) => {
   // Interactive Sandbox Teaser on Hero with Single Formatted Query & Syntax Highlighting
   const [demoQuery, setDemoQuery] = useState(SIMPLE_HERO_QUERY);
   const [demoResult, setDemoResult] = useState<QueryResult | null>(INITIAL_DEMO_RESULT);
@@ -103,14 +109,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
-            {onOpenPlayground && (
+            {onOpenCheatSheet && (
               <button
                 type="button"
-                onClick={onOpenPlayground}
+                onClick={onOpenCheatSheet}
                 className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-duck text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+                title="DuckDB Cheat Sheet & Reference"
               >
-                <Zap size={14} className="fill-ink" />
-                <span className="hidden xs:inline">Playground</span>
+                <FileText size={14} className="text-ink" />
+                <span className="hidden xs:inline">Cheat Sheet</span>
               </button>
             )}
 

@@ -53,7 +53,18 @@ export default {
       },
       borderWidth: {
         '3': '3px',
-      }
+      },
+      keyframes: {
+        'pixel-sheen': {
+          '0%': { transform: 'translateX(-90px)', opacity: '0' },
+          '8%': { opacity: '1' },
+          '45%': { transform: 'translateX(360px)', opacity: '1' },
+          '46%, 100%': { transform: 'translateX(360px)', opacity: '0' },
+        },
+      },
+      animation: {
+        'pixel-sheen': 'pixel-sheen 3.4s cubic-bezier(0.25, 1, 0.35, 1) infinite',
+      },
     },
   },
   plugins: [],

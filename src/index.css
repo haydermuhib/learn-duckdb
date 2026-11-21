@@ -43,3 +43,11 @@ header {
   }
 }
 
+/* Accessibility: respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pixel-sheen {
+    animation: none !important;
+    display: none !important;
+  }
+}
+

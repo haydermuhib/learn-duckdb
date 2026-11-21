@@ -254,49 +254,135 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             </div>
           ) : (
             // Module accordion view
-            MODULES.map((mod, index) => {
-              const modExercises = EXERCISES.filter(e => e.module === mod.id);
-              const isExpanded = !!expandedModules[mod.id];
-              const completedCount = modExercises.filter(e =>
-                completedIds.has(e.id)
-              ).length;
-              const allDone =
-                completedCount === modExercises.length &&
-                modExercises.length > 0;
+            (() => {
+              const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
+              const currentModuleId = currentEx?.module;
 
-              return (
-                <div key={mod.id} className="border-2 border-ink bg-white">
-                  {/* Module header */}
+              return MODULES.map((mod, index) => {
+                const modExercises = EXERCISES.filter(e => e.module === mod.id);
+                const isExpanded = !!expandedModules[mod.id];
+                const isCurrentModule = mod.id === currentModuleId;
+                const completedCount = modExercises.filter(e =>
+                  completedIds.has(e.id)
+                ).length;
+                const allDone =
+                  completedCount === modExercises.length &&
+                  modExercises.length > 0;
+
+                return (
                   <div
-                    onClick={() => toggleModule(mod.id)}
-                    className="flex items-center justify-between p-2.5 cursor-pointer hover:bg-duck-light/50 transition-colors select-none"
+                    key={mod.id}
+                    className={`border-2 border-ink transition-colors ${
+                      isCurrentModule
+                        ? 'bg-[#FFFDF5] border-ink ring-2 ring-duck ring-offset-1 shadow-brutal-sm'
+                        : 'bg-white'
+                    }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 flex items-center justify-center font-mono text-[10px] font-bold bg-ink text-white">
-                        {index + 1}
-                      </span>
-                      <span className="font-extrabold text-xs text-ink">
-                        {mod.title}
-                      </span>
-                    </div>
+                    {/* Module header */}
+                    <div
+                      onClick={() => toggleModule(mod.id)}
+                      className={`relative overflow-hidden flex items-center justify-between p-2.5 cursor-pointer select-none transition-colors ${
+                        isCurrentModule
+                          ? 'bg-amber-50/80 hover:bg-duck-light border-l-4 border-l-duck'
+                          : 'hover:bg-duck-light/50'
+                      }`}
+                    >
+                      {/* Tilted Yellow Pixelated Bar Animation (slides across active module header) */}
+                      {isCurrentModule && (
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                          <div className="absolute top-0 bottom-0 left-0 w-[68px] h-full animate-pixel-sheen">
+                            <svg
+                              viewBox="0 0 70 42"
+                              width="70"
+                              height="42"
+                              preserveAspectRatio="none"
+                              className="w-full h-full block"
+                              aria-hidden="true"
+                            >
+                              <g transform="skewX(-24)">
+                                {/* Trail pixel column */}
+                                <rect x="4" y="2" width="4" height="4" fill="#FEC62E" opacity="0.45" />
+                                <rect x="4" y="10" width="4" height="4" fill="#D97706" opacity="0.55" />
+                                <rect x="4" y="18" width="4" height="4" fill="#FEC62E" opacity="0.5" />
+                                <rect x="4" y="26" width="4" height="4" fill="#D97706" opacity="0.45" />
+                                <rect x="4" y="34" width="4" height="4" fill="#FEC62E" opacity="0.5" />
 
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`text-[10px] font-mono font-bold px-1.5 py-0.2 border ${
-                          allDone
-                            ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
-                            : 'bg-slate-100 border-slate-300 text-slate-600'
-                        }`}
-                      >
-                        {completedCount}/{modExercises.length}
-                      </span>
-                      {isExpanded ? (
-                        <ChevronDown size={14} />
-                      ) : (
-                        <ChevronRight size={14} />
+                                {/* Secondary pixel column */}
+                                <rect x="11" y="0" width="5" height="5" fill="#FEC62E" opacity="0.85" />
+                                <rect x="11" y="8" width="5" height="5" fill="#FFE066" opacity="0.95" />
+                                <rect x="11" y="16" width="5" height="5" fill="#FEC62E" opacity="0.85" />
+                                <rect x="11" y="24" width="5" height="5" fill="#FFE066" opacity="0.95" />
+                                <rect x="11" y="32" width="5" height="5" fill="#D97706" opacity="0.8" />
+
+                                {/* Core pixel column with crisp ink outlines */}
+                                <rect x="18" y="0" width="6" height="6" fill="#FEC62E" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="18" y="8" width="6" height="6" fill="#FFF9C4" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="18" y="16" width="6" height="6" fill="#FFE600" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="18" y="24" width="6" height="6" fill="#FFF9C4" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="18" y="32" width="6" height="6" fill="#FEC62E" stroke="#111827" strokeWidth="0.75" />
+
+                                {/* Bright center highlight column */}
+                                <rect x="26" y="2" width="6" height="6" fill="#FFE600" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="26" y="10" width="6" height="6" fill="#FFFFFF" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="26" y="18" width="6" height="6" fill="#FFE600" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="26" y="26" width="6" height="6" fill="#FFFFFF" stroke="#111827" strokeWidth="0.75" />
+                                <rect x="26" y="34" width="6" height="6" fill="#FFE600" stroke="#111827" strokeWidth="0.75" />
+
+                                {/* Trailing secondary column */}
+                                <rect x="34" y="0" width="5" height="5" fill="#FEC62E" opacity="0.85" />
+                                <rect x="34" y="8" width="5" height="5" fill="#FFE066" opacity="0.95" />
+                                <rect x="34" y="16" width="5" height="5" fill="#FEC62E" opacity="0.85" />
+                                <rect x="34" y="24" width="5" height="5" fill="#FFE066" opacity="0.9" />
+                                <rect x="34" y="32" width="5" height="5" fill="#D97706" opacity="0.75" />
+
+                                {/* Leading pixel specks */}
+                                <rect x="41" y="4" width="4" height="4" fill="#FEC62E" opacity="0.55" />
+                                <rect x="41" y="12" width="4" height="4" fill="#D97706" opacity="0.65" />
+                                <rect x="41" y="20" width="4" height="4" fill="#FEC62E" opacity="0.55" />
+                                <rect x="41" y="28" width="4" height="4" fill="#FEC62E" opacity="0.45" />
+                              </g>
+                            </svg>
+                          </div>
+                        </div>
                       )}
+
+                      <div className="flex items-center gap-2 relative z-10 min-w-0 pr-1">
+                        <span
+                          className={`w-5 h-5 flex items-center justify-center font-mono text-[10px] shrink-0 transition-colors ${
+                            isCurrentModule
+                              ? 'bg-duck text-ink font-black border border-ink shadow-brutal-xs'
+                              : 'font-bold bg-ink text-white'
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="font-extrabold text-xs text-ink truncate">
+                          {mod.title}
+                        </span>
+                        {isCurrentModule && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 bg-duck text-ink font-mono text-[9px] font-black uppercase border border-ink shadow-brutal-xs shrink-0 tracking-wider">
+                            Current
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                        <span
+                          className={`text-[10px] font-mono font-bold px-1.5 py-0.2 border ${
+                            allDone
+                              ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
+                              : 'bg-slate-100 border-slate-300 text-slate-600'
+                          }`}
+                        >
+                          {completedCount}/{modExercises.length}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronDown size={14} />
+                        ) : (
+                          <ChevronRight size={14} />
+                        )}
+                      </div>
                     </div>
-                  </div>
 
                   {/* Exercises in module */}
                   {isExpanded && (
@@ -360,8 +446,9 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                   )}
                 </div>
               );
-            })
-          )}
+            });
+          })()
+        )}
 
           {/* Progress Summary & Reset - naturally placed at the end of the scrollable syllabus */}
           <div className="border-2 border-ink bg-slate-50 p-3 space-y-2.5 text-xs mt-4">

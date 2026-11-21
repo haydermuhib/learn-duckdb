@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { sql } from '@codemirror/lang-sql';
+import { oneDark } from '@codemirror/theme-one-dark';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
 import {
@@ -20,80 +23,37 @@ interface LandingPageProps {
   onOpenPlayground?: () => void;
 }
 
-interface SandboxPreset {
-  id: 'enterprise' | 'modern' | 'python';
-  label: string;
-  badge: string;
-  dialectTag: string;
-  subtitle: string;
-  sql: string;
-}
+const SIMPLE_HERO_QUERY = `SELECT 
+  category, 
+  COUNT(*) AS total_items, 
+  ROUND(AVG(price), 2) AS avg_price
+FROM products
+GROUP BY ALL
+ORDER BY total_items DESC;`;
 
-const SANDBOX_PRESETS: SandboxPreset[] = [
-  {
-    id: 'enterprise',
-    label: 'Enterprise (QUALIFY)',
-    badge: 'Snowflake & BigQuery 1:1',
-    dialectTag: 'Snowflake • BigQuery • DuckDB',
-    subtitle: 'Filter window functions directly without nested subqueries (native in Snowflake & DuckDB).',
-    sql: `SELECT category, name, price,
-       DENSE_RANK() OVER (PARTITION BY category ORDER BY price DESC) AS rank
-FROM products
-QUALIFY rank <= 2;`,
-  },
-  {
-    id: 'modern',
-    label: 'Modern SQL (GROUP BY ALL)',
-    badge: 'Auto-Grouping Standard',
-    dialectTag: 'DuckDB & Snowflake Standard',
-    subtitle: 'No more repeating 10 non-aggregated column names. Let the database infer them automatically.',
-    sql: `SELECT category, COUNT(*) AS items, ROUND(AVG(price), 2) AS avg_price
-FROM products
-GROUP BY ALL
-ORDER BY items DESC;`,
-  },
-  {
-    id: 'python',
-    label: 'Python & Analytics (Revenue)',
-    badge: 'Zero-Copy Analytics',
-    dialectTag: 'Pandas • Polars • Arrow Native',
-    subtitle: 'Run fast vectorized aggregations across relational tables and Arrow dataframes in milliseconds.',
-    sql: `SELECT p.category, SUM(o.quantity * p.price) AS total_revenue
-FROM products p
-JOIN order_items o ON p.id = o.product_id
-GROUP BY ALL
-ORDER BY total_revenue DESC;`,
-  },
-];
+const INITIAL_DEMO_RESULT: QueryResult = {
+  columns: ['category', 'total_items', 'avg_price'],
+  rows: [
+    ['Electronics', 4, 404.99],
+    ['Home', 3, 264.66],
+    ['Sports', 3, 50.17],
+    ['Stationery', 2, 23.50],
+  ],
+  rowCount: 4,
+  executionTimeMs: 4.8,
+};
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpenPlayground }) => {
-  // Interactive Sandbox Teaser on Hero with Dialect Presets
-  const [activePresetId, setActivePresetId] = useState<'enterprise' | 'modern' | 'python'>('enterprise');
-  const [demoQuery, setDemoQuery] = useState(SANDBOX_PRESETS[0].sql);
-  const [demoResult, setDemoResult] = useState<QueryResult | null>(null);
+  // Interactive Sandbox Teaser on Hero with Single Formatted Query & Syntax Highlighting
+  const [demoQuery, setDemoQuery] = useState(SIMPLE_HERO_QUERY);
+  const [demoResult, setDemoResult] = useState<QueryResult | null>(INITIAL_DEMO_RESULT);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const activePreset = SANDBOX_PRESETS.find(p => p.id === activePresetId) || SANDBOX_PRESETS[0];
-
-  const handleSelectPreset = async (preset: SandboxPreset) => {
-    setActivePresetId(preset.id);
-    setDemoQuery(preset.sql);
+  const runDemo = async (queryToRun?: string) => {
     setIsRunningDemo(true);
     try {
-      const res = await executeQuery(preset.sql);
-      setDemoResult(res);
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setIsRunningDemo(false);
-    }
-  };
-
-  const runDemo = async () => {
-    setIsRunningDemo(true);
-    try {
-      const res = await executeQuery(demoQuery);
+      const res = await executeQuery(queryToRun || demoQuery);
       setDemoResult(res);
     } catch (err: any) {
       console.error(err);
@@ -331,78 +291,70 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
           </div>
         </div>
 
-        {/* Live Interactive Hero Sandbox */}
-        <div className="max-w-4xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
+        {/* Live Interactive Hero Sandbox with Single Formatted Query & Syntax Colors */}
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
           
-          {/* Top Bar with Dialect Presets */}
-          <div className="px-3 sm:px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border flex flex-wrap items-center justify-between text-white text-xs select-none gap-2">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <div className="flex items-center gap-1.5 font-mono text-duck font-bold mr-1">
-                <Terminal size={14} className="shrink-0" />
-                <span className="hidden sm:inline">Interactive SQL:</span>
+          {/* Top Bar with window controls */}
+          <div className="px-3 sm:px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border flex items-center justify-between text-white text-xs select-none gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 border border-black/20" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black/20" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500 border border-black/20" />
               </div>
-              
-              {/* Presets */}
-              <div className="flex flex-wrap items-center gap-1">
-                {SANDBOX_PRESETS.map(preset => {
-                  const isActive = preset.id === activePresetId;
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className={`px-2 py-1 text-[11px] font-mono font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-duck text-ink border border-ink shadow-brutal-xs'
-                          : 'bg-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-600'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <span className="font-mono text-[11px] text-slate-300 ml-1.5 flex items-center gap-1.5 font-bold">
+                <Terminal size={13} className="text-duck" />
+                <span>duckdb-interactive.sql</span>
+              </span>
             </div>
 
             <button
-              onClick={runDemo}
+              onClick={() => runDemo()}
               disabled={isRunningDemo}
-              className="flex items-center gap-1 sm:gap-1.5 px-3 py-1 bg-duck text-ink font-bold text-xs border border-ink hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1 bg-duck text-ink font-extrabold text-xs border border-ink shadow-brutal-xs hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 cursor-pointer"
             >
               <Play size={12} className="fill-ink" />
-              {isRunningDemo ? 'Running...' : 'Execute Query'}
+              <span>{isRunningDemo ? 'Running...' : 'Execute Query'}</span>
             </button>
           </div>
 
-          {/* Preset Context Info */}
-          <div className="px-3 sm:px-4 py-1.5 bg-[#172234] border-b border-slate-800 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-300 truncate pr-2">{activePreset.subtitle}</span>
-            <span className="text-duck font-bold shrink-0">{activePreset.dialectTag}</span>
-          </div>
-
-          {/* Editable Query Textarea */}
-          <div className="p-3 sm:p-4 bg-code-bg font-mono text-xs leading-relaxed">
-            <textarea
+          {/* Formatted CodeMirror SQL Editor with syntax colors */}
+          <div className="bg-[#0F172A] border-b-2 border-code-border text-xs">
+            <CodeMirror
               value={demoQuery}
-              onChange={e => setDemoQuery(e.target.value)}
-              rows={demoQuery.split('\n').length || 4}
-              className="w-full bg-transparent text-emerald-400 font-mono text-xs focus:outline-none resize-none selection:bg-duck selection:text-ink leading-relaxed"
-              spellCheck={false}
+              onChange={val => setDemoQuery(val)}
+              theme={oneDark}
+              extensions={[sql()]}
+              basicSetup={{
+                lineNumbers: true,
+                highlightActiveLineGutter: false,
+                highlightActiveLine: false,
+                foldGutter: false,
+                dropCursor: false,
+                allowMultipleSelections: false,
+                indentOnInput: false,
+              }}
+              className="font-mono text-xs leading-relaxed"
             />
           </div>
 
           {/* Live Execution Output */}
           {demoResult && (
-            <div className="border-t-2 border-code-border bg-[#0B1120] p-3 text-xs font-mono text-slate-200 overflow-x-auto">
+            <div className="bg-[#0B1120] p-3 sm:p-4 text-xs font-mono text-slate-200 overflow-x-auto">
               <div className="flex items-center justify-between mb-2 text-[11px] text-slate-400">
-                <span className="text-emerald-400 font-bold">✓ Executed in DuckDB-Wasm ({demoResult.rowCount} rows)</span>
-                <span className="bg-slate-800 text-duck px-2 py-0.5 border border-slate-700">⚡ {demoResult.executionTimeMs} ms</span>
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                  Executed in DuckDB-Wasm ({demoResult.rowCount} rows)
+                </span>
+                <span className="bg-slate-800 text-duck px-2 py-0.5 border border-slate-700 font-bold">
+                  ⚡ {demoResult.executionTimeMs} ms
+                </span>
               </div>
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-700 text-slate-400 text-[10px] uppercase">
                     {demoResult.columns.map((c, i) => (
-                      <th key={i} className="py-1 px-2 whitespace-nowrap">{c}</th>
+                      <th key={i} className="py-1 px-2.5 whitespace-nowrap">{c}</th>
                     ))}
                   </tr>
                 </thead>
@@ -410,7 +362,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartLearning, onOpe
                   {demoResult.rows.map((r, ri) => (
                     <tr key={ri} className="border-b border-slate-800/60 hover:bg-slate-800/30">
                       {r.map((val, ci) => (
-                        <td key={ci} className="py-1 px-2 text-slate-300 whitespace-nowrap">
+                        <td key={ci} className="py-1.5 px-2.5 text-slate-300 whitespace-nowrap">
                           {String(val)}
                         </td>
                       ))}

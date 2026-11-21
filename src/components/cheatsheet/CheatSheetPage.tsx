@@ -121,7 +121,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
     return items;
   }, [searchQuery, activeCategory, activePreset]);
 
-  // Export full cheat sheet as Markdown
+  // Export full cheat sheet as a downloadable Markdown file
   const handleExportMarkdown = () => {
     let md = `# DuckDB Complete Cheat Sheet\n\n`;
     md += `*Generated from Learn-DuckDB (Interactive Offline Browser Platform)*\n\n`;
@@ -144,11 +144,29 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
         }
       });
     });
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(md);
-      setCopiedId('export-md');
-      setTimeout(() => setCopiedId(null), 2500);
+
+    // 1. Trigger actual browser file download of duckdb-cheatsheet.md
+    try {
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'duckdb-cheatsheet.md');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('File download failed', e);
     }
+
+    // 2. Also copy to clipboard as convenience
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(md).catch(() => {});
+    }
+
+    setCopiedId('export-md');
+    setTimeout(() => setCopiedId(null), 2500);
   };
 
   // Copy to clipboard helper
@@ -243,17 +261,17 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               type="button"
               onClick={handleExportMarkdown}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
-              title="Copy complete DuckDB Cheat Sheet as Markdown"
+              title="Download duckdb-cheatsheet.md file to your computer"
             >
               {copiedId === 'export-md' ? (
                 <>
                   <Check size={14} className="text-emerald-600 stroke-[3]" />
-                  <span className="text-emerald-700">Copied .md!</span>
+                  <span className="text-emerald-700">Downloaded!</span>
                 </>
               ) : (
                 <>
                   <Download size={14} />
-                  <span className="hidden sm:inline">Export .md</span>
+                  <span className="hidden sm:inline">Download .md</span>
                 </>
               )}
             </button>

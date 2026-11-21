@@ -32,6 +32,21 @@ export interface DuckDBDataType {
   storageSize?: string;
 }
 
+export interface DuckDBCliCommand {
+  command: string;
+  category: 'dot-command' | 'pragma' | 'setting';
+  description: string;
+  example: string;
+}
+
+export interface DuckDBExtension {
+  name: string;
+  category: 'cloud' | 'spatial' | 'database' | 'lakehouse' | 'ai';
+  installCommand: string;
+  description: string;
+  exampleSql: string;
+}
+
 export interface CheatSheetParameter {
   name: string;
   type: string;

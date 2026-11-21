@@ -4,6 +4,8 @@ import {
   CheatSheetItem,
   FormatSpecifier,
   DuckDBDataType,
+  DuckDBCliCommand,
+  DuckDBExtension,
 } from '../types/cheatsheet';
 
 export const DUCKDB_CHEAT_SHEET_CATEGORIES: CategoryMetadata[] = [
@@ -159,10 +161,120 @@ export const DUCKDB_DATA_TYPES: DuckDBDataType[] = [
   { name: 'ENUM(...)', aliases: [], category: 'special', description: 'Dictionary-encoded discrete string labels stored as 1-byte integers', exampleValue: "'high' (from CREATE TYPE priority AS ENUM)", storageSize: '1 byte' },
 ];
 
+export const DUCKDB_CLI_COMMANDS: DuckDBCliCommand[] = [
+  { command: '.mode duckbox', category: 'dot-command', description: 'Render query output in DuckDB signature Unicode box style', example: '.mode duckbox' },
+  { command: '.mode markdown', category: 'dot-command', description: 'Render query results directly as GitHub-flavored Markdown tables', example: '.mode markdown' },
+  { command: '.mode csv', category: 'dot-command', description: 'Format output as standard comma-separated values', example: '.mode csv' },
+  { command: '.mode json', category: 'dot-command', description: 'Format output rows as serialized JSON objects', example: '.mode json' },
+  { command: '.timer on', category: 'dot-command', description: 'Print real, user, and CPU execution time after every query', example: '.timer on' },
+  { command: '.excel', category: 'dot-command', description: 'Instantly export query results and open directly in Microsoft Excel or Calc', example: '.excel' },
+  { command: '.output filename', category: 'dot-command', description: 'Redirect all query outputs to a file on disk (.output stdout to reset)', example: '.output out.csv' },
+  { command: '.schema [table]', category: 'dot-command', description: 'Display DDL CREATE TABLE statements for tables or views', example: '.schema orders' },
+  { command: '.tables', category: 'dot-command', description: 'List all tables and views across active databases', example: '.tables' },
+  { command: '.read script.sql', category: 'dot-command', description: 'Execute external SQL statements from a file', example: '.read setup.sql' },
+  { command: '.nullvalue string', category: 'dot-command', description: 'Set custom display text for SQL NULL values in terminal outputs', example: ".nullvalue 'NULL'" },
+  { command: 'SET threads = 4;', category: 'setting', description: 'Configure maximum worker threads for parallel query execution', example: 'SET threads = 4;' },
+  { command: "SET memory_limit = '4GB';", category: 'setting', description: 'Set memory consumption cap before out-of-core streaming spills to disk', example: "SET memory_limit = '4GB';" },
+  { command: 'SET preserve_insertion_order = false;', category: 'setting', description: 'Disable insertion ordering to boost hash aggregate and join performance', example: 'SET preserve_insertion_order = false;' },
+  { command: 'PRAGMA version;', category: 'pragma', description: 'Display the running DuckDB engine version, git hash, and build platform', example: 'PRAGMA version;' },
+  { command: "PRAGMA table_info('table_name');", category: 'pragma', description: 'Inspect column names, data types, nullability, and primary key status', example: "PRAGMA table_info('orders');" },
+  { command: 'PRAGMA database_list;', category: 'pragma', description: 'List all currently attached database catalogs and storage paths', example: 'PRAGMA database_list;' },
+];
+
+export const DUCKDB_EXTENSIONS: DuckDBExtension[] = [
+  { name: 'httpfs', category: 'cloud', installCommand: 'INSTALL httpfs; LOAD httpfs;', description: 'Direct querying of HTTPS, S3, Azure Blob, GCS, and Cloudflare R2 object stores', exampleSql: "SELECT * FROM 's3://my-bucket/lake.parquet';" },
+  { name: 'spatial', category: 'spatial', installCommand: 'INSTALL spatial; LOAD spatial;', description: 'Full geospatial analytics engine supporting GeoJSON, Shapefiles, ST_Point, and ST_Distance', exampleSql: "SELECT ST_Distance(ST_Point(0, 0), ST_Point(3, 4));" },
+  { name: 'sqlite', category: 'database', installCommand: 'INSTALL sqlite; LOAD sqlite;', description: 'Zero-copy direct attach and query of SQLite database files', exampleSql: "ATTACH 'production.db' AS sqlite_db (TYPE SQLITE);" },
+  { name: 'postgres', category: 'database', installCommand: 'INSTALL postgres; LOAD postgres;', description: 'Seamless attach and live remote query pushdown to PostgreSQL databases', exampleSql: "ATTACH 'dbname=core user=postgres' AS pg (TYPE POSTGRES);" },
+  { name: 'mysql', category: 'database', installCommand: 'INSTALL mysql; LOAD mysql;', description: 'Attach and direct query pushdown to MySQL databases', exampleSql: "ATTACH 'host=127.0.0.1 user=root' AS mysql_db (TYPE MYSQL);" },
+  { name: 'excel', category: 'cloud', installCommand: 'INSTALL excel; LOAD excel;', description: 'Direct reading and writing of Excel spreadsheet (.xlsx) workbooks', exampleSql: "SELECT * FROM read_xlsx('quarterly_report.xlsx');" },
+  { name: 'iceberg', category: 'lakehouse', installCommand: 'INSTALL iceberg; LOAD iceberg;', description: 'Query Apache Iceberg REST catalogs, metadata snapshots, and tables', exampleSql: "SELECT * FROM iceberg_scan('s3://lake/table_dir');" },
+  { name: 'delta', category: 'lakehouse', installCommand: 'INSTALL delta; LOAD delta;', description: 'Native read access to Delta Lake ACID transaction log tables', exampleSql: "SELECT * FROM delta_scan('s3://lake/delta_table');" },
+  { name: 'vss', category: 'ai', installCommand: 'INSTALL vss; LOAD vss;', description: 'Vector Similarity Search with HNSW indexing for AI embeddings and semantic search', exampleSql: "CREATE INDEX idx ON items USING HNSW (embedding);" },
+  { name: 'json', category: 'cloud', installCommand: 'INSTALL json; LOAD json;', description: 'High-performance native JSON parsing, validation, and JSON Pointer extractions', exampleSql: "SELECT json_extract('{\"a\": [10, 20]}', '$.a[0]');" },
+];
+
 export const DUCKDB_CHEAT_SHEET_ITEMS: CheatSheetItem[] = [
   // ==========================================
   // 1. SUPERPOWERS & CLAUSES
   // ==========================================
+  {
+    id: 'superpower-bar-chart',
+    name: 'bar() - ASCII Terminal Visualizations',
+    category: 'superpowers',
+    signature: 'bar(x, min, max [, width]) -> VARCHAR',
+    summary: 'Renders an in-terminal ASCII/Unicode horizontal bar chart directly inside SQL results. Perfect for CLI dashboards and quick visual distribution checks.',
+    parityBadge: 'DuckDB Exclusive',
+    parameters: [
+      { name: 'x', type: 'numeric', description: 'The numeric value to visualize.' },
+      { name: 'min', type: 'numeric', description: 'Lower bound value of the visualization axis (0% width).' },
+      { name: 'max', type: 'numeric', description: 'Upper bound value of the axis (100% width).' },
+      { name: 'width', type: 'integer', description: 'Character width of the bar (defaults to 80).', optional: true },
+    ],
+    exampleSql: "SELECT name, score, bar(score, 0, 100, 15) AS visual_bar\nFROM (VALUES ('Alice', 95), ('Bob', 72), ('Charlie', 84), ('Diana', 61)) t(name, score);",
+    notes: 'Uses Unicode fractional block characters (▏, ▎, ▍, ▌, ▋, ▊, ▉, █) for sub-character precision.',
+    tags: ['duckdb superpower', 'bar', 'visualization', 'terminal', 'ascii', 'charts', 'cli'],
+  },
+  {
+    id: 'superpower-list-comprehension',
+    name: 'Pythonic List Comprehension',
+    category: 'nested',
+    signature: '[expression FOR var IN list [IF condition]]',
+    summary: 'Write Python-style list comprehension syntax natively in SQL to transform and filter collection lists in a single readable line.',
+    parityBadge: 'DuckDB Exclusive',
+    parameters: [
+      { name: 'expression', type: 'expression', description: 'Transformation expression computed for each element.' },
+      { name: 'var', type: 'identifier', description: 'Variable bound to each list element in iteration.' },
+      { name: 'list', type: 'LIST', description: 'Source list or array to iterate through.' },
+      { name: 'condition', type: 'boolean', description: 'Optional filter predicate; only elements matching condition are kept.', optional: true },
+    ],
+    exampleSql: "SELECT [x * 2 FOR x IN [1, 2, 3, 4, 5, 6] IF x % 2 = 0] AS doubled_evens;",
+    notes: 'Compiles down to list_transform and list_filter under the hood, but is much more ergonomic for Python/Arrow developers.',
+    tags: ['duckdb superpower', 'list comprehension', 'python', 'arrow', 'lists', 'nested'],
+  },
+  {
+    id: 'superpower-columns-regex',
+    name: "COLUMNS('regex') Regex Column Selection",
+    category: 'superpowers',
+    signature: "SELECT func(COLUMNS('regex_pattern')) FROM table",
+    summary: 'Dynamically match and project all columns whose names match a regular expression pattern. Eliminates typing dozens of column names.',
+    parityBadge: 'DuckDB Exclusive',
+    parameters: [
+      { name: 'regex_pattern', type: 'VARCHAR', description: 'Regular expression matching column names.' },
+    ],
+    exampleSql: "SELECT COLUMNS('^rev_')\nFROM (VALUES (100, 250, 'Store A')) t(rev_q1, rev_q2, store_name);",
+    notes: "Combine with aggregations like min(COLUMNS('^metric_')) or max(COLUMNS('.*')) to aggregate whole column families simultaneously.",
+    tags: ['duckdb superpower', 'columns', 'regex', 'pattern matching', 'dynamic projection'],
+  },
+  {
+    id: 'superpower-lateral-join',
+    name: 'LATERAL Subquery Joins',
+    category: 'superpowers',
+    signature: 'FROM table1, LATERAL (SELECT ... FROM table2 WHERE ...)',
+    summary: 'Allows subqueries in FROM/JOIN to reference columns provided by previous preceding tables in the FROM clause, functioning like a SQL foreach loop.',
+    parityBadge: 'Postgres & DuckDB Standard',
+    parameters: [
+      { name: 'LATERAL', type: 'keyword', description: 'Enables subquery to access outer table column references.' },
+    ],
+    exampleSql: "SELECT u.name, item.tag\nFROM (VALUES (1, 'Alice'), (2, 'Bob')) u(id, name),\nLATERAL (SELECT u.name || ' # ' || n AS tag FROM range(1, 3) r(n)) item;",
+    notes: 'Extremely efficient in DuckDB because the planner vectorizes lateral projections without row-by-row iteration overhead.',
+    tags: ['duckdb superpower', 'lateral', 'join', 'subquery', 'correlated'],
+  },
+  {
+    id: 'superpower-merge-into',
+    name: 'MERGE INTO (v1.0+ UPSERT)',
+    category: 'ingestion',
+    signature: 'MERGE INTO target USING source ON condition WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...',
+    summary: 'Performs atomic UPSERT (update, insert, delete) operations between a target table and an incoming source dataset in a single SQL statement.',
+    parityBadge: 'DuckDB v1.0+ Standard',
+    parameters: [
+      { name: 'WHEN MATCHED', type: 'clause', description: 'Specifies action (UPDATE or DELETE) when keys match.' },
+      { name: 'WHEN NOT MATCHED', type: 'clause', description: 'Specifies INSERT action when source keys are absent from target.' },
+    ],
+    exampleSql: "CREATE OR REPLACE TABLE target_users (id INT, status VARCHAR);\nINSERT INTO target_users VALUES (1, 'active'), (2, 'inactive');\nCREATE OR REPLACE TABLE incoming_sync (id INT, status VARCHAR);\nINSERT INTO incoming_sync VALUES (2, 'active'), (3, 'pending');\nMERGE INTO target_users t USING incoming_sync s ON t.id = s.id\nWHEN MATCHED THEN UPDATE SET status = s.status\nWHEN NOT MATCHED THEN INSERT (id, status) VALUES (s.id, s.status);\nSELECT * FROM target_users ORDER BY id;",
+    notes: 'Full ACID-compliant merge introduced in DuckDB 1.0, eliminating the need for multi-step staging tables.',
+    tags: ['ingestion', 'merge into', 'upsert', 'duckdb v1.0', 'mutations'],
+  },
   {
     id: 'clause-group-by-all',
     name: 'GROUP BY ALL',

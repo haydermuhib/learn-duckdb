@@ -6,6 +6,8 @@ import {
   PRINTF_SPECIFIERS,
   REGEX_SPECIFIERS,
   DUCKDB_DATA_TYPES,
+  DUCKDB_CLI_COMMANDS,
+  DUCKDB_EXTENSIONS,
   searchCheatSheet,
 } from '../../data/duckdbCheatSheetData';
 import { CheatSheetCategory, CheatSheetItem } from '../../types/cheatsheet';
@@ -32,6 +34,9 @@ import {
   SlidersHorizontal,
   Code2,
   Tag,
+  Terminal,
+  Boxes,
+  Download,
 } from 'lucide-react';
 
 interface CheatSheetPageProps {
@@ -40,8 +45,8 @@ interface CheatSheetPageProps {
   onStartLearning?: () => void;
 }
 
-type ReferenceTab = 'strftime' | 'printf' | 'regex' | 'types' | null;
-type WorkflowPreset = 'all' | 'snowflake' | 'python' | 'exclusive' | 'dates' | 'strings' | 'window' | 'nested';
+type ReferenceTab = 'strftime' | 'printf' | 'regex' | 'types' | 'cli' | 'extensions' | null;
+type WorkflowPreset = 'all' | 'snowflake' | 'python' | 'exclusive' | 'cli' | 'ingestion' | 'dates' | 'strings' | 'window' | 'nested';
 
 export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
   onBackToHome,
@@ -99,6 +104,10 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       items = items.filter(i => i.parityBadge?.toLowerCase().includes('python') || i.parityBadge?.toLowerCase().includes('arrow') || i.tags.includes('arrow') || i.tags.includes('parquet'));
     } else if (activePreset === 'exclusive') {
       items = items.filter(i => i.parityBadge?.toLowerCase().includes('exclusive') || i.parityBadge?.toLowerCase().includes('superpower') || i.tags.includes('duckdb superpower'));
+    } else if (activePreset === 'cli') {
+      items = items.filter(i => i.tags.includes('cli') || i.tags.includes('terminal') || i.tags.includes('pragma'));
+    } else if (activePreset === 'ingestion') {
+      items = items.filter(i => i.category === 'ingestion' || i.tags.includes('parquet') || i.tags.includes('csv') || i.tags.includes('json'));
     } else if (activePreset === 'dates') {
       items = items.filter(i => i.category === 'dates');
     } else if (activePreset === 'strings') {
@@ -111,6 +120,36 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
     return items;
   }, [searchQuery, activeCategory, activePreset]);
+
+  // Export full cheat sheet as Markdown
+  const handleExportMarkdown = () => {
+    let md = `# DuckDB Complete Cheat Sheet\n\n`;
+    md += `*Generated from Learn-DuckDB (Interactive Offline Browser Platform)*\n\n`;
+    md += `## Table of Contents\n`;
+    DUCKDB_CHEAT_SHEET_CATEGORIES.forEach(c => {
+      md += `- [${c.title}](#${c.id})\n`;
+    });
+    md += `\n---\n\n`;
+    DUCKDB_CHEAT_SHEET_CATEGORIES.forEach(cat => {
+      const catItems = DUCKDB_CHEAT_SHEET_ITEMS.filter(i => i.category === cat.id);
+      if (catItems.length === 0) return;
+      md += `## ${cat.title}\n\n`;
+      catItems.forEach(item => {
+        md += `### ${item.name}\n\n`;
+        md += `**Signature:** \`${item.signature}\`\n\n`;
+        md += `${item.summary}\n\n`;
+        md += `\`\`\`sql\n${item.exampleSql}\n\`\`\`\n\n`;
+        if (item.notes) {
+          md += `> **Tip:** ${item.notes}\n\n`;
+        }
+      });
+    });
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(md);
+      setCopiedId('export-md');
+      setTimeout(() => setCopiedId(null), 2500);
+    }
+  };
 
   // Copy to clipboard helper
   const handleCopy = (text: string, id: string) => {
@@ -200,6 +239,25 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportMarkdown}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+              title="Copy complete DuckDB Cheat Sheet as Markdown"
+            >
+              {copiedId === 'export-md' ? (
+                <>
+                  <Check size={14} className="text-emerald-600 stroke-[3]" />
+                  <span className="text-emerald-700">Copied .md!</span>
+                </>
+              ) : (
+                <>
+                  <Download size={14} />
+                  <span className="hidden sm:inline">Export .md</span>
+                </>
+              )}
+            </button>
+
             {onOpenPlayground && (
               <button
                 type="button"
@@ -291,6 +349,22 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 }`}
               >
                 ⚡ DuckDB Superpowers
+              </button>
+              <button
+                onClick={() => { setActivePreset('cli'); setActiveCategory('all'); setExpandedReference('cli'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'cli' ? 'bg-slate-900 text-white font-black shadow-brutal-xs' : 'bg-white hover:bg-slate-100'
+                }`}
+              >
+                💻 CLI & Pragmas
+              </button>
+              <button
+                onClick={() => { setActivePreset('ingestion'); setActiveCategory('ingestion'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'ingestion' ? 'bg-indigo-100 text-indigo-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-indigo-50'
+                }`}
+              >
+                📁 Parquet & Files
               </button>
               <button
                 onClick={() => { setActivePreset('snowflake'); setActiveCategory('all'); }}
@@ -397,6 +471,30 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 <Tag size={13} />
                 <span>Data Types ({DUCKDB_DATA_TYPES.length})</span>
                 {expandedReference === 'types' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setExpandedReference(prev => prev === 'cli' ? null : 'cli')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'cli' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                }`}
+              >
+                <Terminal size={13} />
+                <span>CLI & PRAGMA ({DUCKDB_CLI_COMMANDS.length})</span>
+                {expandedReference === 'cli' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setExpandedReference(prev => prev === 'extensions' ? null : 'extensions')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'extensions' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                }`}
+              >
+                <Boxes size={13} />
+                <span>Extensions ({DUCKDB_EXTENSIONS.length})</span>
+                {expandedReference === 'extensions' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
             </div>
           </div>
@@ -555,6 +653,92 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     </div>
                     <div className="shrink-0 text-ink-muted group-hover:text-ink">
                       {copiedId === `type-${dt.name}` ? (
+                        <Check size={14} className="text-emerald-600 stroke-[3]" />
+                      ) : (
+                        <Copy size={13} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Expanded CLI & PRAGMA Table */}
+          {expandedReference === 'cli' && (
+            <div className="p-3 sm:p-5">
+              <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
+                <span>Terminal dot-commands, engine pragmas, and execution settings:</span>
+                <span className="text-[10px] font-mono font-bold text-duck-dark">Click command to copy</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                {DUCKDB_CLI_COMMANDS.map(cmd => (
+                  <div
+                    key={cmd.command}
+                    onClick={() => handleCopy(cmd.command, `cli-${cmd.command}`)}
+                    className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 bg-slate-900 text-duck font-mono font-black text-xs border border-ink">
+                          {cmd.command}
+                        </span>
+                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase">
+                          {cmd.category}
+                        </span>
+                      </div>
+                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                        {cmd.description}
+                      </div>
+                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                        Usage: <span className="text-ink font-semibold">{cmd.example}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-ink-muted group-hover:text-ink">
+                      {copiedId === `cli-${cmd.command}` ? (
+                        <Check size={14} className="text-emerald-600 stroke-[3]" />
+                      ) : (
+                        <Copy size={13} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Expanded Extensions Table */}
+          {expandedReference === 'extensions' && (
+            <div className="p-3 sm:p-5">
+              <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
+                <span>Official and community extensions for cloud lakes, GIS, vector search, and databases:</span>
+                <span className="text-[10px] font-mono font-bold text-duck-dark">Click install command to copy</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                {DUCKDB_EXTENSIONS.map(ext => (
+                  <div
+                    key={ext.name}
+                    onClick={() => handleCopy(ext.installCommand, `ext-${ext.name}`)}
+                    className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                          {ext.name}
+                        </span>
+                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase">
+                          {ext.category}
+                        </span>
+                      </div>
+                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                        {ext.description}
+                      </div>
+                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                        Install: <span className="text-ink font-semibold font-mono">{ext.installCommand}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-ink-muted group-hover:text-ink">
+                      {copiedId === `ext-${ext.name}` ? (
                         <Check size={14} className="text-emerald-600 stroke-[3]" />
                       ) : (
                         <Copy size={13} />

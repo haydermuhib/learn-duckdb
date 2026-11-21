@@ -6,6 +6,8 @@ import {
   PRINTF_SPECIFIERS,
   REGEX_SPECIFIERS,
   DUCKDB_DATA_TYPES,
+  DUCKDB_CLI_COMMANDS,
+  DUCKDB_EXTENSIONS,
   searchCheatSheet,
 } from '../src/data/duckdbCheatSheetData';
 
@@ -116,6 +118,42 @@ describe('DuckDB Cheat Sheet Catalog Integrity', () => {
     expect(itemNames.some(n => n.includes('TRY_CAST'))).toBe(true);
     expect(itemNames.some(n => n.includes('ILIKE ANY'))).toBe(true);
     expect(itemNames.some(n => n.includes('MD5') || n.includes('HASH'))).toBe(true);
+    expect(itemNames.some(n => n.includes('BAR()'))).toBe(true);
+    expect(itemNames.some(n => n.includes('LIST COMPREHENSION'))).toBe(true);
+    expect(itemNames.some(n => n.includes('COLUMNS'))).toBe(true);
+    expect(itemNames.some(n => n.includes('LATERAL'))).toBe(true);
+    expect(itemNames.some(n => n.includes('MERGE INTO'))).toBe(true);
+  });
+
+  it('should verify DuckDB CLI and PRAGMA settings catalog contains key commands', () => {
+    expect(DUCKDB_CLI_COMMANDS.length).toBeGreaterThanOrEqual(12);
+    const cmds = DUCKDB_CLI_COMMANDS.map(c => c.command);
+    expect(cmds).toContain('.mode duckbox');
+    expect(cmds).toContain('.timer on');
+    expect(cmds).toContain('.excel');
+    expect(cmds).toContain('PRAGMA version;');
+    expect(cmds).toContain('SET threads = 4;');
+
+    DUCKDB_CLI_COMMANDS.forEach(cmd => {
+      expect(cmd.description.trim()).not.toBe('');
+      expect(cmd.example.trim()).not.toBe('');
+    });
+  });
+
+  it('should verify DuckDB extensions catalog contains core extensions', () => {
+    expect(DUCKDB_EXTENSIONS.length).toBeGreaterThanOrEqual(8);
+    const names = DUCKDB_EXTENSIONS.map(e => e.name);
+    expect(names).toContain('httpfs');
+    expect(names).toContain('spatial');
+    expect(names).toContain('sqlite');
+    expect(names).toContain('postgres');
+    expect(names).toContain('iceberg');
+    expect(names).toContain('delta');
+
+    DUCKDB_EXTENSIONS.forEach(ext => {
+      expect(ext.installCommand.trim()).not.toBe('');
+      expect(ext.description.trim()).not.toBe('');
+    });
   });
 
   it('should support instant search across names, parameters, format codes, and summaries', () => {

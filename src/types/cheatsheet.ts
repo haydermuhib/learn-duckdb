@@ -23,6 +23,15 @@ export interface FormatSpecifier {
   category: 'date' | 'time' | 'printf' | 'regex';
 }
 
+export interface DuckDBDataType {
+  name: string;
+  aliases?: string[];
+  category: 'integer' | 'numeric' | 'temporal' | 'string' | 'nested' | 'special';
+  description: string;
+  exampleValue: string;
+  storageSize?: string;
+}
+
 export interface CheatSheetParameter {
   name: string;
   type: string;

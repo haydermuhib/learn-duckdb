@@ -4,6 +4,8 @@ import {
   DUCKDB_CHEAT_SHEET_ITEMS,
   STRFTIME_SPECIFIERS,
   PRINTF_SPECIFIERS,
+  REGEX_SPECIFIERS,
+  DUCKDB_DATA_TYPES,
   searchCheatSheet,
 } from '../src/data/duckdbCheatSheetData';
 
@@ -67,6 +69,53 @@ describe('DuckDB Cheat Sheet Catalog Integrity', () => {
       expect(spec.meaning.trim()).not.toBe('');
       expect(spec.example.trim()).not.toBe('');
     });
+  });
+
+  it('should verify regex format specifiers contain key regex patterns (\\d, \\w, \\s, \\1, ^, $)', () => {
+    expect(REGEX_SPECIFIERS.length).toBeGreaterThanOrEqual(10);
+    const codes = REGEX_SPECIFIERS.map(s => s.code);
+    expect(codes).toContain('\\d');
+    expect(codes).toContain('\\w');
+    expect(codes).toContain('\\s');
+    expect(codes).toContain('^');
+    expect(codes).toContain('$');
+
+    REGEX_SPECIFIERS.forEach(spec => {
+      expect(spec.meaning.trim()).not.toBe('');
+      expect(spec.example.trim()).not.toBe('');
+    });
+  });
+
+  it('should verify DuckDB data types catalog covers all core type families', () => {
+    expect(DUCKDB_DATA_TYPES.length).toBeGreaterThanOrEqual(18);
+    const names = DUCKDB_DATA_TYPES.map(t => t.name);
+    expect(names).toContain('INTEGER');
+    expect(names).toContain('BIGINT');
+    expect(names).toContain('HUGEINT');
+    expect(names).toContain('VARCHAR');
+    expect(names).toContain('UUID');
+    expect(names).toContain('DATE');
+    expect(names).toContain('TIMESTAMP');
+    expect(names).toContain('INTERVAL');
+    expect(names).toContain('T[] (LIST)');
+    expect(names).toContain('STRUCT(...)');
+    expect(names).toContain('MAP(K, V)');
+    expect(names).toContain('JSON');
+
+    DUCKDB_DATA_TYPES.forEach(dt => {
+      expect(dt.description.trim()).not.toBe('');
+      expect(dt.exampleValue.trim()).not.toBe('');
+    });
+  });
+
+  it('should verify key analytical superpowers are present in items', () => {
+    const itemNames = DUCKDB_CHEAT_SHEET_ITEMS.map(i => i.name.toUpperCase());
+    expect(itemNames.some(n => n.includes('UNION BY NAME'))).toBe(true);
+    expect(itemNames.some(n => n.includes('SUMMARIZE'))).toBe(true);
+    expect(itemNames.some(n => n.includes('RANGE') || n.includes('GENERATE_SERIES'))).toBe(true);
+    expect(itemNames.some(n => n.includes('TRY_CAST'))).toBe(true);
+    expect(itemNames.some(n => n.includes('ILIKE ANY'))).toBe(true);
+    expect(itemNames.some(n => n.includes('MD5') || n.includes('HASH'))).toBe(true);
   });
 
   it('should support instant search across names, parameters, format codes, and summaries', () => {

@@ -1,12 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   DUCKDB_CHEAT_SHEET_CATEGORIES,
   DUCKDB_CHEAT_SHEET_ITEMS,
   STRFTIME_SPECIFIERS,
   PRINTF_SPECIFIERS,
+  REGEX_SPECIFIERS,
+  DUCKDB_DATA_TYPES,
   searchCheatSheet,
 } from '../../data/duckdbCheatSheetData';
-import { CheatSheetCategory, CheatSheetItem, FormatSpecifier } from '../../types/cheatsheet';
+import { CheatSheetCategory, CheatSheetItem } from '../../types/cheatsheet';
+import { executeQuery, QueryResult } from '../../engine/duckdb';
 import {
   Search,
   X,
@@ -24,6 +27,11 @@ import {
   ChevronUp,
   Sparkles,
   BookOpen,
+  Play,
+  ArrowUp,
+  SlidersHorizontal,
+  Code2,
+  Tag,
 } from 'lucide-react';
 
 interface CheatSheetPageProps {
@@ -32,6 +40,9 @@ interface CheatSheetPageProps {
   onStartLearning?: () => void;
 }
 
+type ReferenceTab = 'strftime' | 'printf' | 'regex' | 'types' | null;
+type WorkflowPreset = 'all' | 'snowflake' | 'python' | 'exclusive' | 'dates' | 'strings' | 'window' | 'nested';
+
 export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
   onBackToHome,
   onOpenPlayground,
@@ -39,16 +50,67 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<CheatSheetCategory | 'all'>('all');
-  const [expandedSpecifiers, setExpandedSpecifiers] = useState<'strftime' | 'printf' | null>('strftime');
+  const [activePreset, setActivePreset] = useState<WorkflowPreset>('all');
+  const [expandedReference, setExpandedReference] = useState<ReferenceTab>('strftime');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // Filtered Items
+  // In-line Query Execution State
+  const [inlineResults, setInlineResults] = useState<Record<string, QueryResult>>({});
+  const [runningItems, setRunningItems] = useState<Record<string, boolean>>({});
+  const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut: '/' to focus search, 'Escape' to clear
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        setSearchQuery('');
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Track scroll for Back-to-Top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Filtered Items based on search, category, and workflow presets
   const filteredItems = useMemo(() => {
-    return searchCheatSheet(
+    let items = searchCheatSheet(
       searchQuery,
       activeCategory === 'all' ? undefined : activeCategory
     );
-  }, [searchQuery, activeCategory]);
+
+    if (activePreset === 'snowflake') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('snowflake') || i.tags.includes('snowflake'));
+    } else if (activePreset === 'python') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('python') || i.parityBadge?.toLowerCase().includes('arrow') || i.tags.includes('arrow') || i.tags.includes('parquet'));
+    } else if (activePreset === 'exclusive') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('exclusive') || i.parityBadge?.toLowerCase().includes('superpower') || i.tags.includes('duckdb superpower'));
+    } else if (activePreset === 'dates') {
+      items = items.filter(i => i.category === 'dates');
+    } else if (activePreset === 'strings') {
+      items = items.filter(i => i.category === 'strings');
+    } else if (activePreset === 'window') {
+      items = items.filter(i => i.category === 'window');
+    } else if (activePreset === 'nested') {
+      items = items.filter(i => i.category === 'nested');
+    }
+
+    return items;
+  }, [searchQuery, activeCategory, activePreset]);
 
   // Copy to clipboard helper
   const handleCopy = (text: string, id: string) => {
@@ -56,6 +118,39 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       navigator.clipboard.writeText(text);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  // Run snippet in-place on the cheat sheet card
+  const handleRunInline = async (item: CheatSheetItem) => {
+    if (inlineResults[item.id]) {
+      // Toggle off if already showing
+      setInlineResults(prev => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+      return;
+    }
+
+    setRunningItems(prev => ({ ...prev, [item.id]: true }));
+    setInlineErrors(prev => {
+      const next = { ...prev };
+      delete next[item.id];
+      return next;
+    });
+
+    try {
+      const res = await executeQuery(item.exampleSql);
+      setInlineResults(prev => ({ ...prev, [item.id]: res }));
+    } catch (err: any) {
+      console.error(err);
+      setInlineErrors(prev => ({
+        ...prev,
+        [item.id]: err.message || 'Error executing query in DuckDB-Wasm',
+      }));
+    } finally {
+      setRunningItems(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
@@ -99,7 +194,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 DuckDB Cheat Sheet
               </span>
               <span className="hidden md:inline-block text-[10px] font-mono font-bold bg-duck px-2 py-0.5 border border-ink shadow-brutal-xs">
-                v1.5 Enterprise Reference
+                v1.5 Complete Reference
               </span>
             </div>
           </div>
@@ -135,51 +230,98 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
         <div className="max-w-5xl mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-duck text-ink border-2 border-ink shadow-brutal-sm text-xs font-mono font-bold">
             <Sparkles size={13} className="fill-ink" />
-            <span>Analytical SQL & Python Superpowers</span>
+            <span>Analytical SQL, Python Superpowers & Data Types</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-ink uppercase">
             The Complete DuckDB Cheat Sheet
           </h1>
 
-          <p className="text-xs sm:text-base text-ink-muted max-w-2xl mx-auto leading-relaxed">
-            Essential reference for DuckDB syntax, clauses, functions, complex data types, and format specifiers
-            (like <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%m</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%Y</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">printf</code> <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%s</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%d</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%.2f</code>).
+          <p className="text-xs sm:text-base text-ink-muted max-w-3xl mx-auto leading-relaxed">
+            Instant reference for all DuckDB clauses (<code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">QUALIFY</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">GROUP BY ALL</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">UNION BY NAME</code>), analytical functions, complete format parameters (<code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%m</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%Y</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%s</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">%.2f</code>, regex <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">\d+</code>), and native data types (<code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">HUGEINT</code>, <code className="bg-duck/40 px-1 py-0.5 font-mono text-ink font-bold">TRY_CAST</code>).
           </p>
 
           {/* Omnibar Search */}
-          <div className="pt-2 max-w-2xl mx-auto">
+          <div className="pt-2 max-w-3xl mx-auto">
             <div className="relative">
               <Search
                 size={18}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none"
               />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search functions, clauses, or format codes (%m, %d, printf, qualify, lambda, parquet)..."
-                className="w-full pl-10 pr-10 py-3 bg-surface-card border-3 border-ink shadow-brutal text-xs sm:text-sm font-sans focus:outline-none focus:bg-duck-light/40 transition-colors"
+                placeholder="Search 60+ functions, clauses, types, or format codes (%m, %d, \\d, qualify, summarize)..."
+                className="w-full pl-10 pr-20 py-3 bg-surface-card border-3 border-ink shadow-brutal text-xs sm:text-sm font-sans focus:outline-none focus:bg-duck-light/40 transition-colors"
               />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 text-ink-muted cursor-pointer"
-                >
-                  <X size={16} />
-                </button>
-              )}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 hover:bg-slate-200 text-ink-muted cursor-pointer"
+                    title="Clear search (Esc)"
+                  >
+                    <X size={16} />
+                  </button>
+                ) : (
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-ink-muted bg-slate-100 border border-slate-300 shadow-xs">
+                    /
+                  </kbd>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Workflow Preset Chips */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
+              <button
+                onClick={() => { setActivePreset('all'); setActiveCategory('all'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'all' && activeCategory === 'all' ? 'bg-ink text-white' : 'bg-white hover:bg-slate-100'
+                }`}
+              >
+                🌟 All ({DUCKDB_CHEAT_SHEET_ITEMS.length})
+              </button>
+              <button
+                onClick={() => { setActivePreset('exclusive'); setActiveCategory('all'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'exclusive' ? 'bg-duck text-ink font-black shadow-brutal-xs' : 'bg-white hover:bg-duck-light'
+                }`}
+              >
+                ⚡ DuckDB Superpowers
+              </button>
+              <button
+                onClick={() => { setActivePreset('snowflake'); setActiveCategory('all'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'snowflake' ? 'bg-blue-100 text-blue-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-blue-50'
+                }`}
+              >
+                ❄️ Snowflake 1:1
+              </button>
+              <button
+                onClick={() => { setActivePreset('python'); setActiveCategory('all'); }}
+                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'python' ? 'bg-emerald-100 text-emerald-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-emerald-50'
+                }`}
+              >
+                🐍 Python / Arrow
+              </button>
             </div>
 
             <div className="flex items-center justify-between text-xs font-mono text-ink-muted mt-2 px-1">
-              <span>Found {filteredItems.length} matching items</span>
-              {searchQuery && (
+              <span>Showing {filteredItems.length} matching items</span>
+              {(searchQuery || activePreset !== 'all' || activeCategory !== 'all') && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setActivePreset('all');
+                    setActiveCategory('all');
+                  }}
                   className="text-duck-dark hover:underline font-bold cursor-pointer"
                 >
-                  Clear search
+                  Reset all filters
                 </button>
               )}
             </div>
@@ -190,7 +332,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       {/* Main Body */}
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-6 sm:py-8 flex-1 space-y-8">
         
-        {/* Format Specifiers Drawer (strftime % codes and printf % codes) */}
+        {/* Format Specifiers & Data Types Drawer (4 Dedicated Tables) */}
         <div className="border-3 border-ink bg-surface-card shadow-brutal overflow-hidden">
           <div className="p-3 sm:p-4 bg-amber-50/70 border-b-2 border-ink flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -199,46 +341,71 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               </span>
               <div>
                 <h3 className="font-extrabold text-sm sm:text-base text-ink">
-                  Format Specifiers Reference Table
+                  Format Specifiers & Data Types Catalog
                 </h3>
                 <p className="text-[11px] text-ink-muted">
-                  Parameters used in <code className="font-mono font-bold bg-white px-1 border border-ink/20">strftime()</code>, <code className="font-mono font-bold bg-white px-1 border border-ink/20">strptime()</code>, and <code className="font-mono font-bold bg-white px-1 border border-ink/20">printf()</code>
+                  Parameters used in <code className="font-mono font-bold bg-white px-1 border border-ink/20">strftime</code>, <code className="font-mono font-bold bg-white px-1 border border-ink/20">printf</code>, <code className="font-mono font-bold bg-white px-1 border border-ink/20">regex</code>, and <code className="font-mono font-bold bg-white px-1 border border-ink/20">CAST</code>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* 4 Interactive Tab Selectors */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
               <button
                 type="button"
-                onClick={() => setExpandedSpecifiers(prev => prev === 'strftime' ? null : 'strftime')}
-                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  expandedSpecifiers === 'strftime' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                onClick={() => setExpandedReference(prev => prev === 'strftime' ? null : 'strftime')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'strftime' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
                 }`}
               >
                 <Calendar size={13} />
                 <span>Date strftime ({STRFTIME_SPECIFIERS.length})</span>
-                {expandedSpecifiers === 'strftime' ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                {expandedReference === 'strftime' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
 
               <button
                 type="button"
-                onClick={() => setExpandedSpecifiers(prev => prev === 'printf' ? null : 'printf')}
-                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  expandedSpecifiers === 'printf' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                onClick={() => setExpandedReference(prev => prev === 'printf' ? null : 'printf')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'printf' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
                 }`}
               >
                 <Type size={13} />
                 <span>Text printf ({PRINTF_SPECIFIERS.length})</span>
-                {expandedSpecifiers === 'printf' ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                {expandedReference === 'printf' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setExpandedReference(prev => prev === 'regex' ? null : 'regex')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'regex' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                }`}
+              >
+                <Code2 size={13} />
+                <span>Regex ({REGEX_SPECIFIERS.length})</span>
+                {expandedReference === 'regex' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setExpandedReference(prev => prev === 'types' ? null : 'types')}
+                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  expandedReference === 'types' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                }`}
+              >
+                <Tag size={13} />
+                <span>Data Types ({DUCKDB_DATA_TYPES.length})</span>
+                {expandedReference === 'types' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
             </div>
           </div>
 
           {/* Expanded strftime Table */}
-          {expandedSpecifiers === 'strftime' && (
+          {expandedReference === 'strftime' && (
             <div className="p-3 sm:p-5 overflow-x-auto">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
-                <span>Pass these format specifiers to <code className="font-mono font-bold text-ink">strftime(date, '%format')</code> or <code className="font-mono font-bold text-ink">strptime(str, '%format')</code>:</span>
+                <span>Pass these format codes to <code className="font-mono font-bold text-ink">strftime(date, '%format')</code> or <code className="font-mono font-bold text-ink">strptime(str, '%format')</code>:</span>
                 <span className="text-[10px] font-mono font-bold text-duck-dark">Click code to copy</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -275,7 +442,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           )}
 
           {/* Expanded printf Table */}
-          {expandedSpecifiers === 'printf' && (
+          {expandedReference === 'printf' && (
             <div className="p-3 sm:p-5 overflow-x-auto">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
                 <span>Pass these format specifiers to <code className="font-mono font-bold text-ink">printf(format, args...)</code> or <code className="font-mono font-bold text-ink">format()</code>:</span>
@@ -313,13 +480,99 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               </div>
             </div>
           )}
+
+          {/* Expanded Regex Table */}
+          {expandedReference === 'regex' && (
+            <div className="p-3 sm:p-5 overflow-x-auto">
+              <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
+                <span>Patterns and flags used in <code className="font-mono font-bold text-ink">regexp_extract()</code>, <code className="font-mono font-bold text-ink">regexp_replace()</code>, and <code className="font-mono font-bold text-ink">regexp_matches()</code>:</span>
+                <span className="text-[10px] font-mono font-bold text-duck-dark">Click code to copy</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                {REGEX_SPECIFIERS.map(spec => (
+                  <div
+                    key={spec.code}
+                    onClick={() => handleCopy(spec.code, `spec-${spec.code}`)}
+                    className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                          {spec.code}
+                        </span>
+                        <span className="text-xs font-bold text-ink truncate">
+                          {spec.meaning}
+                        </span>
+                      </div>
+                      <div className="text-[10px] font-mono text-ink-muted mt-1 truncate">
+                        {spec.example}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-ink-muted group-hover:text-ink">
+                      {copiedId === `spec-${spec.code}` ? (
+                        <Check size={14} className="text-emerald-600 stroke-[3]" />
+                      ) : (
+                        <Copy size={13} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Expanded Data Types Table */}
+          {expandedReference === 'types' && (
+            <div className="p-3 sm:p-5 overflow-x-auto">
+              <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
+                <span>Native DuckDB data types for table schemas, <code className="font-mono font-bold text-ink">::TYPE</code> casts, and <code className="font-mono font-bold text-ink">TRY_CAST()</code>:</span>
+                <span className="text-[10px] font-mono font-bold text-duck-dark">Click type to copy</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                {DUCKDB_DATA_TYPES.map(dt => (
+                  <div
+                    key={dt.name}
+                    onClick={() => handleCopy(dt.name, `type-${dt.name}`)}
+                    className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                          {dt.name}
+                        </span>
+                        {dt.storageSize && (
+                          <span className="text-[10px] font-mono text-ink-muted">
+                            ({dt.storageSize})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                        {dt.description}
+                      </div>
+                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                        Ex: <span className="text-ink font-semibold">{dt.exampleValue}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-ink-muted group-hover:text-ink">
+                      {copiedId === `type-${dt.name}` ? (
+                        <Check size={14} className="text-emerald-600 stroke-[3]" />
+                      ) : (
+                        <Copy size={13} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Category Pills Navigation */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-ink-muted font-mono">
-              Filter by Category
+            <span className="text-xs font-extrabold uppercase tracking-wider text-ink-muted font-mono flex items-center gap-1.5">
+              <SlidersHorizontal size={13} />
+              <span>Browse by Category</span>
             </span>
             <span className="text-xs font-mono font-bold text-ink-muted">
               {filteredItems.length} of {DUCKDB_CHEAT_SHEET_ITEMS.length} items
@@ -343,7 +596,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
+                  onClick={() => { setActiveCategory(cat.id); setActivePreset('all'); }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                     activeCategory === cat.id
                       ? 'bg-duck text-ink shadow-brutal-xs font-black'
@@ -363,11 +616,12 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           {filteredItems.length === 0 ? (
             <div className="border-3 border-ink bg-surface-card p-12 text-center shadow-brutal space-y-3">
               <p className="text-base font-bold text-ink">No functions or clauses found matching "{searchQuery}"</p>
-              <p className="text-xs text-ink-muted">Try searching for keywords like <code className="bg-slate-100 px-1 font-mono">printf</code>, <code className="bg-slate-100 px-1 font-mono">%m</code>, <code className="bg-slate-100 px-1 font-mono">lambda</code>, <code className="bg-slate-100 px-1 font-mono">qualify</code>, or <code className="bg-slate-100 px-1 font-mono">parquet</code>.</p>
+              <p className="text-xs text-ink-muted">Try searching for keywords like <code className="bg-slate-100 px-1 font-mono">printf</code>, <code className="bg-slate-100 px-1 font-mono">%m</code>, <code className="bg-slate-100 px-1 font-mono">lambda</code>, <code className="bg-slate-100 px-1 font-mono">qualify</code>, or <code className="bg-slate-100 px-1 font-mono">summarize</code>.</p>
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setActiveCategory('all');
+                  setActivePreset('all');
                 }}
                 className="px-4 py-2 bg-duck text-ink font-bold text-xs border-2 border-ink shadow-brutal-xs hover:bg-duck-hover cursor-pointer"
               >
@@ -396,6 +650,18 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {/* Inline Live Test Button */}
+                    <button
+                      onClick={() => handleRunInline(item)}
+                      disabled={runningItems[item.id]}
+                      className="flex items-center gap-1 px-2.5 py-1 bg-duck hover:bg-duck-hover border border-ink text-xs font-extrabold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                      title="Execute directly in live DuckDB-Wasm"
+                    >
+                      <Play size={11} className="fill-ink" />
+                      <span>{runningItems[item.id] ? 'Running...' : inlineResults[item.id] ? 'Hide Output' : 'Test Live'}</span>
+                    </button>
+
+                    {/* Copy SQL Button */}
                     <button
                       onClick={() => handleCopy(item.exampleSql, `sql-${item.id}`)}
                       className="flex items-center gap-1 px-2.5 py-1 bg-surface-card hover:bg-slate-100 border border-ink text-xs font-bold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
@@ -409,19 +675,20 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                       ) : (
                         <>
                           <Copy size={12} />
-                          <span>Copy SQL</span>
+                          <span>Copy</span>
                         </>
                       )}
                     </button>
 
+                    {/* Open in Full Playground */}
                     {onOpenPlayground && (
                       <button
                         onClick={() => onOpenPlayground(item.exampleSql)}
-                        className="flex items-center gap-1 px-2.5 py-1 bg-duck hover:bg-duck-hover border border-ink text-xs font-extrabold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
-                        title="Run in live DuckDB-Wasm playground"
+                        className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 border border-ink text-xs font-bold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                        title="Open in dedicated SQL Playground"
                       >
-                        <Zap size={12} className="fill-ink" />
-                        <span>Run</span>
+                        <Zap size={11} className="fill-duck" />
+                        <span className="hidden sm:inline">Playground</span>
                       </button>
                     )}
                   </div>
@@ -484,7 +751,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                             window.scrollTo({ top: 300, behavior: 'smooth' });
                           }}
                           className="px-1.5 py-0.5 bg-amber-100 hover:bg-duck border border-amber-400 text-ink font-mono text-[10px] font-bold cursor-pointer transition-colors"
-                          title={`Click to view specifier ${code}`}
+                          title={`Click to search specifier ${code}`}
                         >
                           {code}
                         </button>
@@ -502,6 +769,48 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     </div>
                   </div>
 
+                  {/* Live Inline Execution Output */}
+                  {inlineResults[item.id] && (
+                    <div className="border-2 border-emerald-500 bg-[#0B1120] p-3 text-xs font-mono text-slate-200 overflow-x-auto animate-fadeIn">
+                      <div className="flex items-center justify-between mb-2 text-[11px] text-slate-400 border-b border-slate-700 pb-1.5">
+                        <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                          Executed in DuckDB-Wasm ({inlineResults[item.id].rowCount} rows)
+                        </span>
+                        <span className="bg-slate-800 text-duck px-2 py-0.5 border border-slate-700 font-bold">
+                          ⚡ {inlineResults[item.id].executionTimeMs} ms
+                        </span>
+                      </div>
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-700 text-slate-400 text-[10px] uppercase">
+                            {inlineResults[item.id].columns.map((c, i) => (
+                              <th key={i} className="py-1 px-2.5 whitespace-nowrap">{c}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {inlineResults[item.id].rows.map((r, ri) => (
+                            <tr key={ri} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+                              {r.map((val, ci) => (
+                                <td key={ci} className="py-1.5 px-2.5 text-slate-300 whitespace-nowrap">
+                                  {val === null ? <span className="text-slate-500 italic">NULL</span> : String(val)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Inline Error Message */}
+                  {inlineErrors[item.id] && (
+                    <div className="p-2.5 bg-rose-50 border-2 border-rose-400 text-rose-900 text-xs font-mono">
+                      Execution Error: {inlineErrors[item.id]}
+                    </div>
+                  )}
+
                   {/* Notes */}
                   {item.notes && (
                     <div className="p-2 bg-amber-50 border-l-4 border-l-duck text-[11px] text-amber-950 font-sans">
@@ -515,6 +824,17 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           )}
         </div>
       </main>
+
+      {/* Floating Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 p-2.5 bg-duck text-ink font-bold border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer z-40"
+          title="Back to Top"
+        >
+          <ArrowUp size={18} />
+        </button>
+      )}
 
       {/* Footer */}
       <footer className="border-t-3 border-ink bg-surface-muted py-8 px-4 text-center mt-12 space-y-3 font-mono text-xs text-ink-muted">

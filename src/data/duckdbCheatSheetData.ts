@@ -3,6 +3,7 @@ import {
   CheatSheetCategory,
   CheatSheetItem,
   FormatSpecifier,
+  DuckDBDataType,
 } from '../types/cheatsheet';
 
 export const DUCKDB_CHEAT_SHEET_CATEGORIES: CategoryMetadata[] = [
@@ -101,6 +102,61 @@ export const PRINTF_SPECIFIERS: FormatSpecifier[] = [
   { code: '%-10s', meaning: 'Left-aligned string padded with spaces up to width 10', example: "printf('%-10s|', 'DuckDB') -> 'DuckDB    |'", category: 'printf' },
   { code: '%10s', meaning: 'Right-aligned string padded with spaces up to width 10', example: "printf('%10s|', 'DuckDB') -> '    DuckDB|'", category: 'printf' },
   { code: '%%', meaning: 'Literal % character escape', example: "printf('%d%% complete', 100) -> '100% complete'", category: 'printf' },
+];
+
+export const REGEX_SPECIFIERS: FormatSpecifier[] = [
+  { code: '\\d', meaning: 'Any digit character (0-9)', example: "regexp_extract('Order-948', '\\d+') -> '948'", category: 'regex' },
+  { code: '\\D', meaning: 'Any non-digit character', example: "regexp_replace('A12B', '\\D', '', 'g') -> '12'", category: 'regex' },
+  { code: '\\w', meaning: 'Word character (alphanumeric or underscore)', example: "regexp_matches('DuckDB_2026', '^\\w+$') -> true", category: 'regex' },
+  { code: '\\W', meaning: 'Non-word character (symbols, spaces)', example: "regexp_replace('A#B@C', '\\W', '_', 'g') -> 'A_B_C'", category: 'regex' },
+  { code: '\\s', meaning: 'Any whitespace character (space, tab, newline)', example: "regexp_replace('Hi   there', '\\s+', ' ', 'g') -> 'Hi there'", category: 'regex' },
+  { code: '\\S', meaning: 'Any non-whitespace character', example: "regexp_extract('Hello World', '^\\S+') -> 'Hello'", category: 'regex' },
+  { code: '^', meaning: 'Asserts start of the string boundary', example: "regexp_matches('admin@site.com', '^admin') -> true", category: 'regex' },
+  { code: '$', meaning: 'Asserts end of the string boundary', example: "regexp_matches('file.parquet', '\\.parquet$') -> true", category: 'regex' },
+  { code: '[a-z]', meaning: 'Character set matching any lowercase letter', example: "regexp_extract('DuckDB', '[a-z]+') -> 'uck'", category: 'regex' },
+  { code: '[^0-9]', meaning: 'Negated character set (anything NOT in set)', example: "regexp_replace('$99.50', '[^0-9.]', '', 'g') -> '99.50'", category: 'regex' },
+  { code: '(...)', meaning: 'Capture group for targeted extraction', example: "regexp_extract('id:456', 'id:(\\d+)', 1) -> '456'", category: 'regex' },
+  { code: '\\1, \\2', meaning: 'Backreferences to capture groups in regexp_replace', example: "regexp_replace('First Last', '(\\w+) (\\w+)', '\\2, \\1') -> 'Last, First'", category: 'regex' },
+  { code: '(?i)', meaning: 'Case-insensitive matching mode flag', example: "regexp_matches('duckdb', '(?i)DUCKDB') -> true", category: 'regex' },
+  { code: '*', meaning: 'Match zero or more times (greedy)', example: "regexp_extract('abccc', 'abc*') -> 'abccc'", category: 'regex' },
+  { code: '+', meaning: 'Match one or more times', example: "regexp_extract('item_123', '\\d+') -> '123'", category: 'regex' },
+  { code: '?', meaning: 'Match zero or one time (optional)', example: "regexp_extract('https://', 'https?') -> 'https'", category: 'regex' },
+];
+
+export const DUCKDB_DATA_TYPES: DuckDBDataType[] = [
+  // Integers
+  { name: 'TINYINT', aliases: ['INT1'], category: 'integer', description: 'Signed 1-byte integer (-128 to 127)', exampleValue: '127', storageSize: '1 byte' },
+  { name: 'SMALLINT', aliases: ['INT2', 'SHORT'], category: 'integer', description: 'Signed 2-byte integer (-32,768 to 32,767)', exampleValue: '32000', storageSize: '2 bytes' },
+  { name: 'INTEGER', aliases: ['INT', 'INT4'], category: 'integer', description: 'Standard signed 4-byte integer (-2.1B to 2.1B)', exampleValue: '100000', storageSize: '4 bytes' },
+  { name: 'BIGINT', aliases: ['INT8', 'LONG'], category: 'integer', description: 'Signed 8-byte integer for large IDs and counters', exampleValue: '9223372036854775807', storageSize: '8 bytes' },
+  { name: 'HUGEINT', aliases: ['INT16', 'INT128'], category: 'integer', description: 'DuckDB 128-bit huge integer with zero overflow risk', exampleValue: '170141183460469231731687303715884105727', storageSize: '16 bytes' },
+  
+  // Numerics
+  { name: 'FLOAT', aliases: ['REAL', 'FLOAT4'], category: 'numeric', description: 'Single-precision 4-byte floating point (6-9 digits precision)', exampleValue: '3.14159', storageSize: '4 bytes' },
+  { name: 'DOUBLE', aliases: ['FLOAT8'], category: 'numeric', description: 'Double-precision 8-byte floating point (15-17 digits precision)', exampleValue: '2.718281828459', storageSize: '8 bytes' },
+  { name: 'DECIMAL(p, s)', aliases: ['NUMERIC'], category: 'numeric', description: 'Exact fixed-point decimal up to 38 digits precision (e.g. currency)', exampleValue: '1299.99', storageSize: 'Variable' },
+
+  // Text & Binary
+  { name: 'VARCHAR', aliases: ['TEXT', 'STRING'], category: 'string', description: 'Variable-length UTF-8 encoded text with inline string optimization', exampleValue: "'DuckDB in-browser'", storageSize: 'Dynamic' },
+  { name: 'BLOB', aliases: ['BYTEA', 'BINARY'], category: 'string', description: 'Raw binary byte array (e.g. images, serialized data)', exampleValue: "'\\xAA\\xBB'::BLOB", storageSize: 'Dynamic' },
+  { name: 'UUID', aliases: ['GUID'], category: 'string', description: 'Universally unique 128-bit identifier', exampleValue: "'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::UUID", storageSize: '16 bytes' },
+
+  // Temporal
+  { name: 'DATE', aliases: [], category: 'temporal', description: 'Calendar date without time (YYYY-MM-DD)', exampleValue: "'2026-11-21'::DATE", storageSize: '4 bytes' },
+  { name: 'TIME', aliases: [], category: 'temporal', description: 'Time of day without date (HH:MM:SS.microseconds)', exampleValue: "'14:30:00'::TIME", storageSize: '8 bytes' },
+  { name: 'TIMESTAMP', aliases: ['DATETIME'], category: 'temporal', description: 'Date and time without timezone', exampleValue: "'2026-11-21 14:30:00'::TIMESTAMP", storageSize: '8 bytes' },
+  { name: 'TIMESTAMPTZ', aliases: ['TIMESTAMP WITH TIME ZONE'], category: 'temporal', description: 'Date and time with instant UTC offset', exampleValue: "'2026-11-21 14:30:00+00'::TIMESTAMPTZ", storageSize: '8 bytes' },
+  { name: 'INTERVAL', aliases: [], category: 'temporal', description: 'Relative time span (e.g. INTERVAL 3 DAY 2 HOUR)', exampleValue: "INTERVAL '7' DAY", storageSize: '16 bytes' },
+
+  // Complex / Nested
+  { name: 'T[] (LIST)', aliases: ['ARRAY'], category: 'nested', description: 'Ordered variable-length list of uniform elements', exampleValue: "[1, 2, 3, 4]", storageSize: 'Dynamic' },
+  { name: 'STRUCT(...)', aliases: ['ROW'], category: 'nested', description: 'Key-value record with fixed named fields and types', exampleValue: "{'id': 1, 'name': 'Laptop'}", storageSize: 'Dynamic' },
+  { name: 'MAP(K, V)', aliases: [], category: 'nested', description: 'Key-value hash map supporting fast dynamic keys', exampleValue: "map(['a', 'b'], [1, 2])", storageSize: 'Dynamic' },
+  { name: 'JSON', aliases: [], category: 'nested', description: 'Native JSON text representation supporting -> and ->> operators', exampleValue: "'{\"status\": \"ok\"}'::JSON", storageSize: 'Dynamic' },
+
+  // Special
+  { name: 'BOOLEAN', aliases: ['BOOL'], category: 'special', description: 'Logical true, false, or NULL', exampleValue: 'true', storageSize: '1 byte' },
+  { name: 'ENUM(...)', aliases: [], category: 'special', description: 'Dictionary-encoded discrete string labels stored as 1-byte integers', exampleValue: "'high' (from CREATE TYPE priority AS ENUM)", storageSize: '1 byte' },
 ];
 
 export const DUCKDB_CHEAT_SHEET_ITEMS: CheatSheetItem[] = [
@@ -995,6 +1051,129 @@ SELECT category, AVG(price)
 FROM products 
 GROUP BY ALL;`,
     tags: ['explain', 'explain analyze', 'performance', 'query plan', 'profiling'],
+  },
+  {
+    id: 'clause-union-by-name',
+    name: 'UNION BY NAME',
+    category: 'superpowers',
+    signature: 'table1 UNION [ALL] BY NAME table2',
+    summary: 'Merges tables by column name rather than positional order. Automatically fills missing columns with NULL.',
+    parityBadge: 'DuckDB Exclusive Superpower',
+    parameters: [
+      { name: 'BY NAME', type: 'keyword', description: 'Matches columns across tables by name regardless of order, padding missing columns with NULL.' },
+    ],
+    exampleSql: `SELECT 1 AS id, 'Apple' AS name
+UNION BY NAME
+SELECT 'Banana' AS name, 2 AS id, 0.99 AS price;`,
+    exampleOutput: 'Columns: [id, name, price]',
+    notes: 'Eliminates brittle manual column aligning in data pipelines when stitching schemas together.',
+    tags: ['union by name', 'union', 'schema merge', 'pipelines', 'duckdb superpower'],
+  },
+  {
+    id: 'func-summarize',
+    name: 'SUMMARIZE Data Profiling',
+    category: 'superpowers',
+    signature: 'SUMMARIZE table_name | SUMMARIZE (SELECT ...)',
+    summary: 'One-command data profiler! Computes column types, min, max, unique count, avg, stddev, null percentage, and percentiles for every column.',
+    parityBadge: 'DuckDB Exclusive Superpower',
+    parameters: [
+      { name: 'table_or_query', type: 'table | query', description: 'Target table or subquery expression to profile.' },
+    ],
+    exampleSql: `SUMMARIZE products;`,
+    exampleOutput: 'Returns [column_name, column_type, min, max, approx_unique, avg, std, null_percentage, p25, p50, p75]',
+    notes: 'Essential for Exploratory Data Analysis (EDA). Runs in single-digit milliseconds even on millions of rows.',
+    tags: ['summarize', 'eda', 'data profiling', 'statistics', 'duckdb superpower'],
+  },
+  {
+    id: 'func-range-generate-series',
+    name: 'range() & generate_series()',
+    category: 'dates',
+    signature: 'range(start, stop [, step]) | generate_series(start_date, end_date, INTERVAL \'1\' DAY)',
+    summary: 'Generates sequences of numbers or complete date spines for retention cohorts, missing date filling, and synthetic datasets.',
+    parityBadge: 'Postgres & DuckDB Standard',
+    parameters: [
+      { name: 'start', type: 'INTEGER | DATE | TIMESTAMP', description: 'Initial sequence boundary value.' },
+      { name: 'stop', type: 'INTEGER | DATE | TIMESTAMP', description: 'End boundary value.' },
+      { name: 'step', type: 'INTEGER | INTERVAL', optional: true, description: 'Step duration (e.g. INTERVAL 1 DAY or integer).' },
+    ],
+    exampleSql: `SELECT range::DATE AS calendar_date
+FROM range(DATE '2026-11-01', DATE '2026-11-10', INTERVAL '1' DAY);`,
+    notes: 'In DuckDB, range() is exclusive of stop, while generate_series() is inclusive.',
+    tags: ['range', 'generate_series', 'date spine', 'cohorts', 'sequences'],
+  },
+  {
+    id: 'func-ilike-any',
+    name: 'Multi-Pattern Matching (ILIKE ANY / LIKE ALL)',
+    category: 'strings',
+    signature: 'col ILIKE ANY([\'pattern1\', \'pattern2\']) | col LIKE ALL([\'%a%\', \'%b%\'])',
+    summary: 'Matches a string against multiple patterns contained in an array without typing endless repetitive OR / AND conditions.',
+    parityBadge: 'DuckDB & Snowflake 1:1',
+    parameters: [
+      { name: 'patterns', type: 'LIST(VARCHAR)', description: 'Array of LIKE / ILIKE wildcard patterns (e.g. [\'%pro%\', \'%max%\']).' },
+    ],
+    exampleSql: `SELECT id, name, category, price
+FROM products
+WHERE name ILIKE ANY(['%pro%', '%wireless%', '%mouse%']);`,
+    tags: ['ilike any', 'like all', 'pattern matching', 'wildcard', 'strings'],
+  },
+  {
+    id: 'func-try-cast',
+    name: 'Safe Type Casting (TRY_CAST & ::)',
+    category: 'superpowers',
+    signature: 'TRY_CAST(expression AS type) | expression::type',
+    summary: 'Converts data types. TRY_CAST safely returns NULL if conversion fails instead of throwing a query-killing error.',
+    parityBadge: 'Snowflake & BigQuery 1:1',
+    parameters: [
+      { name: 'expression', type: 'ANY', description: 'Input value to convert.' },
+      { name: 'type', type: 'DATA TYPE', description: 'Target data type (e.g. INTEGER, DATE, DOUBLE, HUGEINT).' },
+    ],
+    exampleSql: `SELECT 
+  '42'::INTEGER AS direct_cast,
+  TRY_CAST('invalid_number' AS INTEGER) AS safe_null_on_error,
+  TRY_CAST('2026-11-21' AS DATE) AS parsed_date;`,
+    notes: 'Crucial when parsing dirty CSVs where some rows contain text like "N/A" or "None".',
+    tags: ['try_cast', 'cast', '::', 'data types', 'safe parsing', 'data cleaning'],
+  },
+  {
+    id: 'func-hashing',
+    name: 'md5(), sha256() & hash()',
+    category: 'strings',
+    signature: 'md5(str) | sha256(str) | hash(any_val)',
+    summary: 'Cryptographic and fast non-cryptographic 64-bit hashing functions for surrogate keys, deduplication, and anomaly tracking.',
+    parityBadge: 'ANSI SQL Standard',
+    parameters: [
+      { name: 'input', type: 'VARCHAR | ANY', description: 'Data to compute hash signature for.' },
+    ],
+    exampleSql: `SELECT 
+  email, 
+  md5(email) AS anonymized_hash,
+  hash(id) AS 64bit_fast_hash
+FROM customers
+LIMIT 5;`,
+    tags: ['hash', 'md5', 'sha256', 'surrogate key', 'deduplication', 'cryptography'],
+  },
+  {
+    id: 'func-pragma-meta',
+    name: 'DESCRIBE & PRAGMA Schema Inspection',
+    category: 'superpowers',
+    signature: 'DESCRIBE table | PRAGMA table_info(\'table\') | PRAGMA version',
+    summary: 'Inspects database metadata, table schemas, column data types, nullability, and engine version info.',
+    parityBadge: 'DuckDB & SQLite Parity',
+    exampleSql: `DESCRIBE products;`,
+    exampleOutput: 'Returns [column_name, column_type, null, key, default, extra]',
+    tags: ['describe', 'pragma', 'schema', 'metadata', 'table_info'],
+  },
+  {
+    id: 'func-set-operations',
+    name: 'INTERSECT & EXCEPT Set Operations',
+    category: 'superpowers',
+    signature: 'query1 INTERSECT [ALL] query2 | query1 EXCEPT [ALL] query2',
+    summary: 'Mathematical set operations: INTERSECT returns rows present in both queries; EXCEPT returns rows in query1 not in query2.',
+    parityBadge: 'ANSI SQL Standard',
+    exampleSql: `SELECT city FROM customers
+INTERSECT
+SELECT 'New York' AS city;`,
+    tags: ['intersect', 'except', 'minus', 'set operations'],
   },
 ];
 

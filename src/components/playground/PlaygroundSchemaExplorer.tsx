@@ -12,7 +12,6 @@ import {
   Copy,
   Check,
   Trash2,
-  FileSpreadsheet,
 } from 'lucide-react';
 
 interface PlaygroundSchemaExplorerProps {

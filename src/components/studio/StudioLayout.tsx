@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { EXERCISES, MODULES, DATABASES } from '../../data/curriculum';
-import { ExerciseDef } from '../../types/curriculum';
 import { executeQuery, QueryResult, resetDatabase, switchDatabase } from '../../engine/duckdb';
 import { validateUserQuery, ValidationFeedback } from '../../engine/validator';
 import { SqlEditor } from './SqlEditor';

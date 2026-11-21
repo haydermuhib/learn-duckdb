@@ -125,7 +125,7 @@ export async function validateUserQuery(
 
       // Reset DB again, run user query, capture check query result
       await resetDatabase(exercise.db);
-      const userMutationResult = await executeQuery(trimmedSql);
+      await executeQuery(trimmedSql);
       const userResult = await executeQuery(expectedCheckQuery);
 
       const isMatch = compareResults(userResult, expectedResult, false);

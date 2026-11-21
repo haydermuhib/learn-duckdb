@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EXERCISES, MODULES, DATABASES, getExerciseById, getExercisesForModule, getDatabaseById } from '../src/data/curriculum';
+import { EXERCISES, MODULES, getExerciseById, getExercisesForModule, getDatabaseById } from '../src/data/curriculum';
 
 describe('Curriculum Data Integrity', () => {
   it('should contain 18 structured modules', () => {

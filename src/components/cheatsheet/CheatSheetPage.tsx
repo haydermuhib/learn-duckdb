@@ -36,7 +36,6 @@ import {
   Tag,
   Terminal,
   Boxes,
-  Download,
 } from 'lucide-react';
 
 interface CheatSheetPageProps {
@@ -120,54 +119,6 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
     return items;
   }, [searchQuery, activeCategory, activePreset]);
-
-  // Export full cheat sheet as a downloadable Markdown file
-  const handleExportMarkdown = () => {
-    let md = `# DuckDB Complete Cheat Sheet\n\n`;
-    md += `*Generated from Learn-DuckDB (Interactive Offline Browser Platform)*\n\n`;
-    md += `## Table of Contents\n`;
-    DUCKDB_CHEAT_SHEET_CATEGORIES.forEach(c => {
-      md += `- [${c.title}](#${c.id})\n`;
-    });
-    md += `\n---\n\n`;
-    DUCKDB_CHEAT_SHEET_CATEGORIES.forEach(cat => {
-      const catItems = DUCKDB_CHEAT_SHEET_ITEMS.filter(i => i.category === cat.id);
-      if (catItems.length === 0) return;
-      md += `## ${cat.title}\n\n`;
-      catItems.forEach(item => {
-        md += `### ${item.name}\n\n`;
-        md += `**Signature:** \`${item.signature}\`\n\n`;
-        md += `${item.summary}\n\n`;
-        md += `\`\`\`sql\n${item.exampleSql}\n\`\`\`\n\n`;
-        if (item.notes) {
-          md += `> **Tip:** ${item.notes}\n\n`;
-        }
-      });
-    });
-
-    // 1. Trigger actual browser file download of duckdb-cheatsheet.md
-    try {
-      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'duckdb-cheatsheet.md');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('File download failed', e);
-    }
-
-    // 2. Also copy to clipboard as convenience
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(md).catch(() => {});
-    }
-
-    setCopiedId('export-md');
-    setTimeout(() => setCopiedId(null), 2500);
-  };
 
   // Copy to clipboard helper
   const handleCopy = (text: string, id: string) => {
@@ -257,25 +208,6 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleExportMarkdown}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
-              title="Download duckdb-cheatsheet.md file to your computer"
-            >
-              {copiedId === 'export-md' ? (
-                <>
-                  <Check size={14} className="text-emerald-600 stroke-[3]" />
-                  <span className="text-emerald-700">Downloaded!</span>
-                </>
-              ) : (
-                <>
-                  <Download size={14} />
-                  <span className="hidden sm:inline">Download .md</span>
-                </>
-              )}
-            </button>
-
             {onOpenPlayground && (
               <button
                 type="button"

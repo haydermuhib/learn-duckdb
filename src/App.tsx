@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';

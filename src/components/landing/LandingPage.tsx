@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -10,11 +10,9 @@ import {
   Zap,
   ShieldCheck,
   Cpu,
-  BookOpen,
   CheckCircle2,
   Terminal,
   Play,
-  HelpCircle,
   ChevronDown,
   FileText,
 } from 'lucide-react';

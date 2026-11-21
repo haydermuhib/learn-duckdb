@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ModuleDef, ExerciseDef } from '../../types/curriculum';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import {
   BookOpen,

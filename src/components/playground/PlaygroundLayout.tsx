@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   initPlayground,
   getPlaygroundTables,
@@ -20,7 +20,6 @@ import {
   RefreshCw,
   Keyboard,
   Coffee,
-  Sparkles,
   BookOpen,
   Zap,
 } from 'lucide-react';

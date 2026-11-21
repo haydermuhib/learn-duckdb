@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileUp, Loader2, AlertCircle } from 'lucide-react';
+import { FileUp, Loader2, AlertCircle } from 'lucide-react';
 
 interface PlaygroundFileUploaderProps {
   onFilesUploaded: (files: File[]) => Promise<void>;

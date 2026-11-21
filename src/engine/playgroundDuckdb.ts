@@ -1,5 +1,4 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
-import * as arrow from 'apache-arrow';
 import { initDuckDB, QueryResult, loadDatabaseTables, extractArrowTable } from './duckdb';
 import { DATABASES } from '../data/databases';
 import {

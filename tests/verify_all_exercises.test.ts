@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as duckdb from '@duckdb/duckdb-wasm/dist/duckdb-node-blocking.cjs';
 import * as path from 'path';
-import { EXERCISES, DATABASES } from '../src/data/curriculum';
+import { EXERCISES } from '../src/data/curriculum';
 import { loadDatabaseTables } from '../src/engine/duckdb';
 
 describe('Run ALL Canonical Solutions against Real DuckDB', () => {

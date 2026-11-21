@@ -663,7 +663,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
                 </div>
 
                 {currentExercise.example && (
-                  <div className="bg-slate-100 border border-slate-300 p-2 text-xs font-mono text-slate-800 overflow-x-auto">
+                  <div className="bg-slate-100 border border-slate-300 p-2 text-xs font-mono text-slate-800 overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words">
                     <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">
                       Example Syntax
                     </span>

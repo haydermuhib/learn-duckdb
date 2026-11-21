@@ -15,9 +15,14 @@ header {
 }
 
 /* Smooth touch scrolling & momentum on mobile */
-.overflow-y-auto, .overflow-x-auto {
+.overflow-y-auto {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
 }
 
 /* Custom scrollbars on desktop (mouse/trackpad), native overlay on touch screens */

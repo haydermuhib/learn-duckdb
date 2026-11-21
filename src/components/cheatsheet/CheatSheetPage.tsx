@@ -403,7 +403,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
           {/* Expanded strftime Table */}
           {expandedReference === 'strftime' && (
-            <div className="p-3 sm:p-5 overflow-x-auto">
+            <div className="p-3 sm:p-5">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
                 <span>Pass these format codes to <code className="font-mono font-bold text-ink">strftime(date, '%format')</code> or <code className="font-mono font-bold text-ink">strptime(str, '%format')</code>:</span>
                 <span className="text-[10px] font-mono font-bold text-duck-dark">Click code to copy</span>
@@ -443,7 +443,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
           {/* Expanded printf Table */}
           {expandedReference === 'printf' && (
-            <div className="p-3 sm:p-5 overflow-x-auto">
+            <div className="p-3 sm:p-5">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
                 <span>Pass these format specifiers to <code className="font-mono font-bold text-ink">printf(format, args...)</code> or <code className="font-mono font-bold text-ink">format()</code>:</span>
                 <span className="text-[10px] font-mono font-bold text-duck-dark">Click code to copy</span>
@@ -483,7 +483,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
           {/* Expanded Regex Table */}
           {expandedReference === 'regex' && (
-            <div className="p-3 sm:p-5 overflow-x-auto">
+            <div className="p-3 sm:p-5">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
                 <span>Patterns and flags used in <code className="font-mono font-bold text-ink">regexp_extract()</code>, <code className="font-mono font-bold text-ink">regexp_replace()</code>, and <code className="font-mono font-bold text-ink">regexp_matches()</code>:</span>
                 <span className="text-[10px] font-mono font-bold text-duck-dark">Click code to copy</span>
@@ -523,7 +523,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
           {/* Expanded Data Types Table */}
           {expandedReference === 'types' && (
-            <div className="p-3 sm:p-5 overflow-x-auto">
+            <div className="p-3 sm:p-5">
               <div className="mb-3 text-xs text-ink-muted font-sans flex items-center justify-between">
                 <span>Native DuckDB data types for table schemas, <code className="font-mono font-bold text-ink">::TYPE</code> casts, and <code className="font-mono font-bold text-ink">TRY_CAST()</code>:</span>
                 <span className="text-[10px] font-mono font-bold text-duck-dark">Click type to copy</span>
@@ -579,7 +579,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto pb-2 scrollbar-none">
             <button
               onClick={() => setActiveCategory('all')}
               className={`px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink whitespace-nowrap transition-all cursor-pointer shrink-0 ${
@@ -697,7 +697,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 {/* Item Body */}
                 <div className="p-3 sm:p-5 space-y-4">
                   {/* Signature */}
-                  <div className="p-2 sm:p-3 bg-[#0F172A] border-2 border-ink text-emerald-400 font-mono text-xs overflow-x-auto">
+                  <div className="p-2 sm:p-3 bg-[#0F172A] border-2 border-ink text-emerald-400 font-mono text-xs overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words">
                     <code>{item.signature}</code>
                   </div>
 
@@ -764,14 +764,14 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted block">
                       Executable DuckDB SQL Example:
                     </span>
-                    <div className="p-3 bg-[#0B1120] border-2 border-ink text-slate-200 font-mono text-xs overflow-x-auto whitespace-pre leading-relaxed">
+                    <div className="p-3 bg-[#0B1120] border-2 border-ink text-slate-200 font-mono text-xs overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words leading-relaxed">
                       {item.exampleSql}
                     </div>
                   </div>
 
                   {/* Live Inline Execution Output */}
                   {inlineResults[item.id] && (
-                    <div className="border-2 border-emerald-500 bg-[#0B1120] p-3 text-xs font-mono text-slate-200 overflow-x-auto animate-fadeIn">
+                    <div className="border-2 border-emerald-500 bg-[#0B1120] p-3 text-xs font-mono text-slate-200 overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto animate-fadeIn">
                       <div className="flex items-center justify-between mb-2 text-[11px] text-slate-400 border-b border-slate-700 pb-1.5">
                         <span className="text-emerald-400 font-bold flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>

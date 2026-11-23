@@ -282,53 +282,30 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               </div>
             </div>
 
-            {/* Quick Workflow Preset Chips */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
+            {/* Quick Ecosystem & Parity Filter Chips */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-3">
+              <span className="text-[11px] font-mono font-bold text-ink-muted">Quick filters:</span>
               <button
-                onClick={() => { setActivePreset('all'); setActiveCategory('all'); }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
-                  activePreset === 'all' && activeCategory === 'all' ? 'bg-ink text-white' : 'bg-white hover:bg-slate-100'
-                }`}
-              >
-                🌟 All ({DUCKDB_CHEAT_SHEET_ITEMS.length})
-              </button>
-              <button
-                onClick={() => { setActivePreset('exclusive'); setActiveCategory('all'); }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
-                  activePreset === 'exclusive' ? 'bg-duck text-ink font-black shadow-brutal-xs' : 'bg-white hover:bg-duck-light'
-                }`}
-              >
-                ⚡ DuckDB Superpowers
-              </button>
-              <button
-                onClick={() => { setActivePreset('cli'); setActiveCategory('all'); setExpandedReference('cli'); }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
-                  activePreset === 'cli' ? 'bg-slate-900 text-white font-black shadow-brutal-xs' : 'bg-white hover:bg-slate-100'
-                }`}
-              >
-                💻 CLI & Pragmas
-              </button>
-              <button
-                onClick={() => { setActivePreset('ingestion'); setActiveCategory('ingestion'); }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
-                  activePreset === 'ingestion' ? 'bg-indigo-100 text-indigo-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-indigo-50'
-                }`}
-              >
-                📁 Parquet & Files
-              </button>
-              <button
-                onClick={() => { setActivePreset('snowflake'); setActiveCategory('all'); }}
+                onClick={() => {
+                  setActivePreset(prev => prev === 'snowflake' ? 'all' : 'snowflake');
+                  setActiveCategory('all');
+                }}
                 className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
                   activePreset === 'snowflake' ? 'bg-blue-100 text-blue-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-blue-50'
                 }`}
+                title="Filter by Snowflake 1:1 parity syntax"
               >
                 ❄️ Snowflake 1:1
               </button>
               <button
-                onClick={() => { setActivePreset('python'); setActiveCategory('all'); }}
+                onClick={() => {
+                  setActivePreset(prev => prev === 'python' ? 'all' : 'python');
+                  setActiveCategory('all');
+                }}
                 className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
                   activePreset === 'python' ? 'bg-emerald-100 text-emerald-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-emerald-50'
                 }`}
+                title="Filter by Python & Arrow ecosystem features"
               >
                 🐍 Python / Arrow
               </button>

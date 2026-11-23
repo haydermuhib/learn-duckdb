@@ -107,14 +107,14 @@ export function App() {
           onBackToLanding={handleBackToLanding}
           initialExerciseId={selectedExerciseId}
           onSwitchToPlayground={handleOpenPlayground}
+          onSwitchToCheatSheet={handleOpenCheatSheet}
         />
       )}
       {view === 'playground' && (
         <PlaygroundLayout
           onBackToLanding={handleBackToLanding}
           onSwitchToExercises={() => handleStartLearning()}
-          onBackToCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : undefined}
-          onOpenCheatSheet={handleBackToCheatSheet}
+          onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
           initialQuery={playgroundInitialQuery}
         />
       )}

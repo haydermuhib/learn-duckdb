@@ -15,19 +15,17 @@ import { PlaygroundFileUploader } from './PlaygroundFileUploader';
 import { PlaygroundSchemaExplorer } from './PlaygroundSchemaExplorer';
 import { KeyboardShortcutsModal } from '../studio/KeyboardShortcutsModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { ModeSwitcher } from '../common/ModeSwitcher';
 import {
   ArrowLeft,
   RefreshCw,
   Keyboard,
-  BookOpen,
   Zap,
-  FileText,
 } from 'lucide-react';
 
 interface PlaygroundLayoutProps {
   onBackToLanding: () => void;
   onSwitchToExercises: () => void;
-  onBackToCheatSheet?: () => void;
   onOpenCheatSheet?: () => void;
   initialQuery?: string;
 }
@@ -39,7 +37,6 @@ SELECT * FROM ecommerce_sales LIMIT 10;`;
 export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   onBackToLanding,
   onSwitchToExercises,
-  onBackToCheatSheet,
   onOpenCheatSheet,
   initialQuery,
 }) => {
@@ -221,55 +218,20 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
           <button
             type="button"
             onClick={onBackToLanding}
-            className="flex items-center gap-1 p-1.5 sm:px-2 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
             title="Back to Home"
           >
             <ArrowLeft size={14} />
-            <span className="hidden md:inline">Home</span>
+            <span className="hidden sm:inline">Home</span>
           </button>
 
-          {onBackToCheatSheet && (
-            <button
-              type="button"
-              onClick={onBackToCheatSheet}
-              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-black border-2 border-ink bg-duck hover:bg-duck-dark shadow-brutal-xs transition-all cursor-pointer"
-              title="Return to Cheat Sheet where you left off"
-            >
-              <FileText size={13} />
-              <span>Cheat Sheet</span>
-            </button>
-          )}
-
-          {/* Mode Switcher Tabs */}
-          <div className="flex items-center border-2 border-ink bg-white p-0.5 text-xs font-bold">
-            <button
-              type="button"
-              onClick={onSwitchToExercises}
-              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Interactive Exercises"
-            >
-              <BookOpen size={13} />
-              <span className="hidden sm:inline">Exercises</span>
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
-            >
-              <Zap size={13} />
-              <span className="hidden xs:inline">Playground</span>
-            </button>
-            {!onBackToCheatSheet && onOpenCheatSheet && (
-              <button
-                type="button"
-                onClick={onOpenCheatSheet}
-                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
-                title="SQL Cheat Sheet"
-              >
-                <FileText size={13} />
-                <span className="hidden sm:inline">Cheat Sheet</span>
-              </button>
-            )}
-          </div>
+          <ModeSwitcher
+            currentMode="playground"
+            onSelectMode={(mode) => {
+              if (mode === 'exercises') onSwitchToExercises();
+              if (mode === 'cheatsheet') onOpenCheatSheet?.();
+            }}
+          />
         </div>
 
         {/* Center Title */}

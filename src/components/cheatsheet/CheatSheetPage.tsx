@@ -13,6 +13,7 @@ import {
 import { CheatSheetCategory, CheatSheetItem } from '../../types/cheatsheet';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
 import { SnowflakeIcon, PythonIcon } from '../common/BrandIcons';
+import { ModeSwitcher } from '../common/ModeSwitcher';
 import {
   Search,
   X,
@@ -185,52 +186,55 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans selection:bg-duck selection:text-ink">
       {/* Top Navigation Bar */}
-      <header className="border-b-3 border-ink bg-surface-card sticky top-0 z-30 shadow-brutal-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={onBackToHome}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-card hover:bg-slate-100 border-2 border-ink shadow-brutal-xs font-bold text-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
-              title="Return to Homepage"
-            >
-              <ArrowLeft size={14} />
-              <span className="hidden sm:inline">Home</span>
-            </button>
+      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onBackToHome}
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            title="Back to Home"
+          >
+            <ArrowLeft size={14} />
+            <span className="hidden sm:inline">Home</span>
+          </button>
 
-            <div className="flex items-center gap-2 border-l-2 border-ink/20 pl-2 sm:pl-3">
-              <img src="/logo.svg" alt="DuckDB" className="w-6 h-6 object-contain shrink-0" />
-              <span className="font-extrabold text-sm sm:text-lg tracking-tight">
-                DuckDB Cheat Sheet
-              </span>
-              <span className="hidden md:inline-block text-[10px] font-mono font-bold bg-duck px-2 py-0.5 border border-ink shadow-brutal-xs">
-                v1.6 Complete Reference
-              </span>
-            </div>
-          </div>
+          <ModeSwitcher
+            currentMode="cheatsheet"
+            onSelectMode={(mode) => {
+              if (mode === 'exercises') onStartLearning?.();
+              if (mode === 'playground') onOpenPlayground?.();
+            }}
+          />
+        </div>
 
-          <div className="flex items-center gap-2">
-            {onOpenPlayground && (
-              <button
-                type="button"
-                onClick={() => onOpenPlayground()}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-duck text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
-              >
-                <Zap size={14} className="fill-ink" />
-                <span className="hidden xs:inline">SQL Playground</span>
-              </button>
-            )}
+        {/* Center Title */}
+        <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[120px] xs:max-w-[160px] sm:max-w-none truncate px-1">
+          <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
+          <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
+            DuckDB Cheat Sheet
+          </span>
+          <span className="hidden sm:inline-block text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
+            v1.6 Reference
+          </span>
+        </div>
 
-            {onStartLearning && (
-              <button
-                type="button"
-                onClick={onStartLearning}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card text-ink font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
-              >
-                <BookOpen size={14} />
-                <span className="hidden sm:inline">151 Exercises</span>
-              </button>
-            )}
-          </div>
+        {/* Right Actions */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.querySelector('input[type="text"]');
+              if (el instanceof HTMLInputElement) {
+                el.focus();
+                el.select();
+              }
+            }}
+            className="hidden md:flex items-center gap-1 px-2 py-1 text-[11px] font-mono text-ink border border-ink bg-white hover:bg-slate-100 cursor-pointer shadow-brutal-xs"
+            title="Focus search input"
+          >
+            <Search size={12} />
+            <span>Search (Ctrl+K)</span>
+          </button>
         </div>
       </header>
 

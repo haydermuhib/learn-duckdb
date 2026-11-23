@@ -10,12 +10,14 @@ import { CurriculumSidebar } from './CurriculumSidebar';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ConfirmResetModal } from './ConfirmResetModal';
 import { DialectCompatibility } from './DialectCompatibility';
+import { ModeSwitcher } from '../common/ModeSwitcher';
 import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap, RotateCcw } from 'lucide-react';
 
 interface StudioLayoutProps {
   onBackToLanding: () => void;
   initialExerciseId?: string;
   onSwitchToPlayground?: () => void;
+  onSwitchToCheatSheet?: () => void;
 }
 
 const STORAGE_KEY_COMPLETED = 'learn_duckdb_completed_exercises';
@@ -29,6 +31,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   onBackToLanding,
   initialExerciseId,
   onSwitchToPlayground,
+  onSwitchToCheatSheet,
 }) => {
   // 1. Progress State
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => {
@@ -459,7 +462,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Studio Top Navigation Bar */}
       <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={onBackToLanding}
             className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
@@ -469,40 +472,25 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             <span className="hidden sm:inline">Home</span>
           </button>
 
+          <ModeSwitcher
+            currentMode="exercises"
+            onSelectMode={(mode) => {
+              if (mode === 'playground') onSwitchToPlayground?.();
+              if (mode === 'cheatsheet') onSwitchToCheatSheet?.();
+            }}
+          />
+
           <button
             onClick={() => setSidebarOpen(prev => !prev)}
             title="Toggle Curriculum Syllabus (Ctrl+B)"
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-duck text-ink text-xs font-bold border-2 border-ink shadow-brutal-xs hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-bold border-2 border-ink bg-white hover:bg-slate-100 shadow-brutal-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
           >
-            <BookOpen size={14} className="shrink-0" />
-            <span className="hidden xs:inline">Syllabus</span>
-            <span className="font-mono text-[10px] sm:text-[11px] ml-0.5 sm:ml-1 bg-ink text-white px-1 sm:px-1.5 py-0.2">
+            <BookOpen size={13} className="shrink-0" />
+            <span className="hidden md:inline">Syllabus</span>
+            <span className="font-mono text-[10px] sm:text-[11px] ml-0.5 bg-ink text-white px-1 sm:px-1.5 py-0.2">
               {completedIds.size}/{EXERCISES.length}
             </span>
           </button>
-
-          {/* Mode Switcher */}
-          {onSwitchToPlayground && (
-            <div className="flex items-center border-2 border-ink bg-white p-0.5 text-xs font-bold">
-              <button
-                type="button"
-                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 bg-duck text-ink border border-ink shadow-brutal-xs font-extrabold cursor-default"
-                title="Interactive Exercises"
-              >
-                <BookOpen size={13} />
-                <span className="hidden sm:inline">Exercises</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onSwitchToPlayground?.()}
-                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Open DuckDB SQL Playground"
-              >
-                <Zap size={13} />
-                <span className="hidden xs:inline">Playground</span>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Center: Module title & Progress */}

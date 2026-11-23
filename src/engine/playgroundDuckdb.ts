@@ -28,6 +28,55 @@ export const DEFAULT_TABLE_NAMES = new Set<string>([
   ...DATABASES.store.tables.map(t => t.name),
 ]);
 
+export const STORAGE_KEY_PLAYGROUND_DELETED = 'learn_duckdb_playground_deleted_tables';
+
+function getStorage(): Storage | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage;
+    }
+    if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) {
+      return (globalThis as any).localStorage;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+export function getDeletedPlaygroundTables(): Set<string> {
+  const storage = getStorage();
+  if (!storage) return new Set<string>();
+  try {
+    const raw = storage.getItem(STORAGE_KEY_PLAYGROUND_DELETED);
+    if (!raw) return new Set<string>();
+    const parsed = JSON.parse(raw);
+    return new Set<string>(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+export function saveDeletedPlaygroundTables(deleted: Set<string>): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(STORAGE_KEY_PLAYGROUND_DELETED, JSON.stringify([...deleted]));
+  } catch {
+    // Ignore storage quota or serialization errors
+  }
+}
+
+export function clearDeletedPlaygroundTables(): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem(STORAGE_KEY_PLAYGROUND_DELETED);
+  } catch {
+    // Ignore
+  }
+}
+
 let playgroundConn: duckdb.AsyncDuckDBConnection | null = null;
 let playgroundDb: duckdb.AsyncDuckDB | null = null;
 const registeredFiles = new Map<
@@ -39,31 +88,85 @@ async function seedDefaultPlaygroundTables(
   conn: duckdb.AsyncDuckDBConnection,
   db: duckdb.AsyncDuckDB
 ): Promise<void> {
-  // 1. Seed e-commerce sales dataset
-  const encoder = new TextEncoder();
-  const defaultBuffer = encoder.encode(DEFAULT_DATASET_CSV);
-  await db.registerFileBuffer(DEFAULT_DATASET_FILENAME, defaultBuffer);
+  const deletedTables = getDeletedPlaygroundTables();
 
-  await conn.query(
-    `CREATE OR REPLACE TABLE ${DEFAULT_DATASET_TABLE_NAME} AS SELECT * FROM read_csv_auto('${DEFAULT_DATASET_FILENAME}', header=true);`
-  );
+  // 1. Seed e-commerce sales dataset if not deleted by user
+  if (!deletedTables.has(DEFAULT_DATASET_TABLE_NAME)) {
+    const encoder = new TextEncoder();
+    const defaultBuffer = encoder.encode(DEFAULT_DATASET_CSV);
+    await db.registerFileBuffer(DEFAULT_DATASET_FILENAME, defaultBuffer);
 
-  registeredFiles.set(DEFAULT_DATASET_TABLE_NAME, {
-    tableName: DEFAULT_DATASET_TABLE_NAME,
-    fileName: DEFAULT_DATASET_FILENAME,
-    size: defaultBuffer.byteLength,
-    isDefault: true,
-  });
+    await conn.query(
+      `CREATE OR REPLACE TABLE ${DEFAULT_DATASET_TABLE_NAME} AS SELECT * FROM read_csv_auto('${DEFAULT_DATASET_FILENAME}', header=true);`
+    );
+
+    registeredFiles.set(DEFAULT_DATASET_TABLE_NAME, {
+      tableName: DEFAULT_DATASET_TABLE_NAME,
+      fileName: DEFAULT_DATASET_FILENAME,
+      size: defaultBuffer.byteLength,
+      isDefault: true,
+    });
+  }
 
   // 2. Seed default store tables (customers, products, orders, order_items, subscribers)
-  await loadDatabaseTables(conn, 'store');
-  for (const t of DATABASES.store.tables) {
-    registeredFiles.set(t.name, {
-      tableName: t.name,
-      fileName: `${t.name}.sql`,
+  // Only seed the ones that the user has not explicitly deleted!
+  for (const table of DATABASES.store.tables) {
+    if (deletedTables.has(table.name)) {
+      continue;
+    }
+
+    const seqName = `seq_${table.name}_id`;
+    await conn.query(`DROP TABLE IF EXISTS ${table.name} CASCADE;`);
+    await conn.query(`DROP SEQUENCE IF EXISTS ${seqName};`);
+    await conn.query(`CREATE SEQUENCE ${seqName} START 100;`);
+
+    const colDefs = table.columns
+      .map(([name, type]) => {
+        let dType = type.toUpperCase();
+        if (dType.includes('INTEGER PRIMARY KEY')) {
+          dType = `INTEGER PRIMARY KEY DEFAULT nextval('${seqName}')`;
+        }
+        return `${name} ${dType}`;
+      })
+      .join(', ');
+
+    await conn.query(`CREATE TABLE ${table.name} (${colDefs});`);
+
+    if (table.rows && table.rows.length > 0) {
+      const rowLiterals = table.rows.map(row => {
+        const values = row.map(val => {
+          if (val === null || val === undefined) return 'NULL';
+          if (typeof val === 'number') return val.toString();
+          if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
+          return `'${String(val)}'`;
+        });
+        return `(${values.join(', ')})`;
+      });
+
+      for (let i = 0; i < rowLiterals.length; i += 50) {
+        const batch = rowLiterals.slice(i, i + 50);
+        await conn.query(`INSERT INTO ${table.name} VALUES ${batch.join(', ')};`);
+      }
+    }
+
+    registeredFiles.set(table.name, {
+      tableName: table.name,
+      fileName: `${table.name}.sql`,
       size: 0,
       isDefault: true,
     });
+  }
+
+  // Pre-seed in-memory VFS files for Parquet and CSV direct querying in Playground
+  try {
+    if (!deletedTables.has('products')) {
+      await conn.query(`COPY products TO 'products.parquet' (FORMAT PARQUET);`);
+    }
+    if (!deletedTables.has('customers')) {
+      await conn.query(`COPY customers TO 'customers.csv' (FORMAT CSV, HEADER);`);
+    }
+  } catch {
+    // Ignore if files cannot be exported
   }
 }
 
@@ -75,6 +178,13 @@ export async function initPlayground(): Promise<duckdb.AsyncDuckDBConnection> {
   const { db } = await initDuckDB();
   playgroundDb = db;
   playgroundConn = await db.connect();
+
+  // Attach an isolated in-memory database for Playground so actions in Playground
+  // never collide with or drop tables from Curriculum / Cheatsheet (main database)
+  await playgroundConn.query(`
+    ATTACH IF NOT EXISTS ':memory:' AS playground;
+    USE playground;
+  `);
 
   await seedDefaultPlaygroundTables(playgroundConn, playgroundDb);
 
@@ -121,6 +231,13 @@ export async function registerPlaygroundFile(
   const countRes = await conn.query(`SELECT COUNT(*) as cnt FROM ${baseName};`);
   const rowCount = Number(countRes.toArray()[0]?.cnt || 0);
 
+  // If this table was previously in the deleted set, un-delete it now that it is uploaded
+  const deleted = getDeletedPlaygroundTables();
+  if (deleted.has(baseName)) {
+    deleted.delete(baseName);
+    saveDeletedPlaygroundTables(deleted);
+  }
+
   registeredFiles.set(baseName, {
     tableName: baseName,
     fileName: file.name,
@@ -137,7 +254,7 @@ export async function getPlaygroundTables(): Promise<PlaygroundTableSchema[]> {
   const tablesResult = await conn.query(`
     SELECT table_name 
     FROM information_schema.tables 
-    WHERE table_schema = 'main' 
+    WHERE table_catalog = 'playground' 
       AND table_type = 'BASE TABLE'
     ORDER BY table_name;
   `);
@@ -191,6 +308,27 @@ export async function executePlaygroundQuery(
   const endTime = performance.now();
   const executionTimeMs = Math.round(endTime - startTime);
 
+  // Check if user ran a DROP TABLE query directly in SQL editor
+  const dropMatch = sql.match(/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([a-zA-Z0-9_]+)/i);
+  if (dropMatch && dropMatch[1]) {
+    const droppedName = dropMatch[1].toLowerCase();
+    const deleted = getDeletedPlaygroundTables();
+    deleted.add(droppedName);
+    saveDeletedPlaygroundTables(deleted);
+    registeredFiles.delete(droppedName);
+  }
+
+  // Check if user ran a CREATE TABLE query directly in SQL editor (un-deletes it)
+  const createMatch = sql.match(/^\s*CREATE\s+(?:OR\s+REPLACE\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/i);
+  if (createMatch && createMatch[1]) {
+    const createdName = createMatch[1].toLowerCase();
+    const deleted = getDeletedPlaygroundTables();
+    if (deleted.has(createdName)) {
+      deleted.delete(createdName);
+      saveDeletedPlaygroundTables(deleted);
+    }
+  }
+
   const { columns, rows } = extractArrowTable(arrowResult);
 
   return {
@@ -215,12 +353,20 @@ export async function removePlaygroundTable(
   }
 
   registeredFiles.delete(tableName);
+
+  // Persist deletion so refresh / hard refresh does NOT resurrect the table
+  const deleted = getDeletedPlaygroundTables();
+  deleted.add(tableName);
+  saveDeletedPlaygroundTables(deleted);
 }
 
 export async function resetPlayground(): Promise<void> {
   const conn = await initPlayground();
 
-  // Drop all current tables
+  // Clear persisted deleted tables so default state is completely restored
+  clearDeletedPlaygroundTables();
+
+  // Drop all current tables in playground database
   const tables = await getPlaygroundTables();
   for (const t of tables) {
     await conn.query(`DROP TABLE IF EXISTS ${t.name};`);

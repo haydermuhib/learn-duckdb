@@ -186,8 +186,8 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans selection:bg-duck selection:text-ink">
       {/* Top Navigation Bar */}
-      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <header className="relative h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 z-10">
           <button
             type="button"
             onClick={onBackToHome}
@@ -207,8 +207,8 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           />
         </div>
 
-        {/* Center Title (Hidden on mobile where space is too small) */}
-        <div className="hidden md:flex items-center gap-1.5 sm:gap-2 text-center max-w-xs lg:max-w-md truncate px-1">
+        {/* Center Title (Hidden on mobile & tablet where space is limited, absolutely centered on desktop) */}
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 sm:gap-2 text-center pointer-events-none z-0">
           <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
           <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
             DuckDB Cheat Sheet
@@ -219,7 +219,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0" />
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 z-10" />
       </header>
 
       {/* Hero Header */}

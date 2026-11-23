@@ -461,8 +461,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Studio Top Navigation Bar */}
-      <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <header className="relative h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 z-10">
           <button
             onClick={onBackToLanding}
             className="h-8 px-2.5 inline-flex items-center justify-center gap-1 text-xs font-bold border-2 border-ink bg-white hover:bg-duck shadow-brutal-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer shrink-0 leading-none"
@@ -493,8 +493,8 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           </button>
         </div>
 
-        {/* Center: Module title & Progress (Hidden on mobile where space is too small) */}
-        <div className="hidden md:flex items-center gap-1.5 sm:gap-2 text-center max-w-xs lg:max-w-md truncate px-1">
+        {/* Center: Module title & Progress (Hidden on mobile where space is too small, centered for clean alignment) */}
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 sm:gap-2 text-center max-w-xs lg:max-w-md truncate px-1 pointer-events-none z-0">
           <span className="font-mono text-[11px] font-bold text-ink-muted uppercase truncate">
             {currentModule.title}
           </span>
@@ -503,7 +503,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 z-10">
           <button
             type="button"
             onClick={() => setIsShortcutsOpen(true)}

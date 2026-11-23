@@ -1,0 +1,5 @@
+- Lightweight SQL Syntax Highlighting for all DuckDB Cheat Sheet example queries
+- Independent database connection and state isolation between Cheat Sheet live runs and DuckDB Playground
+- Table deletion persistence in Playground across page refreshes until explicitly restored via Reset
+- Verified all 66 DuckDB Cheat Sheet example queries with real-time in-browser DuckDB execution
+- Centered mode switcher navigation and unified mobile catalog category tab styling

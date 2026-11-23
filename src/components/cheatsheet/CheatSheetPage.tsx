@@ -21,6 +21,7 @@ import {
   renderParityBadge,
 } from '../common/BrandIcons';
 import { ModeSwitcher } from '../common/ModeSwitcher';
+import { SqlCodeBlock } from '../common/SqlCodeBlock';
 import {
   Search,
   X,
@@ -1034,9 +1035,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     </button>
                   </div>
 
-                  <div className="p-3 bg-[#0B1120] border-2 border-ink text-slate-200 font-mono text-xs overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words leading-relaxed">
-                    {item.exampleSql}
-                  </div>
+                  <SqlCodeBlock code={item.exampleSql} />
 
                   {/* Live Inline Execution Output */}
                   {inlineResults[item.id] && (

@@ -465,10 +465,10 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={onBackToLanding}
-            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            className="h-8 px-2.5 inline-flex items-center justify-center gap-1 text-xs font-bold border-2 border-ink bg-white hover:bg-duck shadow-brutal-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer shrink-0 leading-none"
             title="Back to Home"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={14} className="shrink-0" />
             <span className="hidden sm:inline">Home</span>
           </button>
 
@@ -483,22 +483,22 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           <button
             onClick={() => setSidebarOpen(prev => !prev)}
             title="Toggle Curriculum Syllabus (Ctrl+B)"
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-bold border-2 border-ink bg-white hover:bg-slate-100 shadow-brutal-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            className="h-8 px-2 sm:px-2.5 inline-flex items-center justify-center gap-1 sm:gap-1.5 bg-duck text-ink text-xs font-bold border-2 border-ink shadow-brutal-xs hover:bg-duck-hover active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer shrink-0 leading-none"
           >
-            <BookOpen size={13} className="shrink-0" />
-            <span className="hidden md:inline">Syllabus</span>
-            <span className="font-mono text-[10px] sm:text-[11px] ml-0.5 bg-ink text-white px-1 sm:px-1.5 py-0.2">
+            <BookOpen size={14} className="shrink-0" />
+            <span className="hidden xs:inline">Syllabus</span>
+            <span className="font-mono text-[10px] sm:text-[11px] ml-0.5 sm:ml-1 bg-ink text-white px-1 sm:px-1.5 py-0.5 leading-none">
               {completedIds.size}/{EXERCISES.length}
             </span>
           </button>
         </div>
 
-        {/* Center: Module title & Progress */}
-        <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[100px] xs:max-w-[150px] sm:max-w-[220px] md:max-w-md truncate px-1">
-          <span className="hidden md:inline font-mono text-[11px] font-bold text-ink-muted uppercase">
+        {/* Center: Module title & Progress (Hidden on mobile where space is too small) */}
+        <div className="hidden md:flex items-center gap-1.5 sm:gap-2 text-center max-w-xs lg:max-w-md truncate px-1">
+          <span className="font-mono text-[11px] font-bold text-ink-muted uppercase truncate">
             {currentModule.title}
           </span>
-          <span className="hidden md:inline text-slate-300">•</span>
+          <span className="text-slate-300">•</span>
           <span className="font-extrabold text-xs sm:text-sm truncate">{currentExercise.title}</span>
         </div>
 
@@ -508,7 +508,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             type="button"
             onClick={() => setIsShortcutsOpen(true)}
             title="View keyboard shortcuts (?)"
-            className="hidden md:flex p-1.5 border-2 border-ink hover:bg-duck text-xs font-mono items-center gap-1 cursor-pointer"
+            className="hidden md:inline-flex h-8 px-2 border-2 border-ink hover:bg-duck text-xs font-mono items-center gap-1 cursor-pointer shadow-brutal-xs leading-none"
           >
             <Keyboard size={13} />
             <span className="hidden sm:inline text-[11px] font-bold">Shortcuts</span>
@@ -517,17 +517,17 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
           <button
             onClick={handleResetDb}
             title="Reset database to seed rows"
-            className="p-1.5 border-2 border-ink hover:bg-slate-100 text-xs font-mono flex items-center gap-1 cursor-pointer"
+            className="h-8 px-2 sm:px-2.5 inline-flex items-center gap-1 border-2 border-ink hover:bg-slate-100 text-xs font-mono cursor-pointer shadow-brutal-xs leading-none"
           >
             <RefreshCw size={13} />
             <span className="hidden sm:inline text-[11px]">Reset DB</span>
           </button>
 
-          <div className="flex items-center border-2 border-ink">
+          <div className="h-8 inline-flex items-center border-2 border-ink shadow-brutal-xs bg-white">
             <button
               onClick={handlePrev}
               disabled={!hasPrev}
-              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent border-r border-ink cursor-pointer"
+              className="h-full px-2 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent border-r border-ink cursor-pointer inline-flex items-center justify-center"
               title="Previous Exercise"
             >
               <ChevronLeft size={15} />
@@ -535,7 +535,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             <button
               onClick={handleNext}
               disabled={!hasNext}
-              className="p-1.5 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+              className="h-full px-2 hover:bg-duck disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer inline-flex items-center justify-center"
               title="Next Exercise"
             >
               <ChevronRight size={15} />

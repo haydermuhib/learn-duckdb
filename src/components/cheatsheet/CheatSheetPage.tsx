@@ -191,10 +191,10 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           <button
             type="button"
             onClick={onBackToHome}
-            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            className="h-8 px-2.5 inline-flex items-center justify-center gap-1 text-xs font-bold border-2 border-ink bg-white hover:bg-duck shadow-brutal-xs active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer shrink-0 leading-none"
             title="Back to Home"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={14} className="shrink-0" />
             <span className="hidden sm:inline">Home</span>
           </button>
 
@@ -207,8 +207,8 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
           />
         </div>
 
-        {/* Center Title */}
-        <div className="flex items-center gap-1.5 sm:gap-2 text-center max-w-[120px] xs:max-w-[160px] sm:max-w-none truncate px-1">
+        {/* Center Title (Hidden on mobile where space is too small) */}
+        <div className="hidden md:flex items-center gap-1.5 sm:gap-2 text-center max-w-xs lg:max-w-md truncate px-1">
           <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
           <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
             DuckDB Cheat Sheet
@@ -229,7 +229,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 el.select();
               }
             }}
-            className="hidden md:flex items-center gap-1 px-2 py-1 text-[11px] font-mono text-ink border border-ink bg-white hover:bg-slate-100 cursor-pointer shadow-brutal-xs"
+            className="hidden md:inline-flex h-8 px-2.5 items-center gap-1 text-[11px] font-mono text-ink border-2 border-ink bg-white hover:bg-slate-100 cursor-pointer shadow-brutal-xs leading-none"
             title="Focus search input"
           >
             <Search size={12} />

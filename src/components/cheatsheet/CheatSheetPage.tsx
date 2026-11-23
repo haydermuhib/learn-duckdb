@@ -12,7 +12,14 @@ import {
 } from '../../data/duckdbCheatSheetData';
 import { CheatSheetCategory, CheatSheetItem } from '../../types/cheatsheet';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
-import { SnowflakeIcon, PythonIcon } from '../common/BrandIcons';
+import {
+  SnowflakeIcon,
+  PythonIcon,
+  DuckDBIcon,
+  PostgresIcon,
+  BigQueryIcon,
+  renderParityBadge,
+} from '../common/BrandIcons';
 import { ModeSwitcher } from '../common/ModeSwitcher';
 import {
   Search,
@@ -47,14 +54,19 @@ interface CheatSheetPageProps {
 }
 
 type ReferenceTab = 'strftime' | 'printf' | 'regex' | 'types' | 'cli' | 'extensions' | null;
-type WorkflowPreset = 'all' | 'snowflake' | 'python' | 'exclusive' | 'cli' | 'ingestion' | 'dates' | 'strings' | 'window' | 'nested';
+type WorkflowPreset = 'all' | 'duckdb' | 'snowflake' | 'postgres' | 'bigquery' | 'python' | 'exclusive' | 'cli' | 'ingestion' | 'dates' | 'strings' | 'window' | 'nested';
 
 export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
   onBackToHome,
   onOpenPlayground,
   onStartLearning,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('q') || '';
+    }
+    return '';
+  });
   const [activeCategory, setActiveCategory] = useState<CheatSheetCategory | 'all'>('all');
   const [activePreset, setActivePreset] = useState<WorkflowPreset>('all');
   const [expandedReference, setExpandedReference] = useState<ReferenceTab>('strftime');
@@ -99,12 +111,16 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       activeCategory === 'all' ? undefined : activeCategory
     );
 
-    if (activePreset === 'snowflake') {
+    if (activePreset === 'duckdb' || activePreset === 'exclusive') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('exclusive') || i.parityBadge?.toLowerCase().includes('superpower') || i.tags.includes('duckdb superpower'));
+    } else if (activePreset === 'snowflake') {
       items = items.filter(i => i.parityBadge?.toLowerCase().includes('snowflake') || i.tags.includes('snowflake'));
+    } else if (activePreset === 'postgres') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('postgres') || i.tags.includes('postgres'));
+    } else if (activePreset === 'bigquery') {
+      items = items.filter(i => i.parityBadge?.toLowerCase().includes('bigquery') || i.tags.includes('bigquery'));
     } else if (activePreset === 'python') {
       items = items.filter(i => i.parityBadge?.toLowerCase().includes('python') || i.parityBadge?.toLowerCase().includes('arrow') || i.tags.includes('arrow') || i.tags.includes('parquet'));
-    } else if (activePreset === 'exclusive') {
-      items = items.filter(i => i.parityBadge?.toLowerCase().includes('exclusive') || i.parityBadge?.toLowerCase().includes('superpower') || i.tags.includes('duckdb superpower'));
     } else if (activePreset === 'cli') {
       items = items.filter(i => i.tags.includes('cli') || i.tags.includes('terminal') || i.tags.includes('pragma'));
     } else if (activePreset === 'ingestion') {
@@ -225,13 +241,15 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       {/* Hero Header */}
       <section className="bg-gradient-to-b from-[#FFFDF5] to-[#F5EEDD] border-b-3 border-ink py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-duck text-ink border-2 border-ink shadow-brutal-sm text-xs font-mono font-bold">
-            <Sparkles size={13} className="fill-ink" />
-            <span>Analytical SQL, Python Superpowers & Data Types</span>
-          </div>
-
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-ink uppercase">
-            The Complete DuckDB Cheat Sheet
+            The Complete DuckDB Cheat{' '}
+            <span className="relative inline-block whitespace-nowrap">
+              Sheet
+              <Sparkles
+                aria-hidden="true"
+                className="absolute -top-2.5 -right-6 sm:-top-3.5 sm:-right-8 w-6 h-6 sm:w-8 sm:h-8 text-duck fill-duck stroke-ink stroke-2 drop-shadow-[2px_2px_0px_#1E293B] pointer-events-none"
+              />
+            </span>
           </h1>
 
           <p className="text-xs sm:text-base text-ink-muted max-w-3xl mx-auto leading-relaxed">
@@ -275,6 +293,23 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-2 pt-3">
               <span className="text-[11px] font-mono font-bold text-ink-muted">Quick filters:</span>
               <button
+                type="button"
+                onClick={() => {
+                  setActivePreset(prev => prev === 'duckdb' ? 'all' : 'duckdb');
+                  setActiveCategory('all');
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'duckdb' ? 'bg-duck text-ink font-black shadow-brutal-xs' : 'bg-white hover:bg-duck-light'
+                }`}
+                title="Filter by DuckDB exclusive superpowers"
+              >
+                <span className="w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center">
+                  <DuckDBIcon className="w-full h-full" />
+                </span>
+                <span>DuckDB Superpowers</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setActivePreset(prev => prev === 'snowflake' ? 'all' : 'snowflake');
                   setActiveCategory('all');
@@ -290,6 +325,39 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                 <span>Snowflake 1:1</span>
               </button>
               <button
+                type="button"
+                onClick={() => {
+                  setActivePreset(prev => prev === 'postgres' ? 'all' : 'postgres');
+                  setActiveCategory('all');
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'postgres' ? 'bg-indigo-100 text-indigo-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-indigo-50'
+                }`}
+                title="Filter by PostgreSQL 1:1 parity syntax"
+              >
+                <span className="w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center">
+                  <PostgresIcon className="w-full h-full" />
+                </span>
+                <span>Postgres 1:1</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActivePreset(prev => prev === 'bigquery' ? 'all' : 'bigquery');
+                  setActiveCategory('all');
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                  activePreset === 'bigquery' ? 'bg-sky-100 text-sky-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-sky-50'
+                }`}
+                title="Filter by BigQuery 1:1 parity syntax"
+              >
+                <span className="w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center">
+                  <BigQueryIcon className="w-full h-full" />
+                </span>
+                <span>BigQuery 1:1</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setActivePreset(prev => prev === 'python' ? 'all' : 'python');
                   setActiveCategory('all');
@@ -796,17 +864,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     </h2>
                     {item.parityBadge && (
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 border border-blue-400 text-blue-900 font-mono text-[10px] font-bold">
-                        {item.parityBadge.toLowerCase().includes('snowflake') && (
-                          <span className="w-3 h-3 shrink-0 inline-flex items-center justify-center">
-                            <SnowflakeIcon className="w-full h-full" />
-                          </span>
-                        )}
-                        {item.parityBadge.toLowerCase().includes('python') && (
-                          <span className="w-3 h-3 shrink-0 inline-flex items-center justify-center">
-                            <PythonIcon className="w-full h-full" />
-                          </span>
-                        )}
-                        <span>{item.parityBadge}</span>
+                        {renderParityBadge(item.parityBadge)}
                       </span>
                     )}
                   </div>

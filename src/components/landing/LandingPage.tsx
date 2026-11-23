@@ -4,7 +4,7 @@ import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
-import { SnowflakeIcon, PythonIcon } from '../common/BrandIcons';
+import { SnowflakeIcon, PythonIcon, renderParityBadge } from '../common/BrandIcons';
 import {
   ArrowRight,
   Sparkles,
@@ -214,15 +214,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="mt-3 space-y-1.5 font-mono text-[11px]">
                   <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
                     <span><code className="font-bold text-ink">QUALIFY</code> window filtering</span>
-                    <span className="text-emerald-700 font-bold">Snowflake 1:1</span>
+                    <span className="text-emerald-700 font-bold inline-flex items-center gap-1">{renderParityBadge('Snowflake 1:1')}</span>
                   </div>
                   <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
                     <span><code className="font-bold text-ink">GROUP BY ALL</code></span>
-                    <span className="text-emerald-700 font-bold">Snowflake & DuckDB</span>
+                    <span className="text-emerald-700 font-bold inline-flex items-center gap-1">{renderParityBadge('Snowflake & DuckDB')}</span>
                   </div>
                   <div className="p-1.5 bg-slate-50 border border-ink flex items-center justify-between">
                     <span><code className="font-bold text-ink">SELECT * EXCLUDE / REPLACE</code></span>
-                    <span className="text-emerald-700 font-bold">BigQuery & Snowflake</span>
+                    <span className="text-emerald-700 font-bold inline-flex items-center gap-1">{renderParityBadge('BigQuery & Snowflake')}</span>
                   </div>
                 </div>
               </div>

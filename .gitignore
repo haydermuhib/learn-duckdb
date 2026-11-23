@@ -15,6 +15,9 @@ env/
 # DuckDB runtime files (user-generated)
 data/sandbox/*.duckdb
 data/sandbox/*.duckdb.wal
+*.parquet
+customers.csv
+tmp_*
 
 # uv
 .python-version

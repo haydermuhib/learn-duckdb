@@ -135,6 +135,16 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
       }
     }
   }
+
+  // Pre-seed in-memory VFS files for Parquet and CSV direct querying in Cheatsheet and Playground
+  if (dbName === 'store') {
+    try {
+      await conn.query(`COPY products TO 'products.parquet' (FORMAT PARQUET);`);
+      await conn.query(`COPY customers TO 'customers.csv' (FORMAT CSV, HEADER);`);
+    } catch (e) {
+      // Ignore if files cannot be exported
+    }
+  }
 }
 
 export function extractArrowTable(arrowTable: any): { columns: string[]; rows: any[][] } {

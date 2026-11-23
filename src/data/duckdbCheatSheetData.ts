@@ -287,13 +287,13 @@ export const DUCKDB_CHEAT_SHEET_ITEMS: CheatSheetItem[] = [
     ],
     exampleSql: `SELECT 
   category, 
-  status, 
+  CASE WHEN price > 50 THEN 'Premium' ELSE 'Standard' END AS tier, 
   COUNT(*) AS total_items, 
   ROUND(AVG(price), 2) AS avg_price
 FROM products
 GROUP BY ALL
 ORDER BY total_items DESC;`,
-    exampleOutput: 'Columns: [category, status, total_items, avg_price]',
+    exampleOutput: 'Columns: [category, tier, total_items, avg_price]',
     notes: 'Supported in modern cloud warehouses (DuckDB, Snowflake). Eliminates tedious GROUP BY col1, col2, col3 clauses.',
     tags: ['group by', 'all', 'aggregate', 'ergonomics', 'snowflake'],
   },
@@ -339,7 +339,7 @@ QUALIFY rank <= 2;`,
     parameters: [
       { name: 'columns', type: 'column list', description: 'Comma-separated column names to remove from the asterisk projection.' },
     ],
-    exampleSql: `SELECT * EXCLUDE (created_at, updated_at, internal_id)
+    exampleSql: `SELECT * EXCLUDE (signup_date, city)
 FROM customers
 LIMIT 5;`,
     tags: ['exclude', 'select', 'star', 'projection', 'wide tables'],
@@ -417,7 +417,10 @@ USING SUM(price);`,
     signature: 'UNPIVOT table ON col1, col2 INTO NAME name_col VALUE val_col',
     summary: 'Rotates wide columns into key-value rows (reverse of PIVOT).',
     parityBadge: 'DuckDB Standard',
-    exampleSql: `UNPIVOT monthly_revenue
+    exampleSql: `WITH monthly_revenue AS (
+  SELECT '2026' AS year, 12000 AS jan, 14500 AS feb, 16000 AS mar, 15200 AS apr
+)
+UNPIVOT monthly_revenue
 ON jan, feb, mar, apr
 INTO
   NAME month
@@ -435,7 +438,15 @@ INTO
       { name: 'equality', type: 't1.id = t2.id', description: 'Exact match column(s) (e.g. ticker symbol, user ID).' },
       { name: 'inequality', type: 't1.timestamp >= t2.timestamp', description: 'Temporal ordering column matching the nearest prior state.' },
     ],
-    exampleSql: `SELECT trade.symbol, trade.trade_time, quote.ask
+    exampleSql: `WITH trades AS (
+  SELECT 'AAPL' AS symbol, TIMESTAMP '2026-01-01 10:00:05' AS trade_time
+  UNION ALL SELECT 'AAPL', TIMESTAMP '2026-01-01 10:00:15'
+),
+quotes AS (
+  SELECT 'AAPL' AS symbol, TIMESTAMP '2026-01-01 10:00:00' AS quote_time, 150.25 AS ask
+  UNION ALL SELECT 'AAPL', TIMESTAMP '2026-01-01 10:00:10', 150.50
+)
+SELECT trade.symbol, trade.trade_time, quote.quote_time, quote.ask
 FROM trades trade
 ASOF JOIN quotes quote
   ON trade.symbol = quote.symbol
@@ -561,17 +572,18 @@ LIMIT 5;`,
   },
   {
     id: 'func-trim-casing',
-    name: 'trim(), upper(), lower(), initcap()',
+    name: 'trim(), upper(), lower()',
     category: 'strings',
-    signature: 'upper(s) | lower(s) | initcap(s) | trim(s [, chars])',
+    signature: 'upper(s) | lower(s) | trim(s [, chars])',
     summary: 'Essential string casing and whitespace trimming functions.',
     parityBadge: 'ANSI SQL Standard',
     exampleSql: `SELECT 
-  initcap(lower(name)) AS formatted_name, 
-  trim(category) AS clean_cat
+  upper(name) AS loud_name, 
+  lower(category) AS clean_cat,
+  trim(category) AS trimmed_cat
 FROM products
 LIMIT 5;`,
-    tags: ['trim', 'upper', 'lower', 'initcap', 'cleanup'],
+    tags: ['trim', 'upper', 'lower', 'casing', 'cleanup'],
   },
 
   // ==========================================
@@ -775,11 +787,15 @@ LIMIT 6;`,
     signature: '{\'key1\': val1, \'key2\': val2} | struct_pack(k := v) | s.key | s[\'key\']',
     summary: 'Strongly-typed object records. Accessed via direct dot notation (s.key) or bracket syntax.',
     parityBadge: 'Snowflake & BigQuery Parity',
-    exampleSql: `SELECT 
-  {'id': id, 'name': name, 'usd': price} AS product_obj,
+    exampleSql: `WITH structured AS (
+  SELECT {'id': id, 'name': name, 'usd': price} AS product_obj
+  FROM products
+)
+SELECT 
+  product_obj,
   product_obj.name AS extracted_name,
   product_obj['usd'] AS extracted_price
-FROM products
+FROM structured
 LIMIT 3;`,
     tags: ['struct', 'object', 'dot notation', 'record'],
   },
@@ -871,10 +887,11 @@ FROM products;`,
     parameters: [
       { name: 'path', type: 'VARCHAR | LIST', description: 'Local path, glob pattern, or remote S3 / HTTPS URL.' },
     ],
-    exampleSql: `SELECT category, COUNT(*) AS rows, ROUND(AVG(price), 2) AS avg_price
-FROM 'https://shell.duckdb.org/data/tpch/0_01/parquet/lineitem.parquet'
+    exampleSql: `COPY (SELECT * FROM products) TO 'products.parquet' (FORMAT PARQUET);
+SELECT category, COUNT(*) AS rows, ROUND(AVG(price), 2) AS avg_price
+FROM read_parquet('products.parquet')
 GROUP BY ALL
-LIMIT 5;`,
+ORDER BY rows DESC;`,
     tags: ['parquet', 'read_parquet', 'glob', 'zero-copy', 'arrow'],
   },
   {
@@ -884,7 +901,8 @@ LIMIT 5;`,
     signature: 'read_csv_auto(\'file.csv\', header=true, normalize_names=true)',
     summary: 'Automatically sniffs delimiters, header rows, quotes, and infers strict column data types.',
     parityBadge: 'DuckDB Superpower',
-    exampleSql: `SELECT * 
+    exampleSql: `COPY (SELECT * FROM customers) TO 'customers.csv' (FORMAT CSV, HEADER);
+SELECT id, name, email, city 
 FROM read_csv_auto('customers.csv')
 LIMIT 5;`,
     tags: ['csv', 'read_csv_auto', 'sniffing', 'ingest'],
@@ -914,10 +932,14 @@ LIMIT 5;`,
     signature: 'ATTACH \'other.db\' AS other_db; DETACH other_db;',
     summary: 'Attaches external SQLite, PostgreSQL, MySQL, or DuckDB database files to query and join them across boundaries in a single query.',
     parityBadge: 'DuckDB Superpower',
-    exampleSql: `ATTACH 'analytics.db' AS analytics;
-SELECT * 
+    exampleSql: `ATTACH ':memory:' AS analytics;
+CREATE TABLE analytics.sales AS 
+  SELECT id AS product_id, stock * price AS total_val 
+  FROM main.products;
+SELECT p.name, p.price, s.total_val 
 FROM main.products p
-JOIN analytics.sales s ON p.id = s.product_id;`,
+JOIN analytics.sales s ON p.id = s.product_id
+LIMIT 5;`,
     tags: ['attach', 'detach', 'multi-db', 'sqlite', 'postgres'],
   },
 
@@ -1215,18 +1237,18 @@ FROM range(DATE '2026-11-01', DATE '2026-11-10', INTERVAL '1' DAY);`,
   },
   {
     id: 'func-ilike-any',
-    name: 'Multi-Pattern Matching (ILIKE ANY / LIKE ALL)',
+    name: 'Multi-Pattern Matching (regexp_matches & ILIKE ANY)',
     category: 'strings',
-    signature: 'col ILIKE ANY([\'pattern1\', \'pattern2\']) | col LIKE ALL([\'%a%\', \'%b%\'])',
-    summary: 'Matches a string against multiple patterns contained in an array without typing endless repetitive OR / AND conditions.',
-    parityBadge: 'DuckDB & Snowflake 1:1',
+    signature: 'regexp_matches(string, regex) | regexp_extract(string, regex)',
+    summary: 'Matches strings against multiple patterns using regular expressions (e.g. (?i)pattern1|pattern2) without tedious repetitive OR conditions.',
+    parityBadge: 'DuckDB & Snowflake Parity',
     parameters: [
-      { name: 'patterns', type: 'LIST(VARCHAR)', description: 'Array of LIKE / ILIKE wildcard patterns (e.g. [\'%pro%\', \'%max%\']).' },
+      { name: 'regex', type: 'VARCHAR', description: 'Regular expression pattern with optional flags (e.g. (?i) for case-insensitivity).' },
     ],
     exampleSql: `SELECT id, name, category, price
 FROM products
-WHERE name ILIKE ANY(['%pro%', '%wireless%', '%mouse%']);`,
-    tags: ['ilike any', 'like all', 'pattern matching', 'wildcard', 'strings'],
+WHERE regexp_matches(name, '(?i)pro|wireless|mouse');`,
+    tags: ['regexp_matches', 'pattern matching', 'regex', 'wildcard', 'strings'],
   },
   {
     id: 'func-try-cast',
@@ -1259,7 +1281,7 @@ WHERE name ILIKE ANY(['%pro%', '%wireless%', '%mouse%']);`,
     exampleSql: `SELECT 
   email, 
   md5(email) AS anonymized_hash,
-  hash(id) AS 64bit_fast_hash
+  hash(id) AS fast_hash_64bit
 FROM customers
 LIMIT 5;`,
     tags: ['hash', 'md5', 'sha256', 'surrogate key', 'deduplication', 'cryptography'],

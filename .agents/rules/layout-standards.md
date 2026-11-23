@@ -29,3 +29,21 @@ These layout rules are non-negotiable standards for `learn-duckdb`. Agents and c
 ## 5. Scrollable Syllabus Footer Placement
 - In `CurriculumSidebar.tsx`, the footer containing the progress summary, Backup, Import, and Reset buttons must ALWAYS remain embedded at the natural bottom of the scrollable exercise list (`mt-4` inside the scroll container).
 - It must NEVER be fixed or floating over the exercise list. It belongs at the natural end of the scroll.
+
+## 6. Absolutely Centered Navigation Mode Titles
+- The center title across all main headers (`CheatSheetPage.tsx`, `PlaygroundLayout.tsx`, `StudioLayout.tsx`) must be absolutely positioned:
+  `<div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-2 pointer-events-none">`
+- This ensures zero horizontal or vertical shifting when the user navigates between Studio, Playground, and Cheat Sheet modes.
+- Header action buttons must have uniform heights (`h-8` / `h-9` on mobile and desktop) for visual rhythm.
+
+## 7. Accurate Brand Icon Pairing in Parity Badges
+- When rendering badges that combine multiple ecosystem technologies (e.g., `DuckDB & Snowflake Standard`, `BigQuery & Snowflake 1:1`), NEVER prepend an icon to the entire string.
+- Always use `renderParityBadge()` from `BrandIcons.tsx` to ensure each logo is paired directly beside its corresponding technology name.
+- Use official brand vector icons (`DuckDBIcon`, `SnowflakeIcon`, `PythonIcon`, `PostgresIcon`, `BigQueryIcon`, `SQLiteIcon`, `PrestoIcon`).
+
+## 8. Uniform Drawer & Catalog Tab Button Heights on Mobile
+- Reference tab selectors (such as the 6 catalog tabs in `CheatSheetPage.tsx`) must use fixed uniform heights on mobile (`h-9` or `h-10` with `flex items-center justify-between sm:justify-center`).
+- Labels must not wrap onto jagged extra lines; use concise responsive labels (`strftime`, `printf`, `Regex`, `Types`, `CLI`, `Extensions`) with count indicators and chevrons on the right.
+
+## 9. Non-Intrusive Specifier Card Horizontal Scrolling
+- Reference cards in catalog drawers (`strftime`, `printf`, `regex`, `types`, `cli`, `extensions`) must allow horizontal scrolling for lengthy text descriptions using `.scrollbar-none` and `overflow-x-auto whitespace-nowrap` to prevent card height distortions or truncation dots (`...`).

@@ -413,78 +413,122 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
               </div>
             </div>
 
-            {/* 4 Interactive Tab Selectors */}
+            {/* 6 Interactive Reference Tab Selectors */}
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'strftime' ? null : 'strftime')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'strftime' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'strftime' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="Date formatting strftime parameters"
               >
-                <Calendar size={13} />
-                <span>Date strftime ({STRFTIME_SPECIFIERS.length})</span>
-                {expandedReference === 'strftime' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Calendar size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">
+                    <span className="hidden sm:inline">Date </span>strftime
+                  </span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({STRFTIME_SPECIFIERS.length})</span>
+                  {expandedReference === 'strftime' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'printf' ? null : 'printf')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'printf' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'printf' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="Text formatting printf parameters"
               >
-                <Type size={13} />
-                <span>Text printf ({PRINTF_SPECIFIERS.length})</span>
-                {expandedReference === 'printf' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Type size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">
+                    <span className="hidden sm:inline">Text </span>printf
+                  </span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({PRINTF_SPECIFIERS.length})</span>
+                  {expandedReference === 'printf' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'regex' ? null : 'regex')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'regex' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'regex' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="Regular expression syntax and character classes"
               >
-                <Code2 size={13} />
-                <span>Regex ({REGEX_SPECIFIERS.length})</span>
-                {expandedReference === 'regex' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Code2 size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">Regex</span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({REGEX_SPECIFIERS.length})</span>
+                  {expandedReference === 'regex' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'types' ? null : 'types')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'types' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'types' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="DuckDB native data types"
               >
-                <Tag size={13} />
-                <span>Data Types ({DUCKDB_DATA_TYPES.length})</span>
-                {expandedReference === 'types' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Tag size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">
+                    <span className="hidden sm:inline">Data </span>Types
+                  </span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({DUCKDB_DATA_TYPES.length})</span>
+                  {expandedReference === 'types' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'cli' ? null : 'cli')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'cli' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'cli' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="DuckDB CLI dot-commands and PRAGMA statements"
               >
-                <Terminal size={13} />
-                <span>CLI & PRAGMA ({DUCKDB_CLI_COMMANDS.length})</span>
-                {expandedReference === 'cli' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Terminal size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">
+                    CLI <span className="hidden sm:inline">& PRAGMA</span>
+                  </span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({DUCKDB_CLI_COMMANDS.length})</span>
+                  {expandedReference === 'cli' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setExpandedReference(prev => prev === 'extensions' ? null : 'extensions')}
-                className={`px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                  expandedReference === 'extensions' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light'
+                className={`h-9 sm:h-auto sm:py-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold font-mono border-2 border-ink shadow-brutal-xs transition-colors cursor-pointer flex items-center justify-between sm:justify-center gap-1 ${
+                  expandedReference === 'extensions' ? 'bg-duck text-ink font-black' : 'bg-white hover:bg-duck-light text-ink'
                 }`}
+                title="DuckDB core and official extensions"
               >
-                <Boxes size={13} />
-                <span>Extensions ({DUCKDB_EXTENSIONS.length})</span>
-                {expandedReference === 'extensions' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                <span className="flex items-center gap-1 min-w-0">
+                  <Boxes size={12} className="shrink-0 text-ink" />
+                  <span className="truncate">Extensions</span>
+                </span>
+                <span className="flex items-center gap-0.5 shrink-0 opacity-80">
+                  <span className="text-[10px] font-mono">({DUCKDB_EXTENSIONS.length})</span>
+                  {expandedReference === 'extensions' ? <ChevronUp size={11} className="shrink-0" /> : <ChevronDown size={11} className="shrink-0" />}
+                </span>
               </button>
             </div>
           </div>

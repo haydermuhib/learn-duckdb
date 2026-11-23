@@ -760,46 +760,29 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     {/* Inline Live Test Button */}
                     <button
+                      type="button"
                       onClick={() => handleRunInline(item)}
                       disabled={runningItems[item.id]}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-duck hover:bg-duck-hover border border-ink text-xs font-extrabold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                      className="h-7 px-2.5 inline-flex items-center gap-1.5 bg-duck hover:bg-duck-hover border-2 border-ink text-xs font-black shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 leading-none"
                       title="Execute directly in live DuckDB-Wasm"
                     >
-                      <Play size={11} className="fill-ink" />
+                      <Play size={11} className="fill-ink shrink-0" />
                       <span>{runningItems[item.id] ? 'Running...' : inlineResults[item.id] ? 'Hide Output' : 'Test Live'}</span>
-                    </button>
-
-                    {/* Copy SQL Button */}
-                    <button
-                      onClick={() => handleCopy(item.exampleSql, `sql-${item.id}`)}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-surface-card hover:bg-slate-100 border border-ink text-xs font-bold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
-                      title="Copy SQL snippet"
-                    >
-                      {copiedId === `sql-${item.id}` ? (
-                        <>
-                          <Check size={12} className="text-emerald-600 stroke-[3]" />
-                          <span className="text-emerald-700 font-extrabold">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={12} />
-                          <span>Copy</span>
-                        </>
-                      )}
                     </button>
 
                     {/* Open in Full Playground */}
                     {onOpenPlayground && (
                       <button
+                        type="button"
                         onClick={() => onOpenPlayground(item.exampleSql)}
-                        className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 border border-ink text-xs font-bold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                        className="h-7 px-2.5 inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 border-2 border-ink text-xs font-extrabold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 leading-none"
                         title="Open in dedicated SQL Playground"
                       >
-                        <Zap size={11} className="fill-duck" />
-                        <span className="hidden sm:inline">Playground</span>
+                        <Zap size={11} className="fill-duck shrink-0" />
+                        <span>Playground</span>
                       </button>
                     )}
                   </div>
@@ -870,14 +853,36 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     </div>
                   )}
 
-                  {/* Runnable SQL Snippet */}
-                  <div className="space-y-1 pt-1">
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted block">
-                      Executable DuckDB SQL Example:
-                    </span>
-                    <div className="p-3 bg-[#0B1120] border-2 border-ink text-slate-200 font-mono text-xs overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words leading-relaxed">
-                      {item.exampleSql}
+                  {/* Runnable SQL Snippet Header */}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-duck/30 border-2 border-ink text-ink font-mono text-[11px] font-black shadow-brutal-xs select-none">
+                      <span className="w-2 h-2 rounded-full bg-duck-dark animate-pulse shrink-0"></span>
+                      <span>Executable DuckDB SQL Example:</span>
                     </div>
+
+                    {/* Copy SQL Button placed right on the example block */}
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(item.exampleSql, `sql-${item.id}`)}
+                      className="h-7 px-2.5 inline-flex items-center gap-1.5 bg-surface-card hover:bg-slate-100 border-2 border-ink text-xs font-bold shadow-brutal-xs cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all shrink-0 leading-none"
+                      title="Copy SQL example"
+                    >
+                      {copiedId === `sql-${item.id}` ? (
+                        <>
+                          <Check size={13} className="text-emerald-600 stroke-[3]" />
+                          <span className="text-emerald-700 font-extrabold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={12} />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="p-3 bg-[#0B1120] border-2 border-ink text-slate-200 font-mono text-xs overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto whitespace-pre-wrap break-words leading-relaxed">
+                    {item.exampleSql}
                   </div>
 
                   {/* Live Inline Execution Output */}

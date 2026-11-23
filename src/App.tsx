@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';
@@ -15,12 +15,27 @@ export function App() {
   });
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(undefined);
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
+  const [returnToCheatSheet, setReturnToCheatSheet] = useState(false);
+  const [hasVisitedCheatSheet, setHasVisitedCheatSheet] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet';
+    }
+    return false;
+  });
+
+  const cheatSheetScrollRef = useRef<number>(0);
 
   // Sync hash changes
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet') {
+        setHasVisitedCheatSheet(true);
         setView('cheatsheet');
+        requestAnimationFrame(() => {
+          if (cheatSheetScrollRef.current > 0) {
+            window.scrollTo({ top: cheatSheetScrollRef.current, behavior: 'instant' });
+          }
+        });
       } else if (window.location.hash === '#playground') {
         setView('playground');
       } else if (window.location.hash === '#studio') {
@@ -40,17 +55,35 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenPlayground = (queryOrEvent?: unknown) => {
+  const handleOpenPlayground = (queryOrEvent?: unknown, fromCheatSheet = false) => {
     const safeQuery = typeof queryOrEvent === 'string' ? queryOrEvent : undefined;
+    if (view === 'cheatsheet' || fromCheatSheet) {
+      cheatSheetScrollRef.current = window.scrollY;
+      setReturnToCheatSheet(true);
+    } else {
+      setReturnToCheatSheet(false);
+    }
     setPlaygroundInitialQuery(safeQuery);
     setView('playground');
     window.location.hash = '#playground';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleBackToCheatSheet = () => {
+    setHasVisitedCheatSheet(true);
+    setView('cheatsheet');
+    window.location.hash = '#cheatsheet';
+    setReturnToCheatSheet(false);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: cheatSheetScrollRef.current, behavior: 'instant' });
+    });
   };
 
   const handleOpenCheatSheet = () => {
+    setHasVisitedCheatSheet(true);
     setView('cheatsheet');
     window.location.hash = '#cheatsheet';
+    setReturnToCheatSheet(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -80,15 +113,19 @@ export function App() {
         <PlaygroundLayout
           onBackToLanding={handleBackToLanding}
           onSwitchToExercises={() => handleStartLearning()}
+          onBackToCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : undefined}
+          onOpenCheatSheet={handleBackToCheatSheet}
           initialQuery={playgroundInitialQuery}
         />
       )}
-      {view === 'cheatsheet' && (
-        <CheatSheetPage
-          onBackToHome={handleBackToLanding}
-          onOpenPlayground={handleOpenPlayground}
-          onStartLearning={() => handleStartLearning()}
-        />
+      {hasVisitedCheatSheet && (
+        <div style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}>
+          <CheatSheetPage
+            onBackToHome={handleBackToLanding}
+            onOpenPlayground={(query) => handleOpenPlayground(query, true)}
+            onStartLearning={() => handleStartLearning()}
+          />
+        </div>
       )}
     </div>
   );

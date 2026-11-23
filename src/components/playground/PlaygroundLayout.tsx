@@ -21,11 +21,14 @@ import {
   Keyboard,
   BookOpen,
   Zap,
+  FileText,
 } from 'lucide-react';
 
 interface PlaygroundLayoutProps {
   onBackToLanding: () => void;
   onSwitchToExercises: () => void;
+  onBackToCheatSheet?: () => void;
+  onOpenCheatSheet?: () => void;
   initialQuery?: string;
 }
 
@@ -36,6 +39,8 @@ SELECT * FROM ecommerce_sales LIMIT 10;`;
 export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   onBackToLanding,
   onSwitchToExercises,
+  onBackToCheatSheet,
+  onOpenCheatSheet,
   initialQuery,
 }) => {
   const [editorSql, setEditorSql] = useState<string>(() => {
@@ -212,16 +217,28 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
     <div className="min-h-screen flex flex-col bg-canvas text-ink">
       {/* Top Header */}
       <header className="h-14 border-b-3 border-ink bg-surface-card px-2 sm:px-4 flex items-center justify-between shadow-brutal-sm sticky top-0 z-40">
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={onBackToLanding}
-            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
+            className="flex items-center gap-1 p-1.5 sm:px-2 sm:py-1.5 text-xs font-bold border-2 border-ink hover:bg-duck transition-colors cursor-pointer"
             title="Back to Home"
           >
             <ArrowLeft size={14} />
-            <span className="hidden sm:inline">Home</span>
+            <span className="hidden md:inline">Home</span>
           </button>
+
+          {onBackToCheatSheet && (
+            <button
+              type="button"
+              onClick={onBackToCheatSheet}
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs font-black border-2 border-ink bg-duck hover:bg-duck-dark shadow-brutal-xs transition-all cursor-pointer"
+              title="Return to Cheat Sheet where you left off"
+            >
+              <FileText size={13} />
+              <span>Cheat Sheet</span>
+            </button>
+          )}
 
           {/* Mode Switcher Tabs */}
           <div className="flex items-center border-2 border-ink bg-white p-0.5 text-xs font-bold">
@@ -241,6 +258,17 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               <Zap size={13} />
               <span className="hidden xs:inline">Playground</span>
             </button>
+            {!onBackToCheatSheet && onOpenCheatSheet && (
+              <button
+                type="button"
+                onClick={onOpenCheatSheet}
+                className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-ink-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer"
+                title="SQL Cheat Sheet"
+              >
+                <FileText size={13} />
+                <span className="hidden sm:inline">Cheat Sheet</span>
+              </button>
+            )}
           </div>
         </div>
 

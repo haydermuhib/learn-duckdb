@@ -12,6 +12,7 @@ import {
 } from '../../data/duckdbCheatSheetData';
 import { CheatSheetCategory, CheatSheetItem } from '../../types/cheatsheet';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
+import { SnowflakeIcon, PythonIcon } from '../common/BrandIcons';
 import {
   Search,
   X,
@@ -290,24 +291,30 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                   setActivePreset(prev => prev === 'snowflake' ? 'all' : 'snowflake');
                   setActiveCategory('all');
                 }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
                   activePreset === 'snowflake' ? 'bg-blue-100 text-blue-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-blue-50'
                 }`}
                 title="Filter by Snowflake 1:1 parity syntax"
               >
-                ❄️ Snowflake 1:1
+                <span className="w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center">
+                  <SnowflakeIcon className="w-full h-full" />
+                </span>
+                <span>Snowflake 1:1</span>
               </button>
               <button
                 onClick={() => {
                   setActivePreset(prev => prev === 'python' ? 'all' : 'python');
                   setActiveCategory('all');
                 }}
-                className={`px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-ink cursor-pointer transition-all ${
                   activePreset === 'python' ? 'bg-emerald-100 text-emerald-950 font-black shadow-brutal-xs' : 'bg-white hover:bg-emerald-50'
                 }`}
                 title="Filter by Python & Arrow ecosystem features"
               >
-                🐍 Python / Arrow
+                <span className="w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center">
+                  <PythonIcon className="w-full h-full" />
+                </span>
+                <span>Python / Arrow</span>
               </button>
             </div>
 
@@ -754,8 +761,18 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                       {item.name}
                     </h2>
                     {item.parityBadge && (
-                      <span className="px-2 py-0.5 bg-blue-50 border border-blue-400 text-blue-900 font-mono text-[10px] font-bold">
-                        {item.parityBadge}
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 border border-blue-400 text-blue-900 font-mono text-[10px] font-bold">
+                        {item.parityBadge.toLowerCase().includes('snowflake') && (
+                          <span className="w-3 h-3 shrink-0 inline-flex items-center justify-center">
+                            <SnowflakeIcon className="w-full h-full" />
+                          </span>
+                        )}
+                        {item.parityBadge.toLowerCase().includes('python') && (
+                          <span className="w-3 h-3 shrink-0 inline-flex items-center justify-center">
+                            <PythonIcon className="w-full h-full" />
+                          </span>
+                        )}
+                        <span>{item.parityBadge}</span>
                       </span>
                     )}
                   </div>

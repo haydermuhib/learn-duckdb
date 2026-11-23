@@ -4,6 +4,7 @@ import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
+import { SnowflakeIcon, PythonIcon } from '../common/BrandIcons';
 import {
   ArrowRight,
   Sparkles,
@@ -195,13 +196,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 bg-white border-2 border-ink flex items-center justify-center shadow-brutal-xs p-1 shrink-0">
-                      <svg viewBox="0 0 39 44" className="w-full h-full" fill="#29B5E8" xmlns="http://www.w3.org/2000/svg" aria-label="Snowflake">
-                        <path d="M37.264 33.129l-9.176-5.301c-1.289-.742-2.937-.301-3.684.988a2.912 2.912 0 00-.348 1.609v10.36c0 1.48 1.203 2.683 2.687 2.683 1.481 0 2.684-1.203 2.684-2.683v-5.957l5.14 2.969c1.29.746 2.942.301 3.684-.988.746-1.289.305-2.938-.987-3.68zM14.443 21.77c.016-.957-.488-1.848-1.316-2.328l-9.176-5.297a2.64 2.64 0 00-1.312-.352C1.697 13.793.822 14.297.354 15.11c-.727 1.257-.293 2.87 0.964 3.597l5.29 3.051-5.29 3.055a2.673 2.673 0 00-1.226 1.597 2.707 2.707 0 00.262 2 2.702 2.702 0 002.28 1.317c.461 0 .918-.121 1.317-.352l9.176-5.297a2.667 2.667 0 001.316-2.308zM6.033 10.39l9.176 5.297c1.07.621 2.39.418 3.234-.406.535-.492.867-1.195.867-1.977V2.688C19.31 1.203 18.107 0 16.627 0s-2.688 1.203-2.688 2.688v6.042l-5.21-3.008C7.44 4.977 5.79 5.418 5.045 6.707c-.746 1.289-.301 2.938.988 3.684zM26.666 22.2a.852.852 0 01-.262.632l-3.637 3.637a.89.89 0 01-.632.262h-.926a.89.89 0 01-.633-.262l-3.64-3.637a.852.852 0 01-.262-.632v-.926c0-.207.117-.488.262-.633l3.64-3.64a.885.885 0 01.633-.262h.926c.203 0 .488.117.632.262l3.637 3.64c.145.144.262.426.262.633v.926zm-3.246-.445v-.039a.44.44 0 00-.106-.27l-1.074-1.07a.465.465 0 00-.313-.109h-.039a.465.465 0 00-.312.109l-1.07 1.07a.44.44 0 00-.106.27v.039c0 .153.086.36.191.465l1.07 1.074c.11.106.317.192.465.192h.039c.153 0 .36-.086.465-.192l1.074-1.074c.106-.105.192-.312.192-.465zM28.088 15.688l9.176-5.297c1.289-.743 1.734-2.395.988-3.684-.746-1.289-2.394-1.73-3.684-.984l-5.14 2.968V2.688C29.428 1.203 28.225 0 26.744 0c-1.484 0-2.687 1.203-2.687 2.688v10.406c-.051.539.055 1.101.348 1.609.746 1.29 2.394 1.73 3.683.985zM17.049 27.516c-.61-.118-1.262-.02-1.84.312l-9.176 5.301c-1.289.742-1.734 2.39-0.988 3.68.746 1.293 2.394 1.734 3.684.988l5.21-3.008v5.996c0 1.48 1.204 2.684 2.688 2.684 1.48 0 2.684-1.203 2.684-2.684V30.168c0-1.34-.98-2.45-2.262-2.652z" />
-                      </svg>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 bg-blue-50/80 border-2 border-ink flex items-center justify-center p-1.5 shrink-0">
+                      <SnowflakeIcon className="w-full h-full" />
                     </span>
-                    <span className="font-extrabold text-xs uppercase tracking-tight">Enterprise Warehouse Parity</span>
+                    <span className="font-extrabold text-xs sm:text-sm uppercase tracking-tight">Enterprise Warehouse Parity</span>
                   </div>
                   <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-900 border border-blue-400 px-1.5 py-0.5">
                     Snowflake • BigQuery
@@ -234,14 +233,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 bg-white border-2 border-ink flex items-center justify-center shadow-brutal-xs p-1 shrink-0">
-                      <svg viewBox="0 0 128 128" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="Python">
-                        <path fill="#3776AB" d="M63.391 1.988c-4.222.02-8.252.379-11.8 1.007-10.45 1.846-12.346 5.71-12.346 12.837v9.411h24.693v3.137H29.977c-7.176 0-13.46 4.313-15.426 12.521-2.268 9.405-2.368 15.275 0 25.096 1.755 7.311 5.947 12.519 13.124 12.519h8.491V67.234c0-8.151 7.051-15.34 15.426-15.34h24.665c6.866 0 12.346-5.654 12.346-12.548V15.833c0-6.693-5.646-11.72-12.346-12.837-4.244-.706-8.645-1.027-12.866-1.008zM50.037 9.557c2.55 0 4.634 2.117 4.634 4.721 0 2.593-2.083 4.69-4.634 4.69-2.56 0-4.633-2.097-4.633-4.69-.001-2.604 2.073-4.721 4.633-4.721z" transform="translate(0 10.26)"/>
-                        <path fill="#FFD43B" d="M91.682 28.38v10.966c0 8.5-7.208 15.655-15.426 15.655H51.591c-6.756 0-12.346 5.783-12.346 12.549v23.515c0 6.691 5.818 10.628 12.346 12.547 7.816 2.297 15.312 2.713 24.665 0 6.216-1.801 12.346-5.423 12.346-12.547v-9.412H63.938v-3.138h37.012c7.176 0 9.852-5.005 12.348-12.519 2.578-7.735 2.467-15.174 0-25.096-1.774-7.145-5.161-12.521-12.348-12.521h-9.268zM77.809 87.927c2.561 0 4.634 2.097 4.634 4.692 0 2.602-2.074 4.719-4.634 4.719-2.55 0-4.633-2.117-4.633-4.719 0-2.595 2.083-4.692 4.633-4.692z" transform="translate(0 10.26)"/>
-                      </svg>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 bg-emerald-50/80 border-2 border-ink flex items-center justify-center p-1.5 shrink-0">
+                      <PythonIcon className="w-full h-full" />
                     </span>
-                    <span className="font-extrabold text-xs uppercase tracking-tight">Data Analyst & Python Native</span>
+                    <span className="font-extrabold text-xs sm:text-sm uppercase tracking-tight">Data Analyst & Python Native</span>
                   </div>
                   <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-400 px-1.5 py-0.5">
                     Pandas • Arrow • Polars

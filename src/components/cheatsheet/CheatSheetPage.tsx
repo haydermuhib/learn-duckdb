@@ -435,16 +435,22 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(spec.code, `spec-${spec.code}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink shrink-0">
                           {spec.code}
                         </span>
-                        <span className="text-xs font-bold text-ink truncate">
+                        <div
+                          className="text-xs font-bold text-ink overflow-x-auto whitespace-nowrap scrollbar-none flex-1"
+                          title={spec.meaning}
+                        >
                           {spec.meaning}
-                        </span>
+                        </div>
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted mt-1 truncate">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={spec.example}
+                      >
                         Example: <span className="text-ink font-semibold">{spec.example}</span>
                       </div>
                     </div>
@@ -475,16 +481,22 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(spec.code, `spec-${spec.code}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink shrink-0">
                           {spec.code}
                         </span>
-                        <span className="text-xs font-bold text-ink truncate">
+                        <div
+                          className="text-xs font-bold text-ink overflow-x-auto whitespace-nowrap scrollbar-none flex-1"
+                          title={spec.meaning}
+                        >
                           {spec.meaning}
-                        </span>
+                        </div>
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted mt-1 truncate">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={spec.example}
+                      >
                         {spec.example}
                       </div>
                     </div>
@@ -515,16 +527,22 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(spec.code, `spec-${spec.code}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink shrink-0">
                           {spec.code}
                         </span>
-                        <span className="text-xs font-bold text-ink truncate">
+                        <div
+                          className="text-xs font-bold text-ink overflow-x-auto whitespace-nowrap scrollbar-none flex-1"
+                          title={spec.meaning}
+                        >
                           {spec.meaning}
-                        </span>
+                        </div>
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted mt-1 truncate">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={spec.example}
+                      >
                         {spec.example}
                       </div>
                     </div>
@@ -555,21 +573,27 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(dt.name, `type-${dt.name}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink shrink-0">
                           {dt.name}
                         </span>
                         {dt.storageSize && (
-                          <span className="text-[10px] font-mono text-ink-muted">
+                          <span className="text-[10px] font-mono text-ink-muted shrink-0">
                             ({dt.storageSize})
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                      <div
+                        className="text-xs text-ink font-medium mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={dt.description}
+                      >
                         {dt.description}
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-0.5 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={dt.exampleValue}
+                      >
                         Ex: <span className="text-ink font-semibold">{dt.exampleValue}</span>
                       </div>
                     </div>
@@ -600,19 +624,25 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(cmd.command, `cli-${cmd.command}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-slate-900 text-duck font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-slate-900 text-duck font-mono font-black text-xs border border-ink shrink-0">
                           {cmd.command}
                         </span>
-                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase">
+                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase shrink-0">
                           {cmd.category}
                         </span>
                       </div>
-                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                      <div
+                        className="text-xs text-ink font-medium mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={cmd.description}
+                      >
                         {cmd.description}
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-0.5 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={cmd.example}
+                      >
                         Usage: <span className="text-ink font-semibold">{cmd.example}</span>
                       </div>
                     </div>
@@ -643,19 +673,25 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
                     onClick={() => handleCopy(ext.installCommand, `ext-${ext.name}`)}
                     className="p-2.5 border-2 border-ink bg-[#FFFDF8] hover:bg-duck-light hover:shadow-brutal-xs transition-all cursor-pointer flex items-center justify-between group"
                   >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink">
+                    <div className="min-w-0 pr-2 flex-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-1.5 py-0.5 bg-duck text-ink font-mono font-black text-xs border border-ink shrink-0">
                           {ext.name}
                         </span>
-                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase">
+                        <span className="text-[10px] font-mono px-1 border border-ink/20 bg-white text-ink-muted uppercase shrink-0">
                           {ext.category}
                         </span>
                       </div>
-                      <div className="text-xs text-ink font-medium mt-1 truncate">
+                      <div
+                        className="text-xs text-ink font-medium mt-1 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={ext.description}
+                      >
                         {ext.description}
                       </div>
-                      <div className="text-[10px] font-mono text-ink-muted truncate mt-0.5">
+                      <div
+                        className="text-[10px] font-mono text-ink-muted mt-0.5 overflow-x-auto whitespace-nowrap scrollbar-none"
+                        title={ext.installCommand}
+                      >
                         Install: <span className="text-ink font-semibold font-mono">{ext.installCommand}</span>
                       </div>
                     </div>
@@ -685,32 +721,42 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto pb-2 scrollbar-none">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
+              type="button"
               onClick={() => setActiveCategory('all')}
-              className={`px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+              className={`h-8 sm:h-9 px-3 inline-flex items-center gap-1.5 text-xs font-bold font-mono border-2 border-ink transition-all cursor-pointer ${
                 activeCategory === 'all'
-                  ? 'bg-duck text-ink shadow-brutal-xs font-black'
-                  : 'bg-surface-card hover:bg-slate-100'
+                  ? 'bg-duck text-ink shadow-brutal-xs font-black active:translate-x-0.5 active:translate-y-0.5'
+                  : 'bg-white hover:bg-duck-light text-ink shadow-brutal-xs/50 hover:shadow-brutal-xs'
               }`}
             >
-              All Categories ({DUCKDB_CHEAT_SHEET_ITEMS.length})
+              <LayoutGrid size={13} className="shrink-0" />
+              <span>All Categories</span>
+              <span className="font-mono text-[10px] ml-0.5 px-1.5 py-0.2 bg-black/10 border border-ink/30 font-bold">
+                {DUCKDB_CHEAT_SHEET_ITEMS.length}
+              </span>
             </button>
 
             {DUCKDB_CHEAT_SHEET_CATEGORIES.map(cat => {
               const count = DUCKDB_CHEAT_SHEET_ITEMS.filter(i => i.category === cat.id).length;
+              const isSelected = activeCategory === cat.id;
               return (
                 <button
                   key={cat.id}
+                  type="button"
                   onClick={() => { setActiveCategory(cat.id); setActivePreset('all'); }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold font-mono border-2 border-ink whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                    activeCategory === cat.id
-                      ? 'bg-duck text-ink shadow-brutal-xs font-black'
-                      : 'bg-surface-card hover:bg-slate-100'
+                  className={`h-8 sm:h-9 px-3 inline-flex items-center gap-1.5 text-xs font-bold font-mono border-2 border-ink transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-duck text-ink shadow-brutal-xs font-black active:translate-x-0.5 active:translate-y-0.5'
+                      : 'bg-white hover:bg-duck-light text-ink shadow-brutal-xs/50 hover:shadow-brutal-xs'
                   }`}
                 >
-                  {getCategoryIcon(cat.id)}
-                  <span>{cat.shortTitle} ({count})</span>
+                  <span className="shrink-0">{getCategoryIcon(cat.id)}</span>
+                  <span>{cat.shortTitle}</span>
+                  <span className="font-mono text-[10px] ml-0.5 px-1.5 py-0.2 bg-black/10 border border-ink/30 font-bold">
+                    {count}
+                  </span>
                 </button>
               );
             })}

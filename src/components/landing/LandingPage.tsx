@@ -191,20 +191,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Dual Pillar Value Grid (Enterprise Cloud + Python Analyst) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mt-6 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto mt-6 text-left">
             {/* Pillar 1: Enterprise Cloud Warehouse */}
             <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-2.5">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
                     <span className="w-8 h-8 bg-blue-50/80 border-2 border-ink flex items-center justify-center p-1.5 shrink-0">
                       <SnowflakeIcon className="w-full h-full" />
                     </span>
                     <span className="font-extrabold text-xs sm:text-sm uppercase tracking-tight">Enterprise Warehouse Parity</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-900 border border-blue-400 px-1.5 py-0.5">
-                    Snowflake • BigQuery
-                  </span>
+                  <div className="pl-10.5 sm:pl-0">
+                    <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-900 border border-blue-400 px-2 py-0.5 whitespace-nowrap inline-block">
+                      Snowflake • BigQuery
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-ink-muted leading-relaxed">
                   Learn the exact modern analytical SQL that cloud warehouses rely on—without paying for cloud compute or waiting for cluster cold starts:
@@ -232,16 +234,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Pillar 2: Python & Data Analyst Superpower */}
             <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-2.5">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
                     <span className="w-8 h-8 bg-emerald-50/80 border-2 border-ink flex items-center justify-center p-1.5 shrink-0">
                       <PythonIcon className="w-full h-full" />
                     </span>
                     <span className="font-extrabold text-xs sm:text-sm uppercase tracking-tight">Data Analyst & Python Native</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-400 px-1.5 py-0.5">
-                    Pandas • Arrow • Polars
-                  </span>
+                  <div className="pl-10.5 sm:pl-0">
+                    <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-400 px-2 py-0.5 whitespace-nowrap inline-block">
+                      Pandas • Arrow • Polars
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-ink-muted leading-relaxed">
                   DuckDB is the analyst's secret weapon for Python. Query DataFrames and local Parquet files directly with blazing speed and zero memory bloat:

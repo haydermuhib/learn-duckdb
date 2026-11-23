@@ -219,23 +219,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              const el = document.querySelector('input[type="text"]');
-              if (el instanceof HTMLInputElement) {
-                el.focus();
-                el.select();
-              }
-            }}
-            className="hidden md:inline-flex h-8 px-2.5 items-center gap-1 text-[11px] font-mono text-ink border-2 border-ink bg-white hover:bg-slate-100 cursor-pointer shadow-brutal-xs leading-none"
-            title="Focus search input"
-          >
-            <Search size={12} />
-            <span>Search (Ctrl+K)</span>
-          </button>
-        </div>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0" />
       </header>
 
       {/* Hero Header */}

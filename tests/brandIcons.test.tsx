@@ -8,6 +8,7 @@ import {
   BigQueryIcon,
   SQLiteIcon,
   PrestoIcon,
+  BuyMeACoffeeIcon,
   getBrandIcon,
   renderParityBadge,
 } from '../src/components/common/BrandIcons';
@@ -59,6 +60,13 @@ describe('BrandIcons & Parity Badge Helper', () => {
       const icon = PrestoIcon({});
       expect(icon.props['aria-label']).toBe('Presto');
       expect(icon.props.fill).toBe('#DD00A1');
+    });
+
+    it('should instantiate BuyMeACoffeeIcon with official Buy Me a Coffee vector mark', () => {
+      const icon = BuyMeACoffeeIcon({});
+      expect(icon.props['aria-label']).toBe('Buy Me a Coffee');
+      expect(icon.props.viewBox).toBe('0 0 24 24');
+      expect(icon.props.className).toContain('fill-current');
     });
   });
 

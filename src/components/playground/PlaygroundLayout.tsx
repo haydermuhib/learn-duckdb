@@ -16,6 +16,7 @@ import { PlaygroundSchemaExplorer } from './PlaygroundSchemaExplorer';
 import { KeyboardShortcutsModal } from '../studio/KeyboardShortcutsModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { ModeSwitcher } from '../common/ModeSwitcher';
+import { BuyMeACoffeeIcon } from '../common/BrandIcons';
 import {
   ArrowLeft,
   RefreshCw,
@@ -288,7 +289,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             title="Buy Me a Coffee"
             className="h-8 px-2 inline-flex items-center justify-center border-2 border-ink bg-[#FFDD00] hover:bg-[#FFEA4D] transition-colors text-ink shadow-brutal-xs"
           >
-            <span className="text-xs">☕</span>
+            <BuyMeACoffeeIcon className="w-3.5 h-3.5 fill-current shrink-0" />
           </a>
         </div>
       </header>

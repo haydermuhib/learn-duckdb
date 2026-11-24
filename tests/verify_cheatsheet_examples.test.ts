@@ -14,6 +14,7 @@ describe('Run ALL DuckDB Cheat Sheet Examples against Real DuckDB', () => {
       'analytics.db',
       'p2.parquet',
     ];
+
     for (const f of tempFiles) {
       if (fs.existsSync(f)) {
         try {
@@ -54,7 +55,7 @@ describe('Run ALL DuckDB Cheat Sheet Examples against Real DuckDB', () => {
 
       try {
         const res = await conn.query(sql);
-        const rows = res.toArray();
+        res.toArray();
         // Rows or schema returned
       } catch (err: any) {
         errors.push({

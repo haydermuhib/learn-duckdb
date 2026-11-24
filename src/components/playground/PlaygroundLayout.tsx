@@ -43,8 +43,10 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 }) => {
   const [editorSql, setEditorSql] = useState<string>(() => {
     if (typeof initialQuery === 'string' && initialQuery.trim()) return initialQuery;
+
     try {
       const saved = localStorage.getItem('learn_duckdb_playground_sql');
+
       return typeof saved === 'string' && saved.trim() ? saved : DEFAULT_PLAYGROUND_SQL;
     } catch {
       return DEFAULT_PLAYGROUND_SQL;
@@ -76,6 +78,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       try {
         await initPlayground();
         const loadedTables = await getPlaygroundTables();
+
         if (mounted) {
           setTables(loadedTables);
         }
@@ -85,6 +88,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
         }
       }
     })();
+
     return () => {
       mounted = false;
     };
@@ -92,6 +96,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
   const handleEditorChange = (sql: string) => {
     setEditorSql(sql);
+
     try {
       localStorage.setItem('learn_duckdb_playground_sql', sql);
     } catch {}
@@ -99,6 +104,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
   const handleRunQuery = async () => {
     const trimmed = editorSql.trim();
+
     if (!trimmed) return;
 
     setIsRunning(true);
@@ -126,6 +132,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
     const previewSql = `SELECT * FROM ${tableName};`;
     setIsRunning(true);
     setErrorMessage(null);
+
     try {
       const res = await executePlaygroundQuery(previewSql);
       setQueryResult(res);
@@ -151,6 +158,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
       for (const file of files) {
         await registerPlaygroundFile(file);
       }
+
       const updated = await getPlaygroundTables();
       setTables(updated);
       setStatusMessage(
@@ -176,6 +184,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
   const handleResetPlayground = async () => {
     setIsRunning(true);
+
     try {
       await resetPlayground();
       const updated = await getPlaygroundTables();
@@ -195,19 +204,24 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
+
       if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const active = document.activeElement;
+
         const isEditing =
           active?.tagName === 'INPUT' ||
           active?.tagName === 'TEXTAREA' ||
           active?.closest('.cm-editor');
+
         if (!isEditing) {
           e.preventDefault();
           setIsShortcutsOpen(prev => !prev);
         }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown, true);
+
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
@@ -230,6 +244,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             currentMode="playground"
             onSelectMode={(mode) => {
               if (mode === 'exercises') onSwitchToExercises();
+
               if (mode === 'cheatsheet') onOpenCheatSheet?.();
             }}
           />
@@ -270,7 +285,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
           {/* GitHub Repo */}
           <a
-            href="https://github.com/haydermuhib/learn-duckdb"
+            href="https://github.com/learnnishkaam/learn-duckdb"
             target="_blank"
             rel="noopener noreferrer"
             title="GitHub Repository"

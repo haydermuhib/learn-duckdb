@@ -44,6 +44,7 @@ describe('Curriculum Data Integrity', () => {
 
   it('should ensure every exercise has unique id and valid properties', () => {
     const idSet = new Set<string>();
+
     for (const ex of EXERCISES) {
       expect(idSet.has(ex.id)).toBe(false);
       idSet.add(ex.id);
@@ -103,12 +104,14 @@ describe('Curriculum Data Integrity', () => {
 
   it('should ensure no legacy city or mismatched seed data names exist', () => {
     const legacyNames = ['monterrey', 'guadalajara', 'cdmx', 'tijuana', 'puebla'];
+
     for (const ex of EXERCISES) {
       for (const step of ex.steps) {
         for (const legacy of legacyNames) {
           expect(step.task.toLowerCase()).not.toContain(legacy);
           expect(step.solution.toLowerCase()).not.toContain(legacy);
           expect(ex.concept.toLowerCase()).not.toContain(legacy);
+
           for (const h of step.hints || []) {
             expect(h.toLowerCase()).not.toContain(legacy);
           }

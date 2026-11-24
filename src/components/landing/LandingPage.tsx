@@ -57,6 +57,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const runDemo = async (queryToRun?: string) => {
     setIsRunningDemo(true);
+
     try {
       const res = await executeQuery(queryToRun || demoQuery);
       setDemoResult(res);
@@ -70,7 +71,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const faqs = [
     {
       q: 'Why DuckDB instead of SQLite or PostgreSQL for learning SQL?',
-      a: 'DuckDB is the modern standard for fast analytical queries (OLAP) and enterprise data stack parity. It supports game-changing features like `QUALIFY`, `GROUP BY ALL`, `SELECT * EXCLUDE / REPLACE`, and complex window frames that are identical to Snowflake and BigQuery, while traditional databases lack them or require cumbersome workarounds.',
+      a: 'DuckDB is the modern standard for fast analytical queries (OLAP) and enterprise data stack parity. It supports analytical features like `QUALIFY`, `GROUP BY ALL`, `SELECT * EXCLUDE / REPLACE`, and complex window frames that are identical to Snowflake and BigQuery, while traditional databases lack them or require cumbersome workarounds.',
     },
     {
       q: 'How does DuckDB help Data Analysts and Python practitioners?',
@@ -103,7 +104,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img src="/logo.svg" alt="Learn DuckDB" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
             <span className="font-extrabold text-base sm:text-xl tracking-tight">Learn Duckdb</span>
             <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-mono font-bold bg-duck px-1.5 sm:px-2 py-0.5 border border-ink ml-0.5">
-              v1.6 WASM
+              v2.0 WASM
             </span>
           </div>
 
@@ -121,7 +122,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             )}
 
             <a
-              href="https://github.com/haydermuhib/learn-duckdb"
+              href="https://github.com/learnnishkaam/learn-duckdb"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-surface-card font-extrabold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 transition-all"
@@ -395,7 +396,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold mb-2">Modern SQL Dialect</h3>
                 <p className="text-xs text-ink-muted leading-relaxed">
-                  Learn game-changing syntax like <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">GROUP BY ALL</code>,{' '}
+                  Learn modern dialect syntax like <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">GROUP BY ALL</code>,{' '}
                   <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">SELECT * EXCLUDE</code>, and{' '}
                   <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">QUALIFY</code> that modern data teams use daily.
                 </p>
@@ -563,7 +564,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <span>Learn Duckdb • GPLv3 License</span>
           <span>•</span>
           <a
-            href="https://github.com/haydermuhib/learn-duckdb"
+            href="https://github.com/learnnishkaam/learn-duckdb"
             target="_blank"
             rel="noreferrer"
             className="underline font-bold text-ink hover:text-amber-600"

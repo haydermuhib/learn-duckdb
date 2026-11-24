@@ -27,6 +27,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
 }) => {
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
   const [copiedIdentifier, setCopiedIdentifier] = useState<string | null>(null);
+
   const [tableToDelete, setTableToDelete] = useState<{
     name: string;
     fileName?: string;
@@ -72,8 +73,11 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return null;
+
     if (bytes < 1024) return `${bytes} B`;
+
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
@@ -259,6 +263,7 @@ export const PlaygroundSchemaExplorer: React.FC<PlaygroundSchemaExplorerProps> =
           if (tableToDelete && onDeleteTable) {
             onDeleteTable(tableToDelete.name, tableToDelete.fileName);
           }
+
           setTableToDelete(null);
         }}
         onCancel={() => setTableToDelete(null)}

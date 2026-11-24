@@ -11,6 +11,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.2,
       rowCount: 2,
     };
+
     const resB: QueryResult = {
       columns: ['name', 'price'],
       rows: [['Laptop', 1200], ['Mouse', 25]],
@@ -29,6 +30,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 2,
     };
+
     const resB: QueryResult = {
       columns: ['name', 'price'],
       rows: [['Laptop', 1200], ['Mouse', 25]],
@@ -47,6 +49,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 1,
     };
+
     const resB: QueryResult = {
       columns: ['avg_price'],
       rows: [[199.99]],
@@ -64,6 +67,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 2,
     };
+
     const resB: QueryResult = {
       columns: ['price', 'taxed'],
       rows: [[29.99, 34.7884], [1299.99, 1507.9884]],
@@ -81,6 +85,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 1,
     };
+
     const resB: QueryResult = {
       columns: ['name', 'price'],
       rows: [['Laptop', 1200]],
@@ -98,6 +103,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 1,
     };
+
     const resB: QueryResult = {
       columns: ['count'],
       rows: [[100]],
@@ -131,6 +137,7 @@ describe('Validator Logic & Result Matching', () => {
       executionTimeMs: 1.0,
       rowCount: 3,
     };
+
     const resB: QueryResult = {
       columns: ['name', 'name'],
       rows: [

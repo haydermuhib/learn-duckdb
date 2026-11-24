@@ -58,6 +58,7 @@ describe('Database Schemas and Seed Integrity', () => {
     for (const order of ordersTable.rows) {
       expect(custIds.has(order[1])).toBe(true);
     }
+
     for (const item of orderItemsTable.rows) {
       expect(orderIds.has(item[0])).toBe(true);
       expect(prodIds.has(item[1])).toBe(true);
@@ -103,8 +104,10 @@ describe('Database Schemas and Seed Integrity', () => {
     // Verify company relational integrity
     const deptIds = new Set(DATABASES.company.tables.find(t => t.name === 'departments')!.rows.map(r => r[0]));
     const empIds = new Set(employeesTable.rows.map(r => r[0]));
+
     for (const emp of employeesTable.rows) {
       if (emp[4] !== null) expect(deptIds.has(emp[4])).toBe(true);
+
       if (emp[5] !== null) expect(empIds.has(emp[5])).toBe(true);
     }
   });
@@ -141,6 +144,7 @@ describe('Database Schemas and Seed Integrity', () => {
 
     const studentIds = new Set(studentsTable.rows.map(r => r[0]));
     const subjectIds = new Set(DATABASES.school.tables.find(t => t.name === 'subjects')!.rows.map(r => r[0]));
+
     for (const grade of gradesTable.rows) {
       expect(studentIds.has(grade[0])).toBe(true);
       expect(subjectIds.has(grade[1])).toBe(true);

@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/haydermuhib/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-1.6.1-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 1.6.1" /></a>
+  <a href="https://github.com/learnnishkaam/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-2.0.0-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 2.0.0" /></a>
   <a href="https://duckdb.org"><img src="https://img.shields.io/badge/engine-DuckDB--Wasm-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="DuckDB-Wasm" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat-square&labelColor=18181B" alt="TypeScript 5" /></a>
-  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-105%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="105 Tests Passed" /></a>
+  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-109%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="109 Tests Passed" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPLv3+-blue.svg?style=flat-square&labelColor=18181B" alt="License: GPLv3+" /></a>
 </p>
 
@@ -33,7 +33,7 @@
 
 Learn Duckdb runs 151 analytical SQL exercises directly inside your browser. Because the engine runs as WebAssembly inside a dedicated Web Worker, queries execute locally without network roundtrips, backend servers, or account registration. Your queries and local database state never leave your machine.
 
-> Looking for the terminal version? The Python Textual TUI edition is maintained on the [`cli`](https://github.com/haydermuhib/learn-duckdb/tree/cli) branch.
+> Looking for the terminal version? The Python Textual TUI edition is maintained on the [`cli`](https://github.com/learnnishkaam/learn-duckdb/tree/cli) branch.
 
 ---
 
@@ -202,7 +202,7 @@ The project uses Node.js and npm with [Volta](https://volta.sh) for pinned toolc
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/haydermuhib/learn-duckdb.git
+git clone https://github.com/learnnishkaam/learn-duckdb.git
 cd learn-duckdb
 
 # 2. Install dependencies

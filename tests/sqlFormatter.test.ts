@@ -48,6 +48,7 @@ WHERE "from" > 1;`
   it('preserves single-line and multi-line comments', () => {
     const raw = `-- get active users
 select id, name /* select from comment */ from users where active = true;`;
+
     const formatted = formatSql(raw);
 
     expect(formatted).toContain('-- get active users');

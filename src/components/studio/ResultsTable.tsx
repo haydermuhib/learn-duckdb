@@ -33,6 +33,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   // Reset tab to user and ensure results are visible whenever feedback or result arrives
   useEffect(() => {
     setActiveTab('user');
+
     if (result || feedback) {
       setIsCollapsed(false);
     }
@@ -45,11 +46,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     if (!displayResult || displayResult.columns.length === 0) return;
 
     const header = displayResult.columns.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',');
+
     const rows = displayResult.rows.map(row =>
       row
         .map(cell => (cell === null || cell === undefined ? '' : `"${String(cell).replace(/"/g, '""')}"`))
         .join(',')
     );
+
     const csvContent = [header, ...rows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

@@ -2,7 +2,7 @@
 
 > The complete, interactive SQL learning platform and DuckDB reference powered by DuckDB-Wasm and modern Neo-Brutalist UI.
 
-learn-duckdb is an open-source, client-side SQL learning environment and reference suite. It runs DuckDB directly inside the browser using WebAssembly (`@duckdb/duckdb-wasm`) and Apache Arrow, offering 151 interactive challenges, freeform data playground, and an exhaustive DuckDB v1.6+ analytical cheat sheet with live in-browser execution.
+learn-duckdb is an open-source, client-side SQL learning environment and reference suite. It runs DuckDB directly inside the browser using WebAssembly (`@duckdb/duckdb-wasm`) and Apache Arrow, offering 151 interactive challenges, freeform data playground, and an exhaustive DuckDB v2.0+ analytical cheat sheet with live in-browser execution.
 
 ## Quick Start & Web Access
 
@@ -11,11 +11,11 @@ learn-duckdb is an open-source, client-side SQL learning environment and referen
 - Interactive SQL Playground: https://haydermuhib.github.io/learn-duckdb/#playground
 - Terminal TUI (Zero Install via uvx):
   ```bash
-  uvx --from git+https://github.com/haydermuhib/learn-duckdb.git learn-duckdb
+  uvx --from git+https://github.com/learnnishkaam/learn-duckdb.git learn-duckdb
   ```
 - Local Web Development:
   ```bash
-  git clone https://github.com/haydermuhib/learn-duckdb.git
+  git clone https://github.com/learnnishkaam/learn-duckdb.git
   cd learn-duckdb
   npm install
   npm run dev
@@ -31,7 +31,7 @@ learn-duckdb is an open-source, client-side SQL learning environment and referen
    - Evaluated on result set schema and returned records (data-based validation) rather than rigid SQL string matching.
    - Comprehensive coverage from basic projection through Snowflake-parity clauses (`QUALIFY`, `GROUP BY ALL`), window frames, JSON extraction, nested lists/structs, and direct Parquet querying.
 
-3. **Complete DuckDB Cheat Sheet v1.6**:
+3. **Complete DuckDB Cheat Sheet v2.0**:
    - 66+ analytical clauses, functions, and DuckDB superpowers with one-click in-place live execution (`Test Live`) or full Playground inspection (`Open in Playground`).
    - Quick Ecosystem Filter Chips with official vector brand icons:
      - **DuckDB Superpowers** (`COLUMNS(*)`, `EXCLUDE`, `REPLACE`, `UNION BY NAME`, `SUMMARIZE`)
@@ -94,6 +94,6 @@ learn-duckdb is an open-source, client-side SQL learning environment and referen
 
 ## Repository Links
 
-- GitHub Repository: https://github.com/haydermuhib/learn-duckdb
+- GitHub Repository: https://github.com/learnnishkaam/learn-duckdb
 - Web Application: https://haydermuhib.github.io/learn-duckdb/
 - License: GNU General Public License v3.0 (GPL-3.0-or-later)

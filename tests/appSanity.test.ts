@@ -42,6 +42,7 @@ describe('Application Sanity & Health Checks', () => {
 
     it('should verify all Android launcher icons exist and are non-empty across all mipmap densities', () => {
       const densities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'];
+
       for (const d of densities) {
         const iconPath = path.join(rootDir, `android/app/src/main/res/mipmap-${d}/ic_launcher.png`);
         const roundPath = path.join(rootDir, `android/app/src/main/res/mipmap-${d}/ic_launcher_round.png`);
@@ -103,6 +104,7 @@ describe('Application Sanity & Health Checks', () => {
   describe('Curriculum & Exercise Quality Sanity', () => {
     it('should have all exercises mapped to valid modules', () => {
       const moduleMap = new Set(MODULES.map(m => m.id));
+
       for (const ex of EXERCISES) {
         expect(moduleMap.has(ex.module)).toBe(true);
       }
@@ -110,16 +112,19 @@ describe('Application Sanity & Health Checks', () => {
 
     it('should ensure hints are informative and non-empty when present', () => {
       let hintCount = 0;
+
       for (const ex of EXERCISES) {
         for (const step of ex.steps) {
           if (step.hints && step.hints.length > 0) {
             hintCount += step.hints.length;
+
             for (const hint of step.hints) {
               expect(hint.trim().length).toBeGreaterThan(5);
             }
           }
         }
       }
+
       expect(hintCount).toBeGreaterThan(100);
     });
 
@@ -128,6 +133,7 @@ describe('Application Sanity & Health Checks', () => {
         const db = DATABASES[dbKey];
         expect(db).toBeDefined();
         expect(db.tables.length).toBeGreaterThan(0);
+
         for (const table of db.tables) {
           expect(table.columns.length).toBeGreaterThan(0);
           expect(table.rows.length).toBeGreaterThan(0);

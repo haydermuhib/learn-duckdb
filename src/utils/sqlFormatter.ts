@@ -100,12 +100,14 @@ const OTHER_KEYWORDS = [
 
 // Precompile regexes once at module level (sorted by length descending for greedy multi-word match)
 const SORTED_CLAUSES = [...MAJOR_CLAUSES].sort((a, b) => b.length - a.length);
+
 const CLAUSE_REGEX = new RegExp(
   `\\b(${SORTED_CLAUSES.map(c => c.replace(/ /g, '\\s+')).join('|')})\\b`,
   'gi'
 );
 
 const SORTED_KEYWORDS = [...OTHER_KEYWORDS].sort((a, b) => b.length - a.length);
+
 const KEYWORD_REGEX = new RegExp(
   `\\b(${SORTED_KEYWORDS.map(k => k.replace(/ /g, '\\s+')).join('|')})\\b`,
   'gi'
@@ -115,8 +117,10 @@ export function formatSql(sql: string): string {
   if (!sql || !sql.trim()) return sql;
 
   const placeholders: string[] = [];
+
   const saveLiteral = (str: string) => {
     placeholders.push(str);
+
     return `__SQL_LITERAL_${placeholders.length - 1}__`;
   };
 
@@ -134,6 +138,7 @@ export function formatSql(sql: string): string {
       .replace(/\bnulls\s+first\b/gi, 'NULLS FIRST')
       .replace(/\bnulls\s+last\b/gi, 'NULLS LAST')
       .replace(/\s+/g, ' ');
+
     return saveLiteral(innerFormatted);
   });
 

@@ -22,8 +22,11 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
   const getStatusType = (status: string | undefined): 'native' | 'unsupported' | 'alt' => {
     if (!status) return 'unsupported';
     const lower = status.toLowerCase();
+
     if (lower.startsWith('native')) return 'native';
+
     if (lower.startsWith('unsupported')) return 'unsupported';
+
     return 'alt';
   };
 
@@ -42,6 +45,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
         </span>
       );
     }
+
     if (isAllNative) {
       return (
         <span className="text-[9px] font-mono font-extrabold bg-emerald-100 text-emerald-950 px-1.5 py-0.2 border border-emerald-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -49,6 +53,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
         </span>
       );
     }
+
     if (getStatusType(pgStatus) === 'native' && (getStatusType(myStatus) !== 'native' || getStatusType(sqStatus) !== 'native')) {
       return (
         <span className="text-[9px] font-mono font-extrabold bg-sky-100 text-sky-950 px-1.5 py-0.2 border border-sky-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -56,6 +61,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
         </span>
       );
     }
+
     return (
       <span className="text-[9px] font-mono font-extrabold bg-stone-100 text-stone-900 px-1.5 py-0.2 border border-stone-300 inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
         Multi-Engine
@@ -65,6 +71,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 
   const renderMicroChip = (status: string | undefined) => {
     const type = getStatusType(status);
+
     if (type === 'native') {
       return (
         <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-1 py-0.2">
@@ -72,6 +79,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
         </span>
       );
     }
+
     if (type === 'unsupported') {
       return (
         <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold text-rose-800 bg-rose-100/90 border border-rose-300 px-1 py-0.2">
@@ -79,6 +87,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
         </span>
       );
     }
+
     return (
       <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-900 bg-amber-100/90 border border-amber-300 px-1 py-0.2">
         <AlertCircle size={8} strokeWidth={2.5} /> Alt
@@ -100,6 +109,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
     if (type === 'native') {
       const detail = status.replace(/^native\s*(\((.*)\))?$/i, '$2').trim();
       const displayDetail = detail || (isAllNative ? 'ANSI standard SQL' : undefined);
+
       return (
         <div className="flex flex-col gap-0.5">
           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-300 w-fit">
@@ -116,6 +126,7 @@ export const DialectCompatibility: React.FC<DialectCompatibilityProps> = ({
 
     if (type === 'unsupported') {
       const detail = status.replace(/^unsupported\s*(\((.*)\))?$/i, '$2').trim();
+
       return (
         <div className="flex flex-col gap-0.5">
           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-300 w-fit">

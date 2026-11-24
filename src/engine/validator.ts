@@ -30,9 +30,11 @@ export function stripSqlCommentsAndStrings(sql: string): string {
           i += 2;
           continue;
         }
+
         inString = false;
         result += "''"; // preserve empty quote boundaries
       }
+
       i++;
     } else {
       if (ch === "'") {
@@ -41,16 +43,20 @@ export function stripSqlCommentsAndStrings(sql: string): string {
       } else if (ch === '-' && next === '-') {
         // Line comment: skip until newline
         i += 2;
+
         while (i < len && sql[i] !== '\n' && sql[i] !== '\r') {
           i++;
         }
+
         result += ' ';
       } else if (ch === '/' && next === '*') {
         // Block comment: skip until */
         i += 2;
+
         while (i < len && !(sql[i] === '*' && sql[i + 1] === '/')) {
           i++;
         }
+
         i += 2; // skip */
         result += ' ';
       } else {
@@ -59,6 +65,7 @@ export function stripSqlCommentsAndStrings(sql: string): string {
       }
     }
   }
+
   return result;
 }
 
@@ -95,6 +102,7 @@ export async function validateUserQuery(
           message: `Your query must include the required syntax: ${missing[0]}`,
         };
       }
+
       return {
         pass: false,
         message: `Your query must include each of the following required elements: ${missing.join(' and ')}`,
@@ -129,6 +137,7 @@ export async function validateUserQuery(
       const userResult = await executeQuery(expectedCheckQuery);
 
       const isMatch = compareResults(userResult, expectedResult, false);
+
       if (isMatch) {
         return {
           pass: true,
@@ -148,6 +157,7 @@ export async function validateUserQuery(
 
     // Standard SELECT query validation
     let userResult: QueryResult;
+
     try {
       userResult = await executeQuery(trimmedSql);
     } catch (err: any) {
@@ -159,6 +169,7 @@ export async function validateUserQuery(
     }
 
     let expectedResult: QueryResult;
+
     try {
       expectedResult = await executeQuery(step.solution);
     } catch (err: any) {
@@ -181,6 +192,7 @@ export async function validateUserQuery(
 
     // Detail the discrepancy
     let reason = 'Results do not match the expected answer.';
+
     if (userResult.columns.length !== expectedResult.columns.length) {
       reason = `Expected ${expectedResult.columns.length} columns (${expectedResult.columns.join(', ')}), but your query returned ${userResult.columns.length} columns (${userResult.columns.join(', ')}).`;
     } else if (userResult.rowCount !== expectedResult.rowCount) {
@@ -204,6 +216,7 @@ export async function validateUserQuery(
 
 export function compareResults(actual: QueryResult, expected: QueryResult, strictOrder: boolean): boolean {
   if (actual.columns.length !== expected.columns.length) return false;
+
   if (actual.rowCount !== expected.rowCount) return false;
 
   let actualRows = actual.rows;
@@ -217,6 +230,7 @@ export function compareResults(actual: QueryResult, expected: QueryResult, stric
   for (let i = 0; i < actualRows.length; i++) {
     const aRow = actualRows[i];
     const eRow = expectedRows[i];
+
     for (let j = 0; j < aRow.length; j++) {
       if (!valuesMatch(aRow[j], eRow[j])) {
         return false;
@@ -229,7 +243,9 @@ export function compareResults(actual: QueryResult, expected: QueryResult, stric
 
 function valuesMatch(a: any, b: any): boolean {
   if (a === b) return true;
+
   if (a === null || a === undefined) return b === null || b === undefined;
+
   if (b === null || b === undefined) return false;
 
   // Floating point comparison
@@ -253,6 +269,7 @@ function sortRows(rows: any[][]): any[][] {
   return [...rows].sort((a, b) => {
     const strA = safeStringify(a);
     const strB = safeStringify(b);
+
     return strA.localeCompare(strB);
   });
 }

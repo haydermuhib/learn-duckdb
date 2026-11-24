@@ -16,6 +16,7 @@ export const SchemaExplorer: React.FC<SchemaExplorerProps> = ({
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({
     [database.tables[0]?.name || '']: true,
   });
+
   const [copiedIdentifier, setCopiedIdentifier] = useState<string | null>(null);
 
   // Reset or initialize when database changes

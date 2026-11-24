@@ -52,6 +52,7 @@ export function tokenizeSql(sql: string): Token[] {
       tokens.push({ type: 'space', text: space });
     } else if (word) {
       const upper = word.toUpperCase();
+
       if (KEYWORDS.has(upper)) {
         tokens.push({ type: 'keyword', text: word });
       } else if (DATA_TYPES.has(upper)) {
@@ -59,6 +60,7 @@ export function tokenizeSql(sql: string): Token[] {
       } else {
         // Look ahead to check if immediately followed by an open paren (function call)
         const nextChar = sql.slice(match.index + word.length).trimStart()[0];
+
         if (nextChar === '(') {
           tokens.push({ type: 'func', text: word });
         } else {

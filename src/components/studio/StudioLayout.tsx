@@ -8,10 +8,10 @@ import { ResultsTable } from './ResultsTable';
 import { SchemaExplorer } from './SchemaExplorer';
 import { CurriculumSidebar } from './CurriculumSidebar';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
-import { ConfirmResetModal } from './ConfirmResetModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { DialectCompatibility } from './DialectCompatibility';
 import { ModeSwitcher } from '../common/ModeSwitcher';
-import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap, RotateCcw } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap, RotateCcw, AlertTriangle } from 'lucide-react';
 
 interface StudioLayoutProps {
   onBackToLanding: () => void;
@@ -37,6 +37,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_COMPLETED);
+
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -46,6 +47,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [completedVersions, setCompletedVersions] = useState<Record<string, number>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_COMPLETED_VERSIONS);
+
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -55,6 +57,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [assistedIds, setAssistedIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_ASSISTED);
+
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -64,6 +67,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   // 2. Current Exercise
   const [currentId, setCurrentId] = useState<string>(() => {
     if (initialExerciseId) return initialExerciseId;
+
     try {
       return localStorage.getItem(STORAGE_KEY_CURRENT) || EXERCISES[0].id;
     } catch {
@@ -79,6 +83,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [drafts, setDrafts] = useState<Record<string, string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_DRAFTS);
+
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -97,12 +102,15 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const [revealedHints, setRevealedHints] = useState<number>(0);
   const [solutionViewed, setSolutionViewed] = useState<boolean>(false);
   const [mobileTab, setMobileTab] = useState<'editor' | 'task' | 'schema'>('editor');
+
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth >= 1024;
     }
+
     return true;
   });
+
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -115,6 +123,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setRevealedHints(0);
     setSolutionViewed(false);
     switchDatabase(currentExercise.db).catch(console.error);
+
     try {
       localStorage.setItem(STORAGE_KEY_CURRENT, currentExercise.id);
     } catch {}
@@ -128,23 +137,28 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         // Re-insert to refresh recency in insertion order
         const next = { ...prev };
         delete next[currentExercise.id];
+
         if (editorSql.trim()) {
           next[currentExercise.id] = editorSql;
         }
 
         // Evict oldest drafts if over cap
         const keys = Object.keys(next);
+
         if (keys.length > MAX_SAVED_DRAFTS) {
           const toEvict = keys.slice(0, keys.length - MAX_SAVED_DRAFTS);
+
           for (const k of toEvict) delete next[k];
         }
 
         try {
           localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(next));
         } catch {}
+
         return next;
       });
     }, 300);
+
     return () => clearTimeout(timer);
   }, [editorSql, currentExercise.id]);
 
@@ -157,6 +171,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     if (!editorSql.trim()) return;
     setIsRunning(true);
     setFeedback(null);
+
     try {
       await switchDatabase(currentExercise.db);
       const res = await executeQuery(editorSql.trim());
@@ -176,9 +191,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   const handleCheckAnswer = async () => {
     if (!editorSql.trim()) return;
     setIsChecking(true);
+
     try {
       const validation = await validateUserQuery(currentExercise, 0, editorSql);
       setFeedback(validation);
+
       if (validation.userResult) {
         setQueryResult(validation.userResult);
       }
@@ -195,9 +212,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         // Mark as completed
         setCompletedIds(prev => {
           const next = new Set(prev).add(currentExercise.id);
+
           try {
             localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify([...next]));
           } catch {}
+
           return next;
         });
 
@@ -205,23 +224,28 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         const exerciseVersion = currentExercise.version || 1;
         setCompletedVersions(prev => {
           const next = { ...prev, [currentExercise.id]: exerciseVersion };
+
           try {
             localStorage.setItem(STORAGE_KEY_COMPLETED_VERSIONS, JSON.stringify(next));
           } catch {}
+
           return next;
         });
 
         // Track assisted status
         setAssistedIds(prev => {
           const next = new Set(prev);
+
           if (usedAssistance) {
             next.add(currentExercise.id);
           } else {
             next.delete(currentExercise.id); // independent solve upgrades lesson to mastered!
           }
+
           try {
             localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify([...next]));
           } catch {}
+
           return next;
         });
 
@@ -247,6 +271,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     const previewSql = `SELECT * FROM ${tableName};`;
     setIsRunning(true);
     setFeedback(null);
+
     try {
       await switchDatabase(currentExercise.db);
       const res = await executeQuery(previewSql);
@@ -305,6 +330,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         draftCount: Object.keys(drafts).length,
       },
     };
+
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -328,6 +354,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setCompletedIds(nextCompleted);
     setAssistedIds(nextAssisted);
     setCompletedVersions(nextVersions);
+
     try {
       localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(Array.from(nextCompleted)));
       localStorage.setItem(STORAGE_KEY_ASSISTED, JSON.stringify(Array.from(nextAssisted)));
@@ -337,9 +364,11 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     if (importedDrafts && typeof importedDrafts === 'object') {
       const mergedDrafts = { ...drafts, ...importedDrafts };
       setDrafts(mergedDrafts);
+
       if (mergedDrafts[currentExercise.id]) {
         setEditorSql(mergedDrafts[currentExercise.id]);
       }
+
       try {
         localStorage.setItem(STORAGE_KEY_DRAFTS, JSON.stringify(mergedDrafts));
       } catch {}
@@ -362,12 +391,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     setAssistedIds(new Set());
     setCompletedVersions({});
     setDrafts({});
+
     try {
       localStorage.removeItem(STORAGE_KEY_COMPLETED);
       localStorage.removeItem(STORAGE_KEY_ASSISTED);
       localStorage.removeItem(STORAGE_KEY_COMPLETED_VERSIONS);
       localStorage.removeItem(STORAGE_KEY_DRAFTS);
     } catch {}
+
     setIsResetConfirmOpen(false);
     setFeedback({
       pass: true,
@@ -399,6 +430,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
   // Hints
   const currentStep = currentExercise.steps[0];
   const maxHints = currentStep?.hints?.length || 0;
+
   const isExerciseUpdated =
     completedIds.has(currentExercise.id) &&
     (completedVersions[currentExercise.id] || 1) < (currentExercise.version || 1);
@@ -435,10 +467,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
         handleHint();
       } else if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const active = document.activeElement;
+
         const isEditing =
           active?.tagName === 'INPUT' ||
           active?.tagName === 'TEXTAREA' ||
           active?.closest('.cm-editor');
+
         if (!isEditing) {
           e.preventDefault();
           setIsShortcutsOpen(prev => !prev);
@@ -447,6 +481,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown, true);
+
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
   }, [handleNext, handlePrev, handleHint]);
 
@@ -476,6 +511,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             currentMode="exercises"
             onSelectMode={(mode) => {
               if (mode === 'playground') onSwitchToPlayground?.();
+
               if (mode === 'cheatsheet') onSwitchToCheatSheet?.();
             }}
           />
@@ -794,8 +830,27 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       />
 
       {/* Custom Retro-Brutalist Reset Progress Confirmation Modal */}
-      <ConfirmResetModal
+      <ConfirmModal
         isOpen={isResetConfirmOpen}
+        title="Reset All Progress?"
+        message="Are you sure you want to reset all your learning progress?"
+        detail={
+          <div className="space-y-1">
+            <p className="font-semibold">This will permanently clear:</p>
+            <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
+              <li>All completed and mastered exercises across all 18 modules</li>
+              <li>Hint-assisted completion history</li>
+              <li>All saved SQL drafts in your browser</li>
+            </ul>
+            <p className="mt-2 text-ink-muted text-[10px]">
+              This action cannot be undone. You can click <strong>Backup</strong> in the syllabus drawer first if you wish to save a copy.
+            </p>
+          </div>
+        }
+        confirmLabel="Yes, Reset Everything"
+        cancelLabel="Cancel"
+        variant="danger"
+        icon={<AlertTriangle size={18} className="text-rose-700 shrink-0" />}
         onConfirm={handleConfirmReset}
         onCancel={() => setIsResetConfirmOpen(false)}
       />

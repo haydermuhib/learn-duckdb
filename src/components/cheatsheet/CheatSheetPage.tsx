@@ -38,7 +38,6 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  BookOpen,
   Play,
   ArrowUp,
   SlidersHorizontal,
@@ -55,6 +54,7 @@ interface CheatSheetPageProps {
 }
 
 type ReferenceTab = 'strftime' | 'printf' | 'regex' | 'types' | 'cli' | 'extensions' | null;
+
 type WorkflowPreset = 'all' | 'duckdb' | 'snowflake' | 'postgres' | 'bigquery' | 'python' | 'exclusive' | 'cli' | 'ingestion' | 'dates' | 'strings' | 'window' | 'nested';
 
 export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
@@ -66,8 +66,10 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
     if (typeof window !== 'undefined') {
       return new URLSearchParams(window.location.search).get('q') || '';
     }
+
     return '';
   });
+
   const [activeCategory, setActiveCategory] = useState<CheatSheetCategory | 'all'>('all');
   const [activePreset, setActivePreset] = useState<WorkflowPreset>('all');
   const [expandedReference, setExpandedReference] = useState<ReferenceTab>('strftime');
@@ -92,7 +94,9 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
         searchInputRef.current?.blur();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
+
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
@@ -101,7 +105,9 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 400);
     };
+
     window.addEventListener('scroll', handleScroll);
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -155,8 +161,10 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
       setInlineResults(prev => {
         const next = { ...prev };
         delete next[item.id];
+
         return next;
       });
+
       return;
     }
 
@@ -164,6 +172,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
     setInlineErrors(prev => {
       const next = { ...prev };
       delete next[item.id];
+
       return next;
     });
 
@@ -219,6 +228,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             currentMode="cheatsheet"
             onSelectMode={(mode) => {
               if (mode === 'exercises') onStartLearning?.();
+
               if (mode === 'playground') onOpenPlayground?.();
             }}
           />
@@ -231,7 +241,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             DuckDB Cheat Sheet
           </span>
           <span className="hidden sm:inline-block text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
-            v1.6 Reference
+            v2.0 Reference
           </span>
         </div>
 
@@ -854,6 +864,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             {DUCKDB_CHEAT_SHEET_CATEGORIES.map(cat => {
               const count = DUCKDB_CHEAT_SHEET_ITEMS.filter(i => i.category === cat.id).length;
               const isSelected = activeCategory === cat.id;
+
               return (
                 <button
                   key={cat.id}

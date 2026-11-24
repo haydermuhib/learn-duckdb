@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as duckdb from '@duckdb/duckdb-wasm/dist/duckdb-node-blocking.cjs';
 import * as path from 'path';
 import {
-  STORAGE_KEY_PLAYGROUND_DELETED,
   getDeletedPlaygroundTables,
   saveDeletedPlaygroundTables,
   clearDeletedPlaygroundTables,
@@ -11,6 +10,7 @@ import {
 
 describe('Playground Isolation & Table Persistence', () => {
   const store = new Map<string, string>();
+
   const mockStorage = {
     getItem: (k: string) => store.get(k) ?? null,
     setItem: (k: string, v: string) => store.set(k, String(v)),
@@ -103,6 +103,7 @@ describe('Playground Isolation & Table Persistence', () => {
         FROM information_schema.tables 
         WHERE table_catalog = 'playground' AND table_type = 'BASE TABLE';
       `);
+
       expect(pgTables.toArray().some((r: any) => r.table_name === 'products')).toBe(false);
 
       // 4. Main products STILL exists and was NOT dropped!

@@ -1,5 +1,5 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
-import { initDuckDB, QueryResult, loadDatabaseTables, extractArrowTable } from './duckdb';
+import { initDuckDB, QueryResult, extractArrowTable } from './duckdb';
 import { DATABASES } from '../data/databases';
 import {
   DEFAULT_DATASET_CSV,
@@ -35,22 +35,28 @@ function getStorage(): Storage | null {
     if (typeof window !== 'undefined' && window.localStorage) {
       return window.localStorage;
     }
+
     if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) {
       return (globalThis as any).localStorage;
     }
   } catch {
     return null;
   }
+
   return null;
 }
 
 export function getDeletedPlaygroundTables(): Set<string> {
   const storage = getStorage();
+
   if (!storage) return new Set<string>();
+
   try {
     const raw = storage.getItem(STORAGE_KEY_PLAYGROUND_DELETED);
+
     if (!raw) return new Set<string>();
     const parsed = JSON.parse(raw);
+
     return new Set<string>(Array.isArray(parsed) ? parsed : []);
   } catch {
     return new Set<string>();
@@ -59,7 +65,9 @@ export function getDeletedPlaygroundTables(): Set<string> {
 
 export function saveDeletedPlaygroundTables(deleted: Set<string>): void {
   const storage = getStorage();
+
   if (!storage) return;
+
   try {
     storage.setItem(STORAGE_KEY_PLAYGROUND_DELETED, JSON.stringify([...deleted]));
   } catch {
@@ -69,7 +77,9 @@ export function saveDeletedPlaygroundTables(deleted: Set<string>): void {
 
 export function clearDeletedPlaygroundTables(): void {
   const storage = getStorage();
+
   if (!storage) return;
+
   try {
     storage.removeItem(STORAGE_KEY_PLAYGROUND_DELETED);
   } catch {
@@ -79,6 +89,8 @@ export function clearDeletedPlaygroundTables(): void {
 
 let playgroundConn: duckdb.AsyncDuckDBConnection | null = null;
 let playgroundDb: duckdb.AsyncDuckDB | null = null;
+let initPlaygroundPromise: Promise<duckdb.AsyncDuckDBConnection> | null = null;
+
 const registeredFiles = new Map<
   string,
   { tableName: string; fileName: string; size: number; isDefault: boolean }
@@ -123,9 +135,11 @@ async function seedDefaultPlaygroundTables(
     const colDefs = table.columns
       .map(([name, type]) => {
         let dType = type.toUpperCase();
+
         if (dType.includes('INTEGER PRIMARY KEY')) {
           dType = `INTEGER PRIMARY KEY DEFAULT nextval('${seqName}')`;
         }
+
         return `${name} ${dType}`;
       })
       .join(', ');
@@ -136,10 +150,14 @@ async function seedDefaultPlaygroundTables(
       const rowLiterals = table.rows.map(row => {
         const values = row.map(val => {
           if (val === null || val === undefined) return 'NULL';
+
           if (typeof val === 'number') return val.toString();
+
           if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
+
           return `'${String(val)}'`;
         });
+
         return `(${values.join(', ')})`;
       });
 
@@ -162,6 +180,7 @@ async function seedDefaultPlaygroundTables(
     if (!deletedTables.has('products')) {
       await conn.query(`COPY products TO 'products.parquet' (FORMAT PARQUET);`);
     }
+
     if (!deletedTables.has('customers')) {
       await conn.query(`COPY customers TO 'customers.csv' (FORMAT CSV, HEADER);`);
     }
@@ -175,20 +194,28 @@ export async function initPlayground(): Promise<duckdb.AsyncDuckDBConnection> {
     return playgroundConn;
   }
 
-  const { db } = await initDuckDB();
-  playgroundDb = db;
-  playgroundConn = await db.connect();
+  if (initPlaygroundPromise) {
+    return initPlaygroundPromise;
+  }
 
-  // Attach an isolated in-memory database for Playground so actions in Playground
-  // never collide with or drop tables from Curriculum / Cheatsheet (main database)
-  await playgroundConn.query(`
-    ATTACH IF NOT EXISTS ':memory:' AS playground;
-    USE playground;
-  `);
+  initPlaygroundPromise = (async () => {
+    const { db } = await initDuckDB();
+    playgroundDb = db;
+    playgroundConn = await db.connect();
 
-  await seedDefaultPlaygroundTables(playgroundConn, playgroundDb);
+    // Attach an isolated in-memory database for Playground so actions in Playground
+    // never collide with or drop tables from Curriculum / Cheatsheet (main database)
+    await playgroundConn.query(`
+      ATTACH IF NOT EXISTS ':memory:' AS playground;
+      USE playground;
+    `);
 
-  return playgroundConn;
+    await seedDefaultPlaygroundTables(playgroundConn, playgroundDb);
+
+    return playgroundConn;
+  })();
+
+  return initPlaygroundPromise;
 }
 
 export async function registerPlaygroundFile(
@@ -233,6 +260,7 @@ export async function registerPlaygroundFile(
 
   // If this table was previously in the deleted set, un-delete it now that it is uploaded
   const deleted = getDeletedPlaygroundTables();
+
   if (deleted.has(baseName)) {
     deleted.delete(baseName);
     saveDeletedPlaygroundTables(deleted);
@@ -262,11 +290,13 @@ export async function getPlaygroundTables(): Promise<PlaygroundTableSchema[]> {
   const tableNames = tablesResult
     .toArray()
     .map((r: any) => String(r.table_name));
+
   const schemas: PlaygroundTableSchema[] = [];
 
   for (const name of tableNames) {
     // 1. Column info via PRAGMA
     const pragmaRes = await conn.query(`PRAGMA table_info('${name}');`);
+
     const cols = pragmaRes.toArray().map((col: any) => ({
       name: String(col.name),
       type: String(col.type),
@@ -276,6 +306,7 @@ export async function getPlaygroundTables(): Promise<PlaygroundTableSchema[]> {
 
     // 2. Row count
     let rowCount = 0;
+
     try {
       const countRes = await conn.query(`SELECT COUNT(*) as cnt FROM ${name};`);
       rowCount = Number(countRes.toArray()[0]?.cnt || 0);
@@ -310,6 +341,7 @@ export async function executePlaygroundQuery(
 
   // Check if user ran a DROP TABLE query directly in SQL editor
   const dropMatch = sql.match(/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([a-zA-Z0-9_]+)/i);
+
   if (dropMatch && dropMatch[1]) {
     const droppedName = dropMatch[1].toLowerCase();
     const deleted = getDeletedPlaygroundTables();
@@ -320,9 +352,11 @@ export async function executePlaygroundQuery(
 
   // Check if user ran a CREATE TABLE query directly in SQL editor (un-deletes it)
   const createMatch = sql.match(/^\s*CREATE\s+(?:OR\s+REPLACE\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/i);
+
   if (createMatch && createMatch[1]) {
     const createdName = createMatch[1].toLowerCase();
     const deleted = getDeletedPlaygroundTables();
+
     if (deleted.has(createdName)) {
       deleted.delete(createdName);
       saveDeletedPlaygroundTables(deleted);
@@ -368,9 +402,11 @@ export async function resetPlayground(): Promise<void> {
 
   // Drop all current tables in playground database
   const tables = await getPlaygroundTables();
+
   for (const t of tables) {
     await conn.query(`DROP TABLE IF EXISTS ${t.name};`);
   }
+
   registeredFiles.clear();
 
   // Re-seed all default tables (ecommerce_sales and store dataset)

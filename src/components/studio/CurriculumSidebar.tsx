@@ -49,11 +49,13 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>(() => {
     // Expand module containing current exercise
     const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
+
     return currentEx ? { [currentEx.module]: true } : { select: true };
   });
 
   useEffect(() => {
     const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
+
     if (currentEx) {
       setExpandedModules(prev => ({
         ...prev,
@@ -71,11 +73,13 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
     const reader = new FileReader();
     reader.onload = event => {
       try {
         const data = JSON.parse(event.target?.result as string);
+
         if (Array.isArray(data.completedIds) && onImportProgress) {
           onImportProgress(
             data.completedIds,
@@ -90,6 +94,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
         console.error('Invalid progress backup file:', err);
       }
     };
+
     reader.readAsText(file);
     e.target.value = '';
   };
@@ -113,6 +118,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
   const handleExerciseClick = (id: string) => {
     onSelectExercise(id);
+
     // Only auto-close on mobile screens where the drawer is a blocking overlay modal
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       onClose();
@@ -261,9 +267,11 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                 const modExercises = EXERCISES.filter(e => e.module === mod.id);
                 const isExpanded = !!expandedModules[mod.id];
                 const isCurrentModule = mod.id === currentModuleId;
+
                 const completedCount = modExercises.filter(e =>
                   completedIds.has(e.id)
                 ).length;
+
                 const allDone =
                   completedCount === modExercises.length &&
                   modExercises.length > 0;

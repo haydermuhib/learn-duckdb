@@ -1,9 +1,3 @@
-export interface ColumnDef {
-  name: string;
-  type: string;
-  isPk?: boolean;
-}
-
 export interface TableDef {
   name: string;
   columns: [string, string][]; // [columnName, columnType]

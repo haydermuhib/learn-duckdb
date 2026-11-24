@@ -42,17 +42,20 @@ describe('Run ALL Canonical Solutions against Real DuckDB', () => {
 
         try {
           const isMutation = /^(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i.test(sql.trim());
+
           if (isMutation) {
             await conn.query(sql);
             const checkSql = step.check || `SELECT * FROM ${ex.db === 'school' ? 'students' : 'products'}`;
             const checkRes = await conn.query(checkSql);
             const rows = checkRes.toArray();
+
             if (rows.length === 0) {
               emptyResults.push({ index: i + 1, id: `${ex.id} (step ${s + 1})`, task: step.task, sql: checkSql });
             }
           } else {
             const res = await conn.query(sql);
             const rows = res.toArray();
+
             if (rows.length === 0) {
               emptyResults.push({ index: i + 1, id: `${ex.id} (step ${s + 1})`, task: step.task, sql });
             }
@@ -73,6 +76,7 @@ describe('Run ALL Canonical Solutions against Real DuckDB', () => {
         console.log(`ERROR at #${e.index} [${e.id}]: ${e.error.split('\n')[0]}`);
       }
     }
+
     if (emptyResults.length > 0) {
       for (const er of emptyResults) {
         console.log(`EMPTY RESULT at #${er.index} [${er.id}]: ${er.task}`);

@@ -33,6 +33,7 @@ export const PlaygroundFileUploader: React.FC<PlaygroundFileUploaderProps> = ({
     setErrorMessage(null);
 
     const droppedFiles = Array.from(e.dataTransfer.files);
+
     if (droppedFiles.length === 0) return;
 
     await processFiles(droppedFiles);
@@ -41,6 +42,7 @@ export const PlaygroundFileUploader: React.FC<PlaygroundFileUploaderProps> = ({
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMessage(null);
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
+
     if (selectedFiles.length === 0) return;
 
     await processFiles(selectedFiles);
@@ -49,12 +51,14 @@ export const PlaygroundFileUploader: React.FC<PlaygroundFileUploaderProps> = ({
 
   const processFiles = async (files: File[]) => {
     const validExtensions = ['.csv', '.parquet', '.json'];
+
     const validFiles = files.filter(f =>
       validExtensions.some(ext => f.name.toLowerCase().endsWith(ext))
     );
 
     if (validFiles.length === 0) {
       setErrorMessage('Please select CSV, Parquet, or JSON files (.csv, .parquet, .json).');
+
       return;
     }
 

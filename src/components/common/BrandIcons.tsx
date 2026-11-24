@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function SnowflakeIcon({
   className = 'w-full h-full',
   color = '#29B5E8',
@@ -171,13 +169,21 @@ export function BuyMeACoffeeIcon({
  */
 export function getBrandIcon(name: string, className = 'w-3 h-3 shrink-0') {
   const lower = name.toLowerCase();
+
   if (lower === 'duckdb') return <DuckDBIcon className={className} />;
+
   if (lower === 'snowflake') return <SnowflakeIcon className={className} />;
+
   if (lower === 'python') return <PythonIcon className={className} />;
+
   if (lower === 'postgres' || lower === 'postgresql') return <PostgresIcon className={className} />;
+
   if (lower === 'bigquery') return <BigQueryIcon className={className} />;
+
   if (lower === 'sqlite') return <SQLiteIcon className={className} />;
+
   if (lower === 'presto') return <PrestoIcon className={className} />;
+
   return null;
 }
 
@@ -187,8 +193,10 @@ export function getBrandIcon(name: string, className = 'w-3 h-3 shrink-0') {
  */
 export function renderParityBadge(badge: string) {
   const parts = badge.split(/(DuckDB|Snowflake|BigQuery|PostgreSQL|Postgres|SQLite|Python|Presto)/g);
+
   return parts.map((part, idx) => {
     const icon = getBrandIcon(part, 'w-3 h-3 shrink-0');
+
     if (icon) {
       return (
         <span key={idx} className="inline-flex items-center gap-1 font-bold">
@@ -199,6 +207,7 @@ export function renderParityBadge(badge: string) {
         </span>
       );
     }
+
     return <span key={idx}>{part}</span>;
   });
 }

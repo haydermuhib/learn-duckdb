@@ -35,7 +35,6 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   onNext,
   hasNext,
   onPrev,
-  hasPrev,
   onToggleSidebar,
   onReset,
   onHint,
@@ -64,6 +63,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Shift-Enter',
           run: () => {
             onRun();
+
             return true;
           },
         },
@@ -71,6 +71,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Escape',
           run: (view) => {
             view.contentDOM.blur();
+
             return true;
           },
         },
@@ -78,6 +79,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Ctrl-Enter',
           run: () => {
             handleExecute();
+
             return true;
           },
         },
@@ -85,6 +87,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Mod-Enter',
           run: () => {
             handleExecute();
+
             return true;
           },
         },
@@ -92,6 +95,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-Shift-f',
           run: () => {
             handleFormat();
+
             return true;
           },
         },
@@ -99,6 +103,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-Shift-F',
           run: () => {
             handleFormat();
+
             return true;
           },
         },
@@ -106,6 +111,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-f',
           run: () => {
             handleFormat();
+
             return true;
           },
         },
@@ -113,6 +119,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Mod-b',
           run: () => {
             if (onToggleSidebar) onToggleSidebar();
+
             return true;
           },
         },
@@ -120,6 +127,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Ctrl-b',
           run: () => {
             if (onToggleSidebar) onToggleSidebar();
+
             return true;
           },
         },
@@ -127,6 +135,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-ArrowRight',
           run: () => {
             if (onNext) onNext();
+
             return true;
           },
         },
@@ -134,6 +143,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-ArrowLeft',
           run: () => {
             if (onPrev) onPrev();
+
             return true;
           },
         },
@@ -141,6 +151,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-h',
           run: () => {
             if (onHint) onHint();
+
             return true;
           },
         },
@@ -148,6 +159,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           key: 'Alt-H',
           run: () => {
             if (onHint) onHint();
+
             return true;
           },
         },
@@ -168,6 +180,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         (document.activeElement as HTMLElement)?.blur();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.code === 'KeyB')) {
         e.preventDefault();
+
         if (onToggleSidebar) onToggleSidebar();
       } else if (
         e.altKey &&
@@ -180,18 +193,21 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         (e.key === 'ArrowLeft' || e.code === 'ArrowLeft')
       ) {
         e.preventDefault();
+
         if (onPrev) onPrev();
       } else if (
         e.altKey &&
         (e.key === 'ArrowRight' || e.code === 'ArrowRight')
       ) {
         e.preventDefault();
+
         if (onNext) onNext();
       } else if (
         e.altKey &&
         (e.key === 'h' || e.key === 'H' || e.code === 'KeyH')
       ) {
         e.preventDefault();
+
         if (onHint) onHint();
       }
     },
@@ -200,7 +216,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
 
   return (
     <div
-      className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal overflow-hidden h-[340px] sm:h-[420px] lg:h-[480px] shrink-0"
+      className="flex flex-col border-3 border-ink bg-code-bg rounded-none shadow-brutal overflow-hidden h-[460px] lg:h-[500px] shrink-0"
       onKeyDown={handleKeyDown}
     >
       {/* Editor Toolbar */}
@@ -254,7 +270,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
       </div>
 
       {/* CodeMirror Surface */}
-      <div className="flex-1 overflow-auto text-xs sm:text-sm font-mono min-h-[160px]">
+      <div className="flex-1 overflow-auto text-xs sm:text-sm font-mono min-h-[300px]">
         <CodeMirror
           value={safeValue}
           height="100%"

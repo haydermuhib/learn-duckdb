@@ -115,10 +115,11 @@ describe('BrandIcons & Parity Badge Helper', () => {
       const duckdbWrapper = elements.find(
         (el: any) =>
           React.isValidElement(el) &&
-          React.Children.toArray(el.props.children).some(
+          React.Children.toArray((el.props as any).children).some(
             (c: any) => c?.props?.children === 'DuckDB'
           )
       ) as any;
+
       expect(duckdbWrapper).toBeDefined();
 
       const duckdbIconSpan = React.Children.toArray(duckdbWrapper.props.children)[0] as any;
@@ -128,10 +129,11 @@ describe('BrandIcons & Parity Badge Helper', () => {
       const snowflakeWrapper = elements.find(
         (el: any) =>
           React.isValidElement(el) &&
-          React.Children.toArray(el.props.children).some(
+          React.Children.toArray((el.props as any).children).some(
             (c: any) => c?.props?.children === 'Snowflake'
           )
       ) as any;
+
       expect(snowflakeWrapper).toBeDefined();
 
       const snowflakeIconSpan = React.Children.toArray(snowflakeWrapper.props.children)[0] as any;
@@ -148,10 +150,11 @@ describe('BrandIcons & Parity Badge Helper', () => {
       const snowflakeWrapper = elements.find(
         (el: any) =>
           React.isValidElement(el) &&
-          React.Children.toArray(el.props.children).some(
+          React.Children.toArray((el.props as any).children).some(
             (c: any) => c?.props?.children === 'Snowflake'
           )
       ) as any;
+
       expect(snowflakeWrapper).toBeDefined();
     });
 

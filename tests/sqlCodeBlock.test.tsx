@@ -15,6 +15,7 @@ describe('SqlCodeBlock & SQL Tokenizer Suite', () => {
         'SELECT', 'FROM', 'WHERE', 'QUALIFY', 'EXCLUDE', 'REPLACE',
         'COLUMNS', 'UNPIVOT', 'PIVOT', 'ASOF', 'POSITIONAL', 'GROUP', 'BY'
       ];
+
       for (const kw of expectedKeywords) {
         expect(KEYWORDS.has(kw)).toBe(true);
       }
@@ -22,6 +23,7 @@ describe('SqlCodeBlock & SQL Tokenizer Suite', () => {
 
     it('should include DuckDB analytical and complex types', () => {
       const expectedTypes = ['INTEGER', 'VARCHAR', 'STRUCT', 'LIST', 'MAP', 'TIMESTAMP', 'PARQUET'];
+
       for (const dt of expectedTypes) {
         expect(DATA_TYPES.has(dt)).toBe(true);
       }
@@ -124,6 +126,7 @@ describe('SqlCodeBlock & SQL Tokenizer Suite', () => {
 
     it('should apply One Dark / Neo-Brutalist color classes to tokens', () => {
       const sql = `SELECT\n  printf('SKU-%04d', id) AS label\nFROM products\nLIMIT 5;`;
+
       const markup = renderToStaticMarkup(
         React.createElement(SqlCodeBlock, { code: sql })
       );

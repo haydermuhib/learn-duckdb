@@ -18,6 +18,7 @@ export async function initDuckDB(): Promise<{ db: duckdb.AsyncDuckDB; conn: duck
   if (dbInstance && connInstance) {
     return { db: dbInstance, conn: connInstance };
   }
+
   if (initPromise) {
     return initPromise;
   }
@@ -30,6 +31,7 @@ export async function initDuckDB(): Promise<{ db: duckdb.AsyncDuckDB; conn: duck
       const worker_url = URL.createObjectURL(
         new Blob([`importScripts("${bundle.mainWorker!}");`], { type: 'text/javascript' })
       );
+
       const worker = new Worker(worker_url);
       const logger = new duckdb.VoidLogger();
       const db = new duckdb.AsyncDuckDB(logger, worker);
@@ -57,12 +59,15 @@ export async function initDuckDB(): Promise<{ db: duckdb.AsyncDuckDB; conn: duck
 
 export async function switchDatabase(dbName: string): Promise<void> {
   const { conn } = await initDuckDB();
+
   if (currentDbName === dbName) return;
+
   if (currentDbName && DATABASES[currentDbName]) {
     for (const table of DATABASES[currentDbName].tables) {
       await conn.query(`DROP TABLE IF EXISTS ${table.name};`);
     }
   }
+
   await loadDatabaseTables(conn, dbName);
   currentDbName = dbName;
 }
@@ -85,6 +90,7 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
   // Drop all existing tables & sequences across all datasets to prevent collision or stale state
   for (const dbKey of Object.keys(DATABASES)) {
     const dbDef = DATABASES[dbKey];
+
     if (dbDef) {
       for (const table of dbDef.tables) {
         await conn.query(`DROP TABLE IF EXISTS ${table.name} CASCADE;`);
@@ -107,9 +113,11 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
       .map(([name, type]) => {
         // Normalize SQLite types to DuckDB
         let dType = type.toUpperCase();
+
         if (dType.includes('INTEGER PRIMARY KEY')) {
           dType = `INTEGER PRIMARY KEY DEFAULT nextval('${seqName}')`;
         }
+
         return `${name} ${dType}`;
       })
       .join(', ');
@@ -121,10 +129,14 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
       const rowLiterals = table.rows.map(row => {
         const values = row.map(val => {
           if (val === null || val === undefined) return 'NULL';
+
           if (typeof val === 'number') return val.toString();
+
           if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
+
           return `'${String(val)}'`;
         });
+
         return `(${values.join(', ')})`;
       });
 
@@ -154,6 +166,7 @@ export function extractArrowTable(arrowTable: any): { columns: string[]; rows: a
 
   const children: any[] = [];
   const colTypes: { isDate: boolean; isTimestamp: boolean; isDecimal: boolean; scale: number }[] = [];
+
   for (let c = 0; c < numCols; c++) {
     children.push(arrowTable.getChildAt(c));
     const fieldType = arrowTable.schema.fields[c]?.type;
@@ -167,17 +180,22 @@ export function extractArrowTable(arrowTable: any): { columns: string[]; rows: a
   }
 
   const rows: any[][] = [];
+
   for (let r = 0; r < numRows; r++) {
     const rowArr: any[] = [];
+
     for (let c = 0; c < numCols; c++) {
       let val = children[c]?.get(r);
+
       if (val === null || val === undefined) {
         rowArr.push(null);
         continue;
       }
+
       if (colTypes[c]?.isDecimal) {
         const scale = colTypes[c].scale;
         const unscaledStr = String(val);
+
         if (scale > 0) {
           const isNegative = unscaledStr.startsWith('-');
           const digits = isNegative ? unscaledStr.slice(1) : unscaledStr;
@@ -199,8 +217,10 @@ export function extractArrowTable(arrowTable: any): { columns: string[]; rows: a
       } else if (typeof val === 'object' && val !== null) {
         val = JSON.stringify(val);
       }
+
       rowArr.push(val);
     }
+
     rows.push(rowArr);
   }
 
@@ -223,9 +243,5 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
     executionTimeMs,
     rowCount: rows.length,
   };
-}
-
-export function getCurrentDatabase(): string {
-  return currentDbName || 'store';
 }
 

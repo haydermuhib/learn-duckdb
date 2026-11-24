@@ -8,18 +8,24 @@ export function App() {
   const [view, setView] = useState<'landing' | 'studio' | 'playground' | 'cheatsheet'>(() => {
     if (typeof window !== 'undefined') {
       if (window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet') return 'cheatsheet';
+
       if (window.location.hash === '#playground') return 'playground';
+
       if (window.location.hash === '#studio') return 'studio';
     }
+
     return 'landing';
   });
+
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(undefined);
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
   const [returnToCheatSheet, setReturnToCheatSheet] = useState(false);
+
   const [hasVisitedCheatSheet, setHasVisitedCheatSheet] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet';
     }
+
     return false;
   });
 
@@ -44,7 +50,9 @@ export function App() {
         setView('landing');
       }
     };
+
     window.addEventListener('hashchange', handleHashChange);
+
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
@@ -57,12 +65,14 @@ export function App() {
 
   const handleOpenPlayground = (queryOrEvent?: unknown, fromCheatSheet = false) => {
     const safeQuery = typeof queryOrEvent === 'string' ? queryOrEvent : undefined;
+
     if (view === 'cheatsheet' || fromCheatSheet) {
       cheatSheetScrollRef.current = window.scrollY;
       setReturnToCheatSheet(true);
     } else {
       setReturnToCheatSheet(false);
     }
+
     setPlaygroundInitialQuery(safeQuery);
     setView('playground');
     window.location.hash = '#playground';

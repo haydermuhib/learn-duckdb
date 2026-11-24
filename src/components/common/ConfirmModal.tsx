@@ -32,7 +32,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         onCancel();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
+
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onCancel]);
 

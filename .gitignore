@@ -36,10 +36,6 @@ Thumbs.db
 
 learning.txt
 
-# Antigravity / Agents
-.agents/*
-!.agents/rules/
-
 # Node / Web
 node_modules/
 dist/

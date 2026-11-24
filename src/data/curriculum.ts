@@ -1,6 +1,6 @@
 import { DATABASES } from "./databases";
 import { MODULES } from "./modules";
-import { EXERCISES } from "./exercises";
+import { EXERCISES } from "./exercises/index";
 
 export { DATABASES, MODULES, EXERCISES };
 

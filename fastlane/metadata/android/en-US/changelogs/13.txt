@@ -1,0 +1,3 @@
+- Smooth eye-tracking glide animation and smart viewport-aware centering for FAQ
+- Auto-collapsing accordion in syllabus drawer with active exercise centering
+- Robust element-level array validation for progress imports

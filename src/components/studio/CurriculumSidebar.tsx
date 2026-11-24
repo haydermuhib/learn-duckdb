@@ -13,6 +13,52 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
+function isString(val: unknown): val is string {
+  return Object.prototype.toString.call(val) === '[object String]';
+}
+
+function isNumber(val: unknown): val is number {
+  return Object.prototype.toString.call(val) === '[object Number]' && !Number.isNaN(val);
+}
+
+function isStringArray(val: unknown): val is string[] {
+  return Array.isArray(val) && val.every(isString);
+}
+
+function isStringRecord(val: unknown): val is Record<string, string> {
+  if (Object.prototype.toString.call(val) !== '[object Object]' || val === null) {
+    return false;
+  }
+
+  return Object.values(Object(val)).every(isString);
+}
+
+function isNumberRecord(val: unknown): val is Record<string, number> {
+  if (Object.prototype.toString.call(val) !== '[object Object]' || val === null) {
+    return false;
+  }
+
+  return Object.values(Object(val)).every(isNumber);
+}
+
+function scrollChildToTop(container: HTMLElement, target: HTMLElement, padding = 8): void {
+  const targetRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const offset = targetRect.top - containerRect.top - padding;
+
+  container.scrollBy({ top: offset, behavior: 'smooth' });
+}
+
+function scrollChildToCenter(container: HTMLElement, target: HTMLElement): void {
+  const targetRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const targetCenter = targetRect.top + targetRect.height / 2;
+  const containerCenter = containerRect.top + containerRect.height / 2;
+  const offset = targetCenter - containerCenter;
+
+  container.scrollBy({ top: offset, behavior: 'smooth' });
+}
+
 interface CurriculumSidebarProps {
   currentExerciseId: string;
   onSelectExercise: (id: string) => void;
@@ -45,6 +91,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const activeExerciseRef = useRef<HTMLElement | null>(null);
+  const activeExerciseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const moduleAccordionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>(() => {
     // Expand module containing current exercise
@@ -57,37 +107,80 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     const currentEx = EXERCISES.find(e => e.id === currentExerciseId);
 
     if (currentEx) {
-      setExpandedModules(prev => ({
-        ...prev,
+      setExpandedModules({
         [currentEx.module]: true,
-      }));
+      });
     }
   }, [currentExerciseId]);
 
-  const toggleModule = (modId: string) => {
-    setExpandedModules(prev => ({
-      ...prev,
-      [modId]: !prev[modId],
-    }));
+  // Keep active exercise centered in view whenever sidebar opens or active exercise changes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
+
+    activeExerciseTimerRef.current = setTimeout(() => {
+      const activeEl = activeExerciseRef.current;
+      const container = scrollContainerRef.current;
+
+      if (!activeEl || !container) return;
+
+      scrollChildToCenter(container, activeEl);
+    }, 220);
+
+    return () => {
+      if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
+    };
+  }, [isOpen, currentExerciseId]);
+
+  useEffect(() => {
+    return () => {
+      if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
+
+      if (moduleAccordionTimerRef.current) clearTimeout(moduleAccordionTimerRef.current);
+    };
+  }, []);
+
+  const toggleModule = (modId: string, modEl?: HTMLElement | null) => {
+    const isOpening = !expandedModules[modId];
+
+    // Single accordion: opening one module collapses all others
+    setExpandedModules(isOpening ? { [modId]: true } : {});
+
+    if (isOpening && modEl) {
+      if (moduleAccordionTimerRef.current) clearTimeout(moduleAccordionTimerRef.current);
+
+      moduleAccordionTimerRef.current = setTimeout(() => {
+        const container = scrollContainerRef.current;
+
+        if (!container) return;
+
+        scrollChildToTop(container, modEl, 8);
+      }, 75);
+    }
   };
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
+
     const reader = new FileReader();
+
     reader.onload = event => {
       try {
-        const data = JSON.parse(event.target?.result as string);
+        const raw = event.target?.result;
 
-        if (Array.isArray(data.completedIds) && onImportProgress) {
+        if (!isString(raw)) return;
+
+        const data = JSON.parse(raw);
+
+        if (isStringArray(data.completedIds) && onImportProgress) {
           onImportProgress(
             data.completedIds,
-            Array.isArray(data.assistedIds) ? data.assistedIds : [],
-            data.drafts && typeof data.drafts === 'object' ? data.drafts : undefined,
-            data.completedVersions && typeof data.completedVersions === 'object'
-              ? data.completedVersions
-              : undefined
+            isStringArray(data.assistedIds) ? data.assistedIds : [],
+            isStringRecord(data.drafts) ? data.drafts : undefined,
+            isNumberRecord(data.completedVersions) ? data.completedVersions : undefined
           );
         }
       } catch (err) {
@@ -207,7 +300,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
         </div>
 
         {/* Exercises list */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-2 space-y-2">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain p-2 space-y-2">
           {filteredExercises ? (
             // Search results view
             <div className="space-y-1">
@@ -217,6 +310,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
               {filteredExercises.map(ex => (
                 <button
                   key={ex.id}
+                  ref={ex.id === currentExerciseId ? (el => { activeExerciseRef.current = el; }) : undefined}
                   onClick={() => handleExerciseClick(ex.id)}
                   className={`w-full text-left p-2 border-2 border-ink text-xs flex items-center justify-between transition-colors cursor-pointer ${
                     ex.id === currentExerciseId
@@ -287,7 +381,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                   >
                     {/* Module header */}
                     <div
-                      onClick={() => toggleModule(mod.id)}
+                      onClick={e => toggleModule(mod.id, e.currentTarget.parentElement)}
                       className={`relative overflow-hidden flex items-center justify-between p-2.5 cursor-pointer select-none transition-colors ${
                         isCurrentModule
                           ? 'bg-amber-50/80 hover:bg-duck-light border-l-4 border-l-duck'
@@ -402,6 +496,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                         return (
                           <div
                             key={ex.id}
+                            ref={isActive ? (el => { activeExerciseRef.current = el; }) : undefined}
                             onClick={() => handleExerciseClick(ex.id)}
                             className={`flex items-center justify-between px-3 py-2 cursor-pointer text-xs transition-colors ${
                               isActive

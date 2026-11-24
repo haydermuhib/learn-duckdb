@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -44,6 +44,74 @@ const INITIAL_DEMO_RESULT: QueryResult = {
   executionTimeMs: 4.8,
 };
 
+let activeScrollAnimId: number | null = null;
+
+function cancelSmoothScroll(): void {
+  if (activeScrollAnimId !== null) {
+    cancelAnimationFrame(activeScrollAnimId);
+    activeScrollAnimId = null;
+  }
+}
+
+function smoothScrollTo(targetY: number, duration = 550): void {
+  cancelSmoothScroll();
+
+  const startY = window.scrollY;
+  const distance = targetY - startY;
+
+  if (Math.abs(distance) < 2) return;
+
+  const startTime = performance.now();
+
+  function step(currentTime: number) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // easeInOutCubic: slow start, gentle glide, soft stop for comfortable eye-tracking
+    const ease =
+      progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+    window.scrollTo(0, startY + distance * ease);
+
+    if (progress < 1) {
+      activeScrollAnimId = requestAnimationFrame(step);
+    } else {
+      activeScrollAnimId = null;
+    }
+  }
+
+  activeScrollAnimId = requestAnimationFrame(step);
+}
+
+const FAQS = [
+  {
+    q: 'Why DuckDB instead of SQLite or PostgreSQL for learning SQL?',
+    a: 'DuckDB is the modern standard for fast analytical queries (OLAP) and enterprise data stack parity. It supports analytical features like `QUALIFY`, `GROUP BY ALL`, `SELECT * EXCLUDE / REPLACE`, and complex window frames that are identical to Snowflake and BigQuery, while traditional databases lack them or require cumbersome workarounds.',
+  },
+  {
+    q: 'How does DuckDB help Data Analysts and Python practitioners?',
+    a: 'DuckDB directly queries Pandas DataFrames, Polars, and local/remote Parquet files with zero memory duplication via Apache Arrow. It replaces multi-step 20-line Pandas wrangling scripts with clean, declarative, millisecond SQL.',
+  },
+  {
+    q: 'Do I need to install anything or sign up?',
+    a: 'Zero installation and zero sign-up required. The entire DuckDB engine compiles to WebAssembly and runs straight in your browser tab. Your progress is saved automatically to your browser.',
+  },
+  {
+    q: 'Is my data or SQL query sent to any remote server?',
+    a: 'No. Everything runs 100% locally on your machine via WebAssembly and Web Workers. Your data, code, and queries never leave your device.',
+  },
+  {
+    q: 'How many exercises are included?',
+    a: `${EXERCISES.length} exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.`,
+  },
+  {
+    q: 'What if I am already comfortable with basic SQL?',
+    a: 'You can jump directly into any advanced module from the syllabus—including Window Functions, CTE hierarchies, Advanced Aggregations, or DuckDB-specific superpowers like `QUALIFY` and `PIVOT`.',
+  },
+];
+
 export const LandingPage: React.FC<LandingPageProps> = ({
   onStartLearning,
   onOpenPlayground,
@@ -54,6 +122,75 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [demoResult, setDemoResult] = useState<QueryResult | null>(INITIAL_DEMO_RESULT);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const faqScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleUserInterrupt = () => {
+      cancelSmoothScroll();
+    };
+
+    window.addEventListener('wheel', handleUserInterrupt, { passive: true });
+    window.addEventListener('touchstart', handleUserInterrupt, { passive: true });
+
+    return () => {
+      if (faqScrollTimerRef.current) {
+        clearTimeout(faqScrollTimerRef.current);
+      }
+
+      cancelSmoothScroll();
+      window.removeEventListener('wheel', handleUserInterrupt);
+      window.removeEventListener('touchstart', handleUserInterrupt);
+    };
+  }, []);
+
+  const handleToggleFaq = (idx: number, e: React.MouseEvent<HTMLButtonElement>) => {
+    const isOpening = openFaq !== idx;
+    setOpenFaq(isOpening ? idx : null);
+
+    if (faqScrollTimerRef.current) {
+      clearTimeout(faqScrollTimerRef.current);
+      faqScrollTimerRef.current = null;
+    }
+
+    cancelSmoothScroll();
+
+    if (isOpening) {
+      const card = e.currentTarget.parentElement;
+
+      if (!card) return;
+
+      faqScrollTimerRef.current = setTimeout(() => {
+        const rect = card.getBoundingClientRect();
+        const buttonEl = card.querySelector('button');
+        const answerEl = card.querySelector<HTMLElement>('[data-faq-answer]');
+
+        const buttonHeight = buttonEl?.offsetHeight || 48;
+        const answerHeight = answerEl?.offsetHeight || 0;
+        const fullCardHeight = buttonHeight + answerHeight + 4;
+
+        const headerOffset = 70; // safe clearance below sticky navbar
+        const bottomPadding = 24;
+
+        // If card is already fully visible within the viewport, do not scroll (avoids jitter/jump)
+        const isFullyInView =
+          rect.top >= headerOffset &&
+          rect.top + fullCardHeight <= window.innerHeight - bottomPadding;
+
+        if (!isFullyInView) {
+          // Gently glide down to center so the user's eye can comfortably adjust
+          const currentScrollY = window.scrollY;
+          const cardCenterY = currentScrollY + rect.top + fullCardHeight / 2;
+          const targetScrollY = cardCenterY - window.innerHeight / 2;
+          const maxScrollToClearHeader = currentScrollY + rect.top - headerOffset;
+          const targetY = Math.min(targetScrollY, maxScrollToClearHeader);
+          const maxDocScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const clampedY = Math.max(0, Math.min(targetY, maxDocScroll));
+
+          smoothScrollTo(clampedY, 550);
+        }
+      }, 40);
+    }
+  };
 
   const runDemo = async (queryToRun?: string) => {
     setIsRunningDemo(true);
@@ -61,39 +198,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     try {
       const res = await executeQuery(queryToRun || demoQuery);
       setDemoResult(res);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
     } finally {
       setIsRunningDemo(false);
     }
   };
-
-  const faqs = [
-    {
-      q: 'Why DuckDB instead of SQLite or PostgreSQL for learning SQL?',
-      a: 'DuckDB is the modern standard for fast analytical queries (OLAP) and enterprise data stack parity. It supports analytical features like `QUALIFY`, `GROUP BY ALL`, `SELECT * EXCLUDE / REPLACE`, and complex window frames that are identical to Snowflake and BigQuery, while traditional databases lack them or require cumbersome workarounds.',
-    },
-    {
-      q: 'How does DuckDB help Data Analysts and Python practitioners?',
-      a: 'DuckDB directly queries Pandas DataFrames, Polars, and local/remote Parquet files with zero memory duplication via Apache Arrow. It replaces multi-step 20-line Pandas wrangling scripts with clean, declarative, millisecond SQL.',
-    },
-    {
-      q: 'Do I need to install anything or sign up?',
-      a: 'Zero installation and zero sign-up required. The entire DuckDB engine compiles to WebAssembly and runs straight in your browser tab. Your progress is saved automatically to your browser.',
-    },
-    {
-      q: 'Is my data or SQL query sent to any remote server?',
-      a: 'No. Everything runs 100% locally on your machine via WebAssembly and Web Workers. Your data, code, and queries never leave your device.',
-    },
-    {
-      q: 'How many exercises are included?',
-      a: `${EXERCISES.length} exercises divided into 18 structured modules—spanning foundational SELECT and JOINs, subqueries, CTEs, window functions, and real-world data engineering interview challenges.`,
-    },
-    {
-      q: 'What if I am already comfortable with basic SQL?',
-      a: 'You can jump directly into any advanced module from the syllabus—including Window Functions, CTE hierarchies, Advanced Aggregations, or DuckDB-specific superpowers like `QUALIFY` and `PIVOT`.',
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans">
@@ -511,27 +621,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="space-y-3">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="border-2 border-ink bg-canvas">
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-3.5 sm:p-4 font-bold text-xs sm:text-sm flex items-center justify-between hover:bg-duck-light/60 transition-colors select-none"
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+
+              return (
+                <div
+                  key={idx}
+                  className="border-2 border-ink bg-canvas scroll-mt-24 scroll-mb-6 transition-all"
                 >
-                  <span className="pr-2 leading-snug">{faq.q}</span>
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform duration-200 shrink-0 ml-1 ${
-                      openFaq === idx ? 'rotate-180' : ''
+                  <button
+                    type="button"
+                    onClick={e => handleToggleFaq(idx, e)}
+                    className="w-full text-left p-3.5 sm:p-4 font-bold text-xs sm:text-sm flex items-center justify-between hover:bg-duck-light/60 transition-colors select-none cursor-pointer"
+                  >
+                    <span className="pr-2 leading-snug">{faq.q}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-300 shrink-0 ml-1 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`grid transition-[grid-template-rows,opacity] duration-350 ease-in-out ${
+                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                     }`}
-                  />
-                </button>
-                {openFaq === idx && (
-                  <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans">
-                    {faq.a}
+                  >
+                    <div className="overflow-hidden">
+                      <div
+                        data-faq-answer
+                        className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans"
+                      >
+                        {faq.a}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -1,0 +1,3 @@
+- 100% offline-ready bundle with self-hosted fonts and single-engine DuckDB-Wasm (~41 MB uncompressed / ~13 MB APK)
+- Instant, snappy mode switching across Exercises, Cheat Sheet, and Playground with Framer Motion tab feedback
+- Updated app and site references to v2.1.0

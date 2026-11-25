@@ -1,7 +1,7 @@
 {
   "name": "learn-duckdb-web",
   "private": true,
-  "version": "2.0.2",
+  "version": "2.1.0",
   "author": "Haider Ali Tariq",
   "license": "GPL-3.0-or-later",
   "type": "module",

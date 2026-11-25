@@ -299,7 +299,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img src="/logo.svg" alt="Learn DuckDB" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
             <span className="font-extrabold text-base sm:text-xl tracking-tight">Learn Duckdb</span>
             <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-mono font-bold bg-duck px-1.5 sm:px-2 py-0.5 border border-ink ml-0.5">
-              v2.0 WASM
+              v2.1.0 WASM
             </span>
           </div>
 

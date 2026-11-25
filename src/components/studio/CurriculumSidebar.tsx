@@ -595,76 +595,74 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                     </motion.div>
 
                   {/* Exercises in module */}
-                  <motion.div
-                    data-module-body
-                    initial={false}
-                    animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
-                    transition={{ duration: 0.3, ease: EFFECTS_EASE }}
-                    className="overflow-hidden"
-                    aria-hidden={!isExpanded}
-                  >
-                    <div className="border-t border-ink/20 divide-y divide-slate-100">
-                      {modExercises.map((ex, exIdx) => {
-                        const isActive = ex.id === currentExerciseId;
-                        const isDone = completedIds.has(ex.id);
-                        const isAssisted = assistedIds.has(ex.id);
+                  {isExpanded && (
+                    <motion.div
+                      data-module-body
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      transition={{ duration: 0.25, ease: EFFECTS_EASE }}
+                      className="overflow-hidden"
+                    >
+                      <div className="border-t border-ink/20 divide-y divide-slate-100">
+                        {modExercises.map((ex, exIdx) => {
+                          const isActive = ex.id === currentExerciseId;
+                          const isDone = completedIds.has(ex.id);
+                          const isAssisted = assistedIds.has(ex.id);
 
-                        return (
-                          <motion.div
-                            key={ex.id}
-                            ref={isActive ? (el => { activeExerciseRef.current = el; }) : undefined}
-                            whileHover={{ opacity: 0.92 }}
-                            whileTap={{ opacity: 0.82 }}
-                            transition={FEEDBACK_TRANSITION}
-                            onClick={() => handleExerciseClick(ex.id)}
-                            className={`flex items-center justify-between px-3 py-2 cursor-pointer text-xs transition-colors ${
-                              isActive
-                                ? 'bg-duck text-ink font-bold border-l-4 border-l-ink'
-                                : 'hover:bg-duck-light/60 text-slate-700'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 truncate pr-2">
-                              <span className="font-mono text-[10px] text-ink-subtle w-4">
-                                {exIdx + 1}.
-                              </span>
-                              <span className="truncate">{ex.title}</span>
-                              {ex.isDuckDbFeature && (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] bg-amber-200 text-amber-900 px-1 font-bold border border-amber-400">
-                                  <Sparkles size={9} />
-                                  DuckDB
+                          return (
+                            <div
+                              key={ex.id}
+                              ref={isActive ? (el => { activeExerciseRef.current = el; }) : undefined}
+                              onClick={() => handleExerciseClick(ex.id)}
+                              className={`flex items-center justify-between px-3 py-2 cursor-pointer text-xs transition-colors active:opacity-80 ${
+                                isActive
+                                  ? 'bg-duck text-ink font-bold border-l-4 border-l-ink'
+                                  : 'hover:bg-duck-light/60 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate pr-2">
+                                <span className="font-mono text-[10px] text-ink-subtle w-4">
+                                  {exIdx + 1}.
                                 </span>
-                              )}
-                            </div>
+                                <span className="truncate">{ex.title}</span>
+                                {ex.isDuckDbFeature && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] bg-amber-200 text-amber-900 px-1 font-bold border border-amber-400">
+                                    <Sparkles size={9} />
+                                    DuckDB
+                                  </span>
+                                )}
+                              </div>
 
-                            {isDone &&
-                              ((completedVersions[ex.id] || 1) < (ex.version || 1) ? (
-                                <div
-                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-[9px] font-bold shrink-0 shadow-xs"
-                                  title="Updated with new requirements since you completed it (Solve again to re-verify)"
-                                >
-                                  <RotateCcw size={9} className="text-amber-800 shrink-0" />
-                                  <span>Updated</span>
-                                </div>
-                              ) : isAssisted ? (
-                                <div
-                                  className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
-                                  title="Completed with hints (Solve independently to earn mastery)"
-                                >
-                                  <Check size={10} strokeWidth={2.5} />
-                                </div>
-                              ) : (
-                                <div
-                                  className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
-                                  title="Mastered (Solved independently)"
-                                >
-                                  <Check size={11} strokeWidth={3} />
-                                </div>
-                              ))}
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
+                              {isDone &&
+                                ((completedVersions[ex.id] || 1) < (ex.version || 1) ? (
+                                  <div
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-[9px] font-bold shrink-0 shadow-xs"
+                                    title="Updated with new requirements since you completed it (Solve again to re-verify)"
+                                  >
+                                    <RotateCcw size={9} className="text-amber-800 shrink-0" />
+                                    <span>Updated</span>
+                                  </div>
+                                ) : isAssisted ? (
+                                  <div
+                                    className="w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center shrink-0"
+                                    title="Completed with hints (Solve independently to earn mastery)"
+                                  >
+                                    <Check size={10} strokeWidth={2.5} />
+                                  </div>
+                                ) : (
+                                  <div
+                                    className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
+                                    title="Mastered (Solved independently)"
+                                  >
+                                    <Check size={11} strokeWidth={3} />
+                                  </div>
+                                ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               );
             });

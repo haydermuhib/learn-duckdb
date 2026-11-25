@@ -241,7 +241,7 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
             DuckDB Cheat Sheet
           </span>
           <span className="hidden sm:inline-block text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
-            v2.0 Reference
+            v2.1.0 Reference
           </span>
         </div>
 

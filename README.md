@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/learnnishkaam/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-2.0.2-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 2.0.2" /></a>
+  <a href="https://github.com/learnnishkaam/learn-duckdb/releases/latest"><img src="https://img.shields.io/badge/version-2.1.0-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="Version 2.1.0" /></a>
   <a href="https://duckdb.org"><img src="https://img.shields.io/badge/engine-DuckDB--Wasm-FFF000.svg?style=flat-square&labelColor=18181B&color=FFF000" alt="DuckDB-Wasm" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat-square&labelColor=18181B" alt="TypeScript 5" /></a>
   <a href="https://vitest.dev"><img src="https://img.shields.io/badge/tests-109%20passed-16A34A.svg?style=flat-square&labelColor=18181B" alt="109 Tests Passed" /></a>

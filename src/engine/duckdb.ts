@@ -1,21 +1,8 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdbWasmMvp from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url';
 import duckdbWorkerMvp from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url';
-import duckdbWasmEh from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url';
-import duckdbWorkerEh from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url';
 import * as arrow from 'apache-arrow';
 import { DATABASES } from '../data/databases';
-
-const LOCAL_DUCKDB_BUNDLES: duckdb.DuckDBBundles = {
-  mvp: {
-    mainModule: duckdbWasmMvp,
-    mainWorker: duckdbWorkerMvp,
-  },
-  eh: {
-    mainModule: duckdbWasmEh,
-    mainWorker: duckdbWorkerEh,
-  },
-};
 
 export interface QueryResult {
   columns: string[];
@@ -40,11 +27,10 @@ export async function initDuckDB(): Promise<{ db: duckdb.AsyncDuckDB; conn: duck
 
   initPromise = (async () => {
     try {
-      const bundle = await duckdb.selectBundle(LOCAL_DUCKDB_BUNDLES);
-      const worker = new Worker(bundle.mainWorker!);
+      const worker = new Worker(duckdbWorkerMvp);
       const logger = new duckdb.VoidLogger();
       const db = new duckdb.AsyncDuckDB(logger, worker);
-      await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+      await db.instantiate(duckdbWasmMvp);
 
       const conn = await db.connect();
       dbInstance = db;

@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig, motion } from 'framer-motion';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';
 import { CheatSheetPage } from './components/cheatsheet/CheatSheetPage';
+
+const VIEW_TRANSITION = { duration: 0.25, delay: 0, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] };
 
 export function App() {
   const [view, setView] = useState<'landing' | 'studio' | 'playground' | 'cheatsheet'>(() => {
@@ -61,7 +63,7 @@ export function App() {
     setSelectedExerciseId(exerciseId);
     setView('studio');
     window.location.hash = '#studio';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleOpenPlayground = (queryOrEvent?: unknown, fromCheatSheet = false) => {
@@ -95,7 +97,7 @@ export function App() {
     setView('cheatsheet');
     window.location.hash = '#cheatsheet';
     setReturnToCheatSheet(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleBackToLanding = () => {
@@ -115,29 +117,47 @@ export function App() {
           />
         )}
         {view === 'studio' && (
-          <StudioLayout
-            onBackToLanding={handleBackToLanding}
-            initialExerciseId={selectedExerciseId}
-            onSwitchToPlayground={handleOpenPlayground}
-            onSwitchToCheatSheet={handleOpenCheatSheet}
-          />
+          <motion.div
+            key="studio"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={VIEW_TRANSITION}
+          >
+            <StudioLayout
+              onBackToLanding={handleBackToLanding}
+              initialExerciseId={selectedExerciseId}
+              onSwitchToPlayground={handleOpenPlayground}
+              onSwitchToCheatSheet={handleOpenCheatSheet}
+            />
+          </motion.div>
         )}
         {view === 'playground' && (
-          <PlaygroundLayout
-            onBackToLanding={handleBackToLanding}
-            onSwitchToExercises={() => handleStartLearning()}
-            onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
-            initialQuery={playgroundInitialQuery}
-          />
+          <motion.div
+            key="playground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={VIEW_TRANSITION}
+          >
+            <PlaygroundLayout
+              onBackToLanding={handleBackToLanding}
+              onSwitchToExercises={() => handleStartLearning()}
+              onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
+              initialQuery={playgroundInitialQuery}
+            />
+          </motion.div>
         )}
         {hasVisitedCheatSheet && (
-          <div style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}>
+          <motion.div
+            animate={{ opacity: view === 'cheatsheet' ? 1 : 0 }}
+            transition={VIEW_TRANSITION}
+            style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}
+          >
             <CheatSheetPage
               onBackToHome={handleBackToLanding}
               onOpenPlayground={(query) => handleOpenPlayground(query, true)}
               onStartLearning={() => handleStartLearning()}
             />
-          </div>
+          </motion.div>
         )}
       </div>
     </MotionConfig>

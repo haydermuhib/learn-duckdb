@@ -11,9 +11,9 @@ RepoType: git
 Repo: https://github.com/learnnishkaam/learn-duckdb.git
 
 Builds:
-  - versionName: 2.0.1
-    versionCode: 13
-    commit: dd2e460ff7b594a351738ca1bba3950fdf1a26c4
+  - versionName: 2.0.2
+    versionCode: 14
+    commit: 920cd68acfa4a0baa62d502d804efb84a2a08669
     subdir: android/app
     nodejs: yes
     prebuild:

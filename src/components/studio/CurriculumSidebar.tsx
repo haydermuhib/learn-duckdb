@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, animate, useReducedMotion, type AnimationPlaybackControls } from 'framer-motion';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import {
   BookOpen,
   Check,
-  ChevronDown,
   ChevronRight,
   Search,
   Sparkles,
@@ -41,22 +41,73 @@ function isNumberRecord(val: unknown): val is Record<string, number> {
   return Object.values(Object(val)).every(isNumber);
 }
 
-function scrollChildToTop(container: HTMLElement, target: HTMLElement, padding = 8): void {
-  const targetRect = target.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  const offset = targetRect.top - containerRect.top - padding;
+const EFFECTS_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-  container.scrollBy({ top: offset, behavior: 'smooth' });
+const FEEDBACK_TRANSITION = { duration: 0.25, delay: 0, ease: EFFECTS_EASE };
+
+function animateContainerScroll(
+  container: HTMLElement,
+  rawTargetTop: number,
+  reduceMotion: boolean,
+  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>
+): void {
+  if (activeAnimRef.current) {
+    activeAnimRef.current.stop();
+    activeAnimRef.current = null;
+  }
+
+  const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+  const clampedTarget = Math.max(0, Math.min(rawTargetTop, maxScrollTop));
+  const startTop = container.scrollTop;
+
+  if (Math.abs(clampedTarget - startTop) < 2) return;
+
+  if (reduceMotion) {
+    container.scrollTop = clampedTarget;
+
+    return;
+  }
+
+  activeAnimRef.current = animate(startTop, clampedTarget, {
+    duration: 0.45,
+    ease: EFFECTS_EASE,
+    onUpdate: latest => {
+      container.scrollTop = latest;
+    },
+    onComplete: () => {
+      activeAnimRef.current = null;
+    },
+  });
 }
 
-function scrollChildToCenter(container: HTMLElement, target: HTMLElement): void {
+function scrollChildToTop(
+  container: HTMLElement,
+  target: HTMLElement,
+  collapseShiftAbove: number,
+  reduceMotion: boolean,
+  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>,
+  padding = 8
+): void {
+  const targetRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const projectedOffset = targetRect.top - containerRect.top - padding - collapseShiftAbove;
+
+  animateContainerScroll(container, container.scrollTop + projectedOffset, reduceMotion, activeAnimRef);
+}
+
+function scrollChildToCenter(
+  container: HTMLElement,
+  target: HTMLElement,
+  reduceMotion: boolean,
+  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>
+): void {
   const targetRect = target.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   const targetCenter = targetRect.top + targetRect.height / 2;
   const containerCenter = containerRect.top + containerRect.height / 2;
   const offset = targetCenter - containerCenter;
 
-  container.scrollBy({ top: offset, behavior: 'smooth' });
+  animateContainerScroll(container, container.scrollTop + offset, reduceMotion, activeAnimRef);
 }
 
 interface CurriculumSidebarProps {
@@ -89,10 +140,13 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   onExportProgress,
   onImportProgress,
 }) => {
+  const shouldReduceMotion = useReducedMotion() ?? false;
   const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeExerciseRef = useRef<HTMLElement | null>(null);
+  const moduleCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollAnimRef = useRef<AnimationPlaybackControls | null>(null);
   const activeExerciseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const moduleAccordionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -125,16 +179,37 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
       if (!activeEl || !container) return;
 
-      scrollChildToCenter(container, activeEl);
-    }, 220);
+      scrollChildToCenter(container, activeEl, shouldReduceMotion, scrollAnimRef);
+    }, 320);
 
     return () => {
       if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
     };
-  }, [isOpen, currentExerciseId]);
+  }, [isOpen, currentExerciseId, shouldReduceMotion]);
 
   useEffect(() => {
+    const container = scrollContainerRef.current;
+
+    const handleUserInterrupt = () => {
+      if (scrollAnimRef.current) {
+        scrollAnimRef.current.stop();
+        scrollAnimRef.current = null;
+      }
+    };
+
+    if (container) {
+      container.addEventListener('wheel', handleUserInterrupt, { passive: true });
+      container.addEventListener('touchmove', handleUserInterrupt, { passive: true });
+    }
+
     return () => {
+      if (container) {
+        container.removeEventListener('wheel', handleUserInterrupt);
+        container.removeEventListener('touchmove', handleUserInterrupt);
+      }
+
+      handleUserInterrupt();
+
       if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
 
       if (moduleAccordionTimerRef.current) clearTimeout(moduleAccordionTimerRef.current);
@@ -143,6 +218,24 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
   const toggleModule = (modId: string, modEl?: HTMLElement | null) => {
     const isOpening = !expandedModules[modId];
+
+    let collapseShiftAbove = 0;
+
+    if (isOpening && modEl) {
+      for (const [otherId, wasExpanded] of Object.entries(expandedModules)) {
+        if (!wasExpanded || otherId === modId) continue;
+
+        const otherCard = moduleCardRefs.current[otherId];
+
+        if (otherCard && (otherCard.compareDocumentPosition(modEl) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+          const otherBody = otherCard.querySelector<HTMLElement>('[data-module-body]');
+
+          if (otherBody) {
+            collapseShiftAbove += otherBody.getBoundingClientRect().height;
+          }
+        }
+      }
+    }
 
     // Single accordion: opening one module collapses all others
     setExpandedModules(isOpening ? { [modId]: true } : {});
@@ -155,8 +248,8 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
         if (!container) return;
 
-        scrollChildToTop(container, modEl, 8);
-      }, 75);
+        scrollChildToTop(container, modEl, collapseShiftAbove, shouldReduceMotion, scrollAnimRef, 8);
+      }, 32);
     }
   };
 
@@ -213,7 +306,9 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     onSelectExercise(id);
 
     // Only auto-close on mobile screens where the drawer is a blocking overlay modal
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+    const win = globalThis.window;
+
+    if (win && win.innerWidth < 1024) {
       onClose();
     }
   };
@@ -222,7 +317,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     <>
       {/* Mobile Backdrop */}
       {isOpen && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={FEEDBACK_TRANSITION}
           onClick={onClose}
           className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] bg-ink/50 z-30 lg:hidden"
         />
@@ -249,14 +347,17 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             <span className="text-xs font-mono font-bold px-1.5 sm:px-2 py-0.5 bg-duck border border-ink">
               {completedIds.size}/{EXERCISES.length}
             </span>
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              transition={FEEDBACK_TRANSITION}
               onClick={onClose}
               title="Close Syllabus (Ctrl+B)"
               className="p-1 hover:bg-slate-200 border border-ink cursor-pointer"
             >
               <X size={16} />
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -373,6 +474,9 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                 return (
                   <div
                     key={mod.id}
+                    ref={el => {
+                      moduleCardRefs.current[mod.id] = el;
+                    }}
                     className={`border-2 border-ink transition-colors ${
                       isCurrentModule
                         ? 'bg-[#FFFDF5] border-ink ring-2 ring-duck ring-offset-1 shadow-brutal-sm'
@@ -380,7 +484,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                     }`}
                   >
                     {/* Module header */}
-                    <div
+                    <motion.div
+                      whileHover={{ opacity: 0.92 }}
+                      whileTap={{ opacity: 0.82 }}
+                      transition={FEEDBACK_TRANSITION}
                       onClick={e => toggleModule(mod.id, e.currentTarget.parentElement)}
                       className={`relative overflow-hidden flex items-center justify-between p-2.5 cursor-pointer select-none transition-colors ${
                         isCurrentModule
@@ -477,16 +584,25 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                         >
                           {completedCount}/{modExercises.length}
                         </span>
-                        {isExpanded ? (
-                          <ChevronDown size={14} />
-                        ) : (
+                        <motion.span
+                          animate={{ rotate: isExpanded ? 90 : 0 }}
+                          transition={{ duration: 0.25, ease: EFFECTS_EASE }}
+                          className="inline-flex items-center justify-center shrink-0"
+                        >
                           <ChevronRight size={14} />
-                        )}
+                        </motion.span>
                       </div>
-                    </div>
+                    </motion.div>
 
                   {/* Exercises in module */}
-                  {isExpanded && (
+                  <motion.div
+                    data-module-body
+                    initial={false}
+                    animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
+                    transition={{ duration: 0.3, ease: EFFECTS_EASE }}
+                    className="overflow-hidden"
+                    aria-hidden={!isExpanded}
+                  >
                     <div className="border-t border-ink/20 divide-y divide-slate-100">
                       {modExercises.map((ex, exIdx) => {
                         const isActive = ex.id === currentExerciseId;
@@ -494,9 +610,12 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                         const isAssisted = assistedIds.has(ex.id);
 
                         return (
-                          <div
+                          <motion.div
                             key={ex.id}
                             ref={isActive ? (el => { activeExerciseRef.current = el; }) : undefined}
+                            whileHover={{ opacity: 0.92 }}
+                            whileTap={{ opacity: 0.82 }}
+                            transition={FEEDBACK_TRANSITION}
                             onClick={() => handleExerciseClick(ex.id)}
                             className={`flex items-center justify-between px-3 py-2 cursor-pointer text-xs transition-colors ${
                               isActive
@@ -541,11 +660,11 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                                   <Check size={11} strokeWidth={3} />
                                 </div>
                               ))}
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>
-                  )}
+                  </motion.div>
                 </div>
               );
             });
@@ -569,26 +688,32 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
             {/* Backup & Import Tools */}
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
               {onExportProgress && (
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  transition={FEEDBACK_TRANSITION}
                   onClick={onExportProgress}
                   className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-duck border border-ink text-[11px] font-bold shadow-brutal-xs transition-colors cursor-pointer"
                   title="Backup learning progress as a JSON file"
                 >
                   <Download size={12} />
                   <span>Backup</span>
-                </button>
+                </motion.button>
               )}
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                transition={FEEDBACK_TRANSITION}
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-duck border border-ink text-[11px] font-bold shadow-brutal-xs transition-colors cursor-pointer"
                 title="Restore learning progress from a backup JSON file"
               >
                 <Upload size={12} />
                 <span>Import</span>
-              </button>
+              </motion.button>
               <input
                 ref={fileInputRef}
                 type="file"

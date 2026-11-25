@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';
@@ -104,40 +105,42 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink selection:bg-duck selection:text-ink">
-      {view === 'landing' && (
-        <LandingPage
-          onStartLearning={handleStartLearning}
-          onOpenPlayground={handleOpenPlayground}
-          onOpenCheatSheet={handleOpenCheatSheet}
-        />
-      )}
-      {view === 'studio' && (
-        <StudioLayout
-          onBackToLanding={handleBackToLanding}
-          initialExerciseId={selectedExerciseId}
-          onSwitchToPlayground={handleOpenPlayground}
-          onSwitchToCheatSheet={handleOpenCheatSheet}
-        />
-      )}
-      {view === 'playground' && (
-        <PlaygroundLayout
-          onBackToLanding={handleBackToLanding}
-          onSwitchToExercises={() => handleStartLearning()}
-          onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
-          initialQuery={playgroundInitialQuery}
-        />
-      )}
-      {hasVisitedCheatSheet && (
-        <div style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}>
-          <CheatSheetPage
-            onBackToHome={handleBackToLanding}
-            onOpenPlayground={(query) => handleOpenPlayground(query, true)}
-            onStartLearning={() => handleStartLearning()}
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-canvas text-ink selection:bg-duck selection:text-ink">
+        {view === 'landing' && (
+          <LandingPage
+            onStartLearning={handleStartLearning}
+            onOpenPlayground={handleOpenPlayground}
+            onOpenCheatSheet={handleOpenCheatSheet}
           />
-        </div>
-      )}
-    </div>
+        )}
+        {view === 'studio' && (
+          <StudioLayout
+            onBackToLanding={handleBackToLanding}
+            initialExerciseId={selectedExerciseId}
+            onSwitchToPlayground={handleOpenPlayground}
+            onSwitchToCheatSheet={handleOpenCheatSheet}
+          />
+        )}
+        {view === 'playground' && (
+          <PlaygroundLayout
+            onBackToLanding={handleBackToLanding}
+            onSwitchToExercises={() => handleStartLearning()}
+            onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
+            initialQuery={playgroundInitialQuery}
+          />
+        )}
+        {hasVisitedCheatSheet && (
+          <div style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}>
+            <CheatSheetPage
+              onBackToHome={handleBackToLanding}
+              onOpenPlayground={(query) => handleOpenPlayground(query, true)}
+              onStartLearning={() => handleStartLearning()}
+            />
+          </div>
+        )}
+      </div>
+    </MotionConfig>
   );
 }
 

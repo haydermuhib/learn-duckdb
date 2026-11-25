@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, animate, useReducedMotion, type AnimationPlaybackControls } from 'framer-motion';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -44,16 +45,18 @@ const INITIAL_DEMO_RESULT: QueryResult = {
   executionTimeMs: 4.8,
 };
 
-let activeScrollAnimId: number | null = null;
+const EFFECTS_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+let activeScrollPlayback: AnimationPlaybackControls | null = null;
 
 function cancelSmoothScroll(): void {
-  if (activeScrollAnimId !== null) {
-    cancelAnimationFrame(activeScrollAnimId);
-    activeScrollAnimId = null;
+  if (activeScrollPlayback) {
+    activeScrollPlayback.stop();
+    activeScrollPlayback = null;
   }
 }
 
-function smoothScrollTo(targetY: number, duration = 550): void {
+function smoothScrollTo(targetY: number, reduceMotion: boolean, duration = 0.55): void {
   cancelSmoothScroll();
 
   const startY = window.scrollY;
@@ -61,29 +64,93 @@ function smoothScrollTo(targetY: number, duration = 550): void {
 
   if (Math.abs(distance) < 2) return;
 
-  const startTime = performance.now();
+  if (reduceMotion) {
+    window.scrollTo(0, targetY);
 
-  function step(currentTime: number) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-
-    // easeInOutCubic: slow start, gentle glide, soft stop for comfortable eye-tracking
-    const ease =
-      progress < 0.5
-        ? 4 * progress * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-    window.scrollTo(0, startY + distance * ease);
-
-    if (progress < 1) {
-      activeScrollAnimId = requestAnimationFrame(step);
-    } else {
-      activeScrollAnimId = null;
-    }
+    return;
   }
 
-  activeScrollAnimId = requestAnimationFrame(step);
+  activeScrollPlayback = animate(startY, targetY, {
+    duration,
+    ease: EFFECTS_EASE,
+    onUpdate: latest => {
+      window.scrollTo(0, latest);
+    },
+    onComplete: () => {
+      activeScrollPlayback = null;
+    },
+  });
 }
+
+const HERO_ENTRANCE_TRANSITION = { duration: 0.8, delay: 0, ease: EFFECTS_EASE };
+
+const FEEDBACK_TRANSITION = { duration: 0.25, delay: 0, ease: EFFECTS_EASE };
+
+const REVEAL_VIEWPORT = { once: true, amount: 0.15 };
+
+const TALL_REVEAL_VIEWPORT = { once: true, amount: 0 };
+
+const PHONE_MEDIA_QUERY = '(max-width: 639px)';
+
+function getScrollRevealTransition(staggerOffset = 0) {
+  return { duration: 1, delay: 0.1 + staggerOffset, ease: EFFECTS_EASE };
+}
+
+function getInitialIsPhone(): boolean {
+  const win = globalThis.window;
+
+  if (!win || !win.matchMedia) return false;
+
+  return win.matchMedia(PHONE_MEDIA_QUERY).matches;
+}
+
+function useIsPhone(): boolean {
+  const [isPhone, setIsPhone] = useState(getInitialIsPhone);
+
+  useEffect(() => {
+    const win = globalThis.window;
+
+    if (!win || !win.matchMedia) return;
+
+    const mediaQuery = win.matchMedia(PHONE_MEDIA_QUERY);
+    setIsPhone(mediaQuery.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsPhone(event.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  return isPhone;
+}
+
+const VALUE_PROPS = [
+  {
+    step: '01',
+    title: 'Modern SQL Dialect',
+    description: (
+      <>
+        Learn modern dialect syntax like <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">GROUP BY ALL</code>,{' '}
+        <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">SELECT * EXCLUDE</code>, and{' '}
+        <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">QUALIFY</code> that modern data teams use daily.
+      </>
+    ),
+  },
+  {
+    step: '02',
+    title: 'Instant Wasm Sandbox',
+    description:
+      'No remote servers or spin-up delays. DuckDB executes in a background Web Worker right inside your browser, completing queries in milliseconds.',
+  },
+  {
+    step: '03',
+    title: 'Interview-Grade Challenges',
+    description: `Progress through ${EXERCISES.length} exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.`,
+  },
+];
 
 const FAQS = [
   {
@@ -117,11 +184,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenPlayground,
   onOpenCheatSheet,
 }) => {
+  const isPhone = useIsPhone();
+  const shouldReduceMotion = useReducedMotion() ?? false;
+  const revealOffsetY = isPhone ? 8 : 12;
+
   // Interactive Sandbox Teaser on Hero with Single Formatted Query & Syntax Highlighting
   const [demoQuery, setDemoQuery] = useState(SIMPLE_HERO_QUERY);
   const [demoResult, setDemoResult] = useState<QueryResult | null>(INITIAL_DEMO_RESULT);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const faqCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const faqScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -130,7 +202,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     };
 
     window.addEventListener('wheel', handleUserInterrupt, { passive: true });
-    window.addEventListener('touchstart', handleUserInterrupt, { passive: true });
+    window.addEventListener('touchmove', handleUserInterrupt, { passive: true });
 
     return () => {
       if (faqScrollTimerRef.current) {
@@ -139,13 +211,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       cancelSmoothScroll();
       window.removeEventListener('wheel', handleUserInterrupt);
-      window.removeEventListener('touchstart', handleUserInterrupt);
+      window.removeEventListener('touchmove', handleUserInterrupt);
     };
   }, []);
 
   const handleToggleFaq = (idx: number, e: React.MouseEvent<HTMLButtonElement>) => {
-    const isOpening = openFaq !== idx;
-    setOpenFaq(isOpening ? idx : null);
+    const prevOpenIdx = openFaq;
+    const isOpening = prevOpenIdx !== idx;
+    const card = e.currentTarget.parentElement;
 
     if (faqScrollTimerRef.current) {
       clearTimeout(faqScrollTimerRef.current);
@@ -154,41 +227,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
     cancelSmoothScroll();
 
-    if (isOpening) {
-      const card = e.currentTarget.parentElement;
+    let collapseShiftAbove = 0;
 
-      if (!card) return;
+    if (isOpening && prevOpenIdx !== null && prevOpenIdx < idx) {
+      const prevCard = faqCardRefs.current[prevOpenIdx];
+      const prevBody = prevCard?.querySelector<HTMLElement>('[data-faq-body]');
 
+      if (prevBody) {
+        collapseShiftAbove = prevBody.getBoundingClientRect().height;
+      }
+    }
+
+    setOpenFaq(isOpening ? idx : null);
+
+    if (isOpening && card) {
       faqScrollTimerRef.current = setTimeout(() => {
         const rect = card.getBoundingClientRect();
         const buttonEl = card.querySelector('button');
         const answerEl = card.querySelector<HTMLElement>('[data-faq-answer]');
 
         const buttonHeight = buttonEl?.offsetHeight || 48;
-        const answerHeight = answerEl?.offsetHeight || 0;
+        const answerHeight = answerEl?.scrollHeight || answerEl?.offsetHeight || 0;
         const fullCardHeight = buttonHeight + answerHeight + 4;
 
-        const headerOffset = 70; // safe clearance below sticky navbar
+        const stickyHeader = document.querySelector('header');
+        const headerBottom = stickyHeader ? stickyHeader.getBoundingClientRect().bottom : 56;
+        const headerOffset = headerBottom + 12;
         const bottomPadding = 24;
 
-        // If card is already fully visible within the viewport, do not scroll (avoids jitter/jump)
+        // Account for any collapsing FAQ card above so target position stays accurate on Android & desktop
+        const projectedTop = rect.top - collapseShiftAbove;
+
         const isFullyInView =
-          rect.top >= headerOffset &&
-          rect.top + fullCardHeight <= window.innerHeight - bottomPadding;
+          projectedTop >= headerOffset &&
+          projectedTop + fullCardHeight <= window.innerHeight - bottomPadding;
 
         if (!isFullyInView) {
-          // Gently glide down to center so the user's eye can comfortably adjust
           const currentScrollY = window.scrollY;
-          const cardCenterY = currentScrollY + rect.top + fullCardHeight / 2;
+          const cardCenterY = currentScrollY + projectedTop + fullCardHeight / 2;
           const targetScrollY = cardCenterY - window.innerHeight / 2;
-          const maxScrollToClearHeader = currentScrollY + rect.top - headerOffset;
+          const maxScrollToClearHeader = currentScrollY + projectedTop - headerOffset;
           const targetY = Math.min(targetScrollY, maxScrollToClearHeader);
-          const maxDocScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const maxDocScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
           const clampedY = Math.max(0, Math.min(targetY, maxDocScroll));
 
-          smoothScrollTo(clampedY, 550);
+          smoothScrollTo(clampedY, shouldReduceMotion, 0.55);
         }
-      }, 40);
+      }, 32);
     }
   };
 
@@ -264,45 +349,59 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="py-10 sm:py-16 md:py-20 px-4 sm:px-6 border-b-3 border-ink relative overflow-hidden bg-gradient-to-b from-canvas via-[#FAF6E9] to-[#F5EEDD]">
         <div className="max-w-5xl mx-auto text-center space-y-5 sm:space-y-6">
 
-          {/* Main Hero Headline */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.06] text-ink uppercase font-sans break-words max-w-4xl mx-auto">
-            Enterprise SQL for Modern Data Analysts.
-          </h1>
+          {/* Hero Heading, Copy & Primary Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={HERO_ENTRANCE_TRANSITION}
+            className="space-y-5 sm:space-y-6"
+          >
+            {/* Main Hero Headline */}
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.06] text-ink uppercase font-sans break-words max-w-4xl mx-auto">
+              Enterprise SQL for Modern Data Analysts.
+            </h1>
 
-          {/* Subheadline */}
-          <p className="text-base sm:text-xl text-ink-muted max-w-3xl mx-auto leading-relaxed px-1">
-            Master the advanced analytical SQL used in <strong className="text-ink font-bold">Snowflake, BigQuery, and Databricks</strong>. 
-            {' '}{EXERCISES.length} interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>—zero cloud bills, zero setup, and native Python data stack portability.
-          </p>
+            {/* Subheadline */}
+            <p className="text-base sm:text-xl text-ink-muted max-w-3xl mx-auto leading-relaxed px-1">
+              Master the advanced analytical SQL used in <strong className="text-ink font-bold">Snowflake, BigQuery, and Databricks</strong>. 
+              {' '}{EXERCISES.length} interactive exercises powered by real <span className="font-bold text-ink underline decoration-duck decoration-4">DuckDB-Wasm</span>—zero cloud bills, zero setup, and native Python data stack portability.
+            </p>
 
-          {/* Primary Action Buttons */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
-            <button
-              onClick={() => onStartLearning()}
-              className="px-6 sm:px-8 py-3.5 sm:py-4 bg-duck text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Start Learning Free</span>
-              <ArrowRight size={18} />
-            </button>
-            {onOpenPlayground && (
+            {/* Primary Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
               <button
-                onClick={() => onOpenPlayground?.()}
-                className="px-5 sm:px-6 py-3.5 sm:py-4 bg-white text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                onClick={() => onStartLearning()}
+                className="px-6 sm:px-8 py-3.5 sm:py-4 bg-duck text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-hover hover:shadow-brutal-lg active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Zap size={18} className="fill-duck" />
-                <span>Open SQL Playground</span>
+                <span>Start Learning Free</span>
+                <ArrowRight size={18} />
               </button>
-            )}
-            <a
-              href="#syllabus"
-              className="px-5 sm:px-6 py-3.5 sm:py-4 bg-surface-card text-ink font-bold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-surface-muted active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center"
-            >
-              Browse 18 Modules
-            </a>
-          </div>
+              {onOpenPlayground && (
+                <button
+                  onClick={() => onOpenPlayground?.()}
+                  className="px-5 sm:px-6 py-3.5 sm:py-4 bg-white text-ink font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-duck-light active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Zap size={18} className="fill-duck" />
+                  <span>Open SQL Playground</span>
+                </button>
+              )}
+              <a
+                href="#syllabus"
+                className="px-5 sm:px-6 py-3.5 sm:py-4 bg-surface-card text-ink font-bold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-surface-muted active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center"
+              >
+                Browse 18 Modules
+              </a>
+            </div>
+          </motion.div>
 
           {/* Dual Pillar Value Grid (Enterprise Cloud + Python Analyst) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto mt-6 text-left">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto mt-6 text-left"
+          >
             {/* Pillar 1: Enterprise Cloud Warehouse */}
             <div className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal flex flex-col justify-between">
               <div>
@@ -380,10 +479,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span>Replace 20 lines of pandas wrangling with declarative SQL</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Proof Strip */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono text-ink-muted">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="pt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono text-ink-muted"
+          >
             <span className="flex items-center gap-1.5">
               <Zap size={14} className="text-amber-500 fill-amber-400" /> Multi-threaded WASM
             </span>
@@ -399,11 +504,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <span className="flex items-center gap-1.5">
               <CheckCircle2 size={14} className="text-ink" /> {EXERCISES.length} Interactive Challenges
             </span>
-          </div>
+          </motion.div>
         </div>
 
         {/* Live Interactive Hero Sandbox with Single Formatted Query & Syntax Colors */}
-        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={REVEAL_VIEWPORT}
+          transition={getScrollRevealTransition()}
+          className="max-w-3xl mx-auto mt-8 sm:mt-12 border-3 border-ink bg-code-bg shadow-brutal text-left overflow-hidden"
+        >
           
           {/* Top Bar with window controls */}
           <div className="px-3 sm:px-4 py-2.5 bg-[#1E293B] border-b-2 border-code-border flex items-center justify-between text-white text-xs select-none gap-2">
@@ -483,59 +594,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </table>
             </div>
           )}
-        </div>
+        </motion.div>
       </section>
 
       {/* Feature Value Props */}
       <section className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-surface-card">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="text-center max-w-xl mx-auto mb-8 sm:mb-12"
+          >
             <span className="text-xs font-bold uppercase font-mono tracking-wider text-duck-dark bg-duck/20 px-2.5 py-1 border border-duck-dark">
               Why learn with DuckDB?
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-3">
               The Analytical SQL Stack of the Future
             </h2>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
-              <div>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
-                  01
+            {VALUE_PROPS.map((item, idx) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: revealOffsetY }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={REVEAL_VIEWPORT}
+                transition={getScrollRevealTransition(isPhone ? 0 : idx * 0.1)}
+                className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
+                    {item.step}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-xs text-ink-muted leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Modern SQL Dialect</h3>
-                <p className="text-xs text-ink-muted leading-relaxed">
-                  Learn modern dialect syntax like <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">GROUP BY ALL</code>,{' '}
-                  <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">SELECT * EXCLUDE</code>, and{' '}
-                  <code className="bg-white px-1 py-0.5 border border-ink text-ink font-mono font-bold">QUALIFY</code> that modern data teams use daily.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
-              <div>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
-                  02
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Instant Wasm Sandbox</h3>
-                <p className="text-xs text-ink-muted leading-relaxed">
-                  No remote servers or spin-up delays. DuckDB executes in a background Web Worker right inside your browser, completing queries in milliseconds.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-6 border-3 border-ink bg-canvas shadow-brutal flex flex-col justify-between">
-              <div>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-duck border-2 border-ink flex items-center justify-center font-bold text-base sm:text-lg mb-3 sm:mb-4">
-                  03
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Interview-Grade Challenges</h3>
-                <p className="text-xs text-ink-muted leading-relaxed">
-                  Progress through {EXERCISES.length} exercises across realistic store, corporate, and academic schemas, culminating in retention cohorts and ranking challenges.
-                </p>
-              </div>
-            </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -543,7 +643,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Curriculum Syllabus Section */}
       <section id="syllabus" className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-canvas">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4"
+          >
             <div>
               <span className="text-xs font-bold uppercase font-mono tracking-wider text-duck-dark bg-duck/20 px-2.5 py-1 border border-duck-dark">
                 Curriculum Map
@@ -552,25 +658,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 18 Structured Modules • {EXERCISES.length} Exercises
               </h2>
             </div>
-            <button
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              transition={FEEDBACK_TRANSITION}
               onClick={() => onStartLearning()}
-              className="w-full sm:w-auto px-4 py-2.5 bg-duck font-bold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 bg-duck font-bold text-xs sm:text-sm border-2 border-ink shadow-brutal hover:bg-duck-hover transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Start from Module 1</span>
               <ArrowRight size={14} />
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={TALL_REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4"
+          >
             {MODULES.map((mod, index) => {
               const modExercises = EXERCISES.filter(e => e.module === mod.id);
               const hasDuckDb = modExercises.some(e => e.isDuckDbFeature);
 
               return (
-                <div
+                <motion.div
                   key={mod.id}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  transition={FEEDBACK_TRANSITION}
                   onClick={() => onStartLearning(modExercises[0]?.id)}
-                  className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal hover:shadow-brutal-lg hover:border-black cursor-pointer group transition-all flex flex-col justify-between"
+                  className="p-4 sm:p-5 border-3 border-ink bg-surface-card shadow-brutal hover:shadow-brutal-lg hover:border-black cursor-pointer group transition-[box-shadow,border-color] flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -601,87 +720,124 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-10 sm:py-16 px-4 sm:px-6 border-b-3 border-ink bg-surface-card">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 sm:mb-10">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="text-center mb-8 sm:mb-10"
+          >
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Frequently Asked Questions
             </h2>
             <p className="text-xs text-ink-muted mt-1">
               Everything you need to know about the platform.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-3">
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="space-y-3"
+          >
             {FAQS.map((faq, idx) => {
               const isOpen = openFaq === idx;
 
               return (
                 <div
                   key={idx}
-                  className="border-2 border-ink bg-canvas scroll-mt-24 scroll-mb-6 transition-all"
+                  ref={el => {
+                    faqCardRefs.current[idx] = el;
+                  }}
+                  className="border-2 border-ink bg-canvas scroll-mt-24 scroll-mb-6"
                 >
-                  <button
+                  <motion.button
                     type="button"
+                    aria-expanded={isOpen}
+                    whileHover={{ opacity: 0.9 }}
+                    whileTap={{ opacity: 0.8 }}
+                    transition={FEEDBACK_TRANSITION}
                     onClick={e => handleToggleFaq(idx, e)}
-                    className="w-full text-left p-3.5 sm:p-4 font-bold text-xs sm:text-sm flex items-center justify-between hover:bg-duck-light/60 transition-colors select-none cursor-pointer"
+                    className="w-full text-left p-3.5 sm:p-4 font-bold text-xs sm:text-sm flex items-center justify-between hover:bg-duck-light/60 active:bg-duck-light transition-colors select-none cursor-pointer"
                   >
                     <span className="pr-2 leading-snug">{faq.q}</span>
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform duration-300 shrink-0 ml-1 ${
-                        isOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows,opacity] duration-350 ease-in-out ${
-                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                    }`}
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: EFFECTS_EASE }}
+                      className="shrink-0 ml-1 inline-flex items-center justify-center"
+                    >
+                      <ChevronDown size={16} />
+                    </motion.span>
+                  </motion.button>
+                  <motion.div
+                    data-faq-body
+                    initial={false}
+                    animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                    transition={{ duration: 0.35, ease: EFFECTS_EASE }}
+                    className="overflow-hidden"
+                    aria-hidden={!isOpen}
                   >
-                    <div className="overflow-hidden">
-                      <div
-                        data-faq-answer
-                        className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans"
-                      >
-                        {faq.a}
-                      </div>
+                    <div
+                      data-faq-answer
+                      className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs text-ink-muted leading-relaxed border-t border-ink/10 pt-2 font-sans"
+                    >
+                      {faq.a}
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Final Call to Action */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 bg-duck text-center border-b-3 border-ink">
         <div className="max-w-xl mx-auto space-y-4 flex flex-col items-center">
-          <img src="/logo.svg" alt="Learn DuckDB" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-ink uppercase">
-            Start Writing DuckDB SQL Today
-          </h2>
-          <p className="text-xs sm:text-sm font-bold text-ink/80">
-            No signup. No configuration. Runs completely in your browser.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={() => onStartLearning()}
-              className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-ink text-white font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-slate-800 active:translate-x-1 active:translate-y-1 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Start Learning Free</span>
-              <ArrowRight size={18} />
-            </button>
-          </div>
+          <motion.img
+            src="/logo.svg"
+            alt="Learn DuckDB"
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: revealOffsetY }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={REVEAL_VIEWPORT}
+            transition={getScrollRevealTransition()}
+            className="space-y-4"
+          >
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-ink uppercase">
+              Start Writing DuckDB SQL Today
+            </h2>
+            <p className="text-xs sm:text-sm font-bold text-ink/80">
+              No signup. No configuration. Runs completely in your browser.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => onStartLearning()}
+                className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-ink text-white font-extrabold text-sm sm:text-base border-3 border-ink shadow-brutal hover:bg-slate-800 active:translate-x-1 active:translate-y-1 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Start Learning Free</span>
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </motion.div>
         </div>
       </section>
 

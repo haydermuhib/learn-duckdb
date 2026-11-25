@@ -1,0 +1,4 @@
+- Restrained Framer Motion entrance reveals and interaction feedback across landing sections
+- Smooth Framer Motion FAQ accordion and Android edge-to-edge header clearance when centering items
+- Smooth Framer Motion single-accordion expansion and accurate top alignment in the studio syllabus sidebar
+- Native prefers-reduced-motion accessibility support across app views

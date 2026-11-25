@@ -71,7 +71,19 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x android/gradlew
 
+      - name: Decode Release Keystore (if configured)
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$RELEASE_KEYSTORE_BASE64" ]; then
+            printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          fi
+
       - name: Build Android Release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew assembleRelease --stacktrace
@@ -80,7 +92,10 @@ jobs:
         run: |
           APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           if [ ! -f "$APK_PATH" ]; then
-            echo "::error::APK was not found at $APK_PATH"
+            APK_PATH="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          fi
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::APK was not found in android/app/build/outputs/apk/release/"
             exit 1
           fi
           SIZE=$(stat -c%s "$APK_PATH")
@@ -97,13 +112,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LearnDuckDB-Android-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/apk/release/app-release*.apk
           if-no-files-found: error
           retention-days: 30
 
       - name: Prepare Release APK Asset
         if: startsWith(github.ref, 'refs/tags/v')
-        run: cp android/app/build/outputs/apk/release/app-release.apk learn-duckdb-${{ github.ref_name }}.apk
+        run: |
+          APK=$(ls android/app/build/outputs/apk/release/app-release*.apk | head -n 1)
+          cp "$APK" "learn-duckdb-${{ github.ref_name }}.apk"
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')

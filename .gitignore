@@ -44,8 +44,10 @@ scratch/
 
 # Android & Keystores (private keys & local config)
 *.jks
+*.keystore
 *.keystore.private
 *.local.keystore
+release.keystore
 local.properties
 .gradle/
 

@@ -24,17 +24,19 @@ android {
     signingConfigs {
         release {
             def keystoreFile = file("release.keystore")
-            if (keystoreFile.exists()) {
+            if (keystoreFile.exists() && System.getenv("KEYSTORE_PASSWORD")) {
                 storeFile keystoreFile
-                storePassword System.getenv("KEYSTORE_PASSWORD") ?: "learnduckdb_release_2026"
-                keyAlias System.getenv("KEY_ALIAS") ?: "learnduckdb"
-                keyPassword System.getenv("KEY_PASSWORD") ?: "learnduckdb_release_2026"
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
             }
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

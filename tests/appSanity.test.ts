@@ -197,5 +197,18 @@ describe('Application Sanity & Health Checks', () => {
       const cheatContent = fs.readFileSync(cheatSheetPath, 'utf8');
       expect(cheatContent).toContain('v2.1.1 Reference');
     });
+
+    it('should render active views directly without hidden visitedViews white-screen regression', () => {
+      const appPath = path.join(rootDir, 'src/App.tsx');
+      expect(fs.existsSync(appPath)).toBe(true);
+
+      const appContent = fs.readFileSync(appPath, 'utf8');
+      expect(appContent).not.toContain('visitedViews');
+      expect(appContent).not.toContain('opacity-0 invisible');
+      expect(appContent).toContain("view === 'landing'");
+      expect(appContent).toContain("view === 'studio'");
+      expect(appContent).toContain("view === 'playground'");
+      expect(appContent).toContain("hasVisitedCheatSheet");
+    });
   });
 });

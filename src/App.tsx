@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig, motion } from 'framer-motion';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudioLayout } from './components/studio/StudioLayout';
 import { PlaygroundLayout } from './components/playground/PlaygroundLayout';
 import { CheatSheetPage } from './components/cheatsheet/CheatSheetPage';
+
+const VIEW_TRANSITION = { duration: 0.2, delay: 0, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] };
 
 export type AppView = 'landing' | 'studio' | 'playground' | 'cheatsheet';
 
@@ -24,43 +26,22 @@ export function App() {
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
   const [returnToCheatSheet, setReturnToCheatSheet] = useState(false);
 
-  const [visitedViews, setVisitedViews] = useState<Set<AppView>>(() => {
-    const initial = new Set<AppView>();
+  const [hasVisitedCheatSheet, setHasVisitedCheatSheet] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet') {
-        initial.add('cheatsheet');
-      } else if (window.location.hash === '#playground') {
-        initial.add('playground');
-      } else if (window.location.hash === '#studio') {
-        initial.add('studio');
-      } else {
-        initial.add('landing');
-      }
-    } else {
-      initial.add('landing');
+      return window.location.hash === '#cheatsheet' || window.location.hash === '#cheat-sheet';
     }
 
-    return initial;
+    return false;
   });
 
   const cheatSheetScrollRef = useRef<number>(0);
 
-  // Track visited views to keep layouts warm in memory
-  useEffect(() => {
-    setVisitedViews(prev => {
-      if (prev.has(view)) return prev;
-      const next = new Set(prev);
-      next.add(view);
-
-      return next;
-    });
-  }, [view]);
-
-  // Sync hash and history changes (handles mobile swipe back and browser back/forward)
+  // Sync hash changes
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
       if (hash === '#cheatsheet' || hash === '#cheat-sheet') {
+        setHasVisitedCheatSheet(true);
         setView('cheatsheet');
         requestAnimationFrame(() => {
           if (cheatSheetScrollRef.current > 0) {
@@ -71,26 +52,15 @@ export function App() {
         setView('playground');
       } else if (hash === '#studio') {
         setView('studio');
-      } else {
-        // Any hash other than specific sub-modes (including #syllabus or empty) goes back home
+      } else if (!hash || hash === '#') {
         setView('landing');
       }
     };
 
-    // If loaded directly at a subview, seed a root history entry so Android back gesture returns home instead of closing
-    if (window.location.hash && window.location.hash !== '#' && window.history.length <= 1) {
-      window.history.replaceState({ view: 'landing' }, '', window.location.pathname);
-      window.history.pushState({ view }, '', window.location.hash);
-    }
-
     window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener('popstate', handleHashChange);
 
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('popstate', handleHashChange);
-    };
-  }, [view]);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const handleStartLearning = (exerciseId?: string) => {
     setSelectedExerciseId(exerciseId);
@@ -116,6 +86,7 @@ export function App() {
   };
 
   const handleBackToCheatSheet = () => {
+    setHasVisitedCheatSheet(true);
     setView('cheatsheet');
     window.location.hash = '#cheatsheet';
     setReturnToCheatSheet(false);
@@ -125,6 +96,7 @@ export function App() {
   };
 
   const handleOpenCheatSheet = () => {
+    setHasVisitedCheatSheet(true);
     setView('cheatsheet');
     window.location.hash = '#cheatsheet';
     setReturnToCheatSheet(false);
@@ -139,29 +111,20 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-canvas text-ink selection:bg-duck selection:text-ink relative">
-        {visitedViews.has('landing') && (
-          <div
-            className={`transition-opacity duration-200 ease-out ${
-              view === 'landing'
-                ? 'opacity-100 visible relative z-10'
-                : 'opacity-0 invisible pointer-events-none absolute inset-0 max-h-screen overflow-hidden -z-10'
-            }`}
-          >
-            <LandingPage
-              onStartLearning={handleStartLearning}
-              onOpenPlayground={handleOpenPlayground}
-              onOpenCheatSheet={handleOpenCheatSheet}
-            />
-          </div>
+      <div className="min-h-screen bg-canvas text-ink selection:bg-duck selection:text-ink">
+        {view === 'landing' && (
+          <LandingPage
+            onStartLearning={handleStartLearning}
+            onOpenPlayground={handleOpenPlayground}
+            onOpenCheatSheet={handleOpenCheatSheet}
+          />
         )}
-        {visitedViews.has('studio') && (
-          <div
-            className={`transition-opacity duration-200 ease-out ${
-              view === 'studio'
-                ? 'opacity-100 visible relative z-10'
-                : 'opacity-0 invisible pointer-events-none absolute inset-0 max-h-screen overflow-hidden -z-10'
-            }`}
+        {view === 'studio' && (
+          <motion.div
+            key="studio"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={VIEW_TRANSITION}
           >
             <StudioLayout
               onBackToLanding={handleBackToLanding}
@@ -169,15 +132,14 @@ export function App() {
               onSwitchToPlayground={handleOpenPlayground}
               onSwitchToCheatSheet={handleOpenCheatSheet}
             />
-          </div>
+          </motion.div>
         )}
-        {visitedViews.has('playground') && (
-          <div
-            className={`transition-opacity duration-200 ease-out ${
-              view === 'playground'
-                ? 'opacity-100 visible relative z-10'
-                : 'opacity-0 invisible pointer-events-none absolute inset-0 max-h-screen overflow-hidden -z-10'
-            }`}
+        {view === 'playground' && (
+          <motion.div
+            key="playground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={VIEW_TRANSITION}
           >
             <PlaygroundLayout
               onBackToLanding={handleBackToLanding}
@@ -185,22 +147,20 @@ export function App() {
               onOpenCheatSheet={returnToCheatSheet ? handleBackToCheatSheet : handleOpenCheatSheet}
               initialQuery={playgroundInitialQuery}
             />
-          </div>
+          </motion.div>
         )}
-        {visitedViews.has('cheatsheet') && (
-          <div
-            className={`transition-opacity duration-200 ease-out ${
-              view === 'cheatsheet'
-                ? 'opacity-100 visible relative z-10'
-                : 'opacity-0 invisible pointer-events-none absolute inset-0 max-h-screen overflow-hidden -z-10'
-            }`}
+        {hasVisitedCheatSheet && (
+          <motion.div
+            animate={{ opacity: view === 'cheatsheet' ? 1 : 0 }}
+            transition={VIEW_TRANSITION}
+            style={{ display: view === 'cheatsheet' ? 'block' : 'none' }}
           >
             <CheatSheetPage
               onBackToHome={handleBackToLanding}
               onOpenPlayground={(query) => handleOpenPlayground(query, true)}
               onStartLearning={() => handleStartLearning()}
             />
-          </div>
+          </motion.div>
         )}
       </div>
     </MotionConfig>

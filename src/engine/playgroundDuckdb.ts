@@ -363,10 +363,11 @@ export async function executePlaygroundQuery(
     }
   }
 
-  const { columns, rows } = extractArrowTable(arrowResult);
+  const { columns, rows, columnTypes } = extractArrowTable(arrowResult);
 
   return {
     columns,
+    columnTypes,
     rows,
     executionTimeMs,
     rowCount: rows.length,

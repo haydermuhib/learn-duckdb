@@ -79,6 +79,16 @@ describe('Application Sanity & Health Checks', () => {
       const content = fs.readFileSync(nodeVersionPath, 'utf8').trim();
       expect(content.startsWith('22')).toBe(true);
     });
+
+    it('should configure MainActivity with OnBackPressedCallback to navigate webview back on Android swipe back', () => {
+      const mainActivityPath = path.join(rootDir, 'android/app/src/main/java/app/learnduckdb/MainActivity.java');
+      expect(fs.existsSync(mainActivityPath)).toBe(true);
+
+      const content = fs.readFileSync(mainActivityPath, 'utf8');
+      expect(content).toContain('getOnBackPressedDispatcher().addCallback');
+      expect(content).toContain('bridge.getWebView().canGoBack()');
+      expect(content).toContain('bridge.getWebView().goBack()');
+    });
   });
 
   describe('Web Entry & Mobile Meta Sanity', () => {
@@ -146,6 +156,24 @@ describe('Application Sanity & Health Checks', () => {
       expect(DEFAULT_DATASET_FILENAME).toBe('ecommerce_sales.csv');
       expect(DEFAULT_DATASET_CSV.length).toBeGreaterThan(100);
       expect(DEFAULT_DATASET_CSV).toContain('order_id,order_timestamp');
+    });
+  });
+
+  describe('Navigation & UI Interaction Sanity', () => {
+    it('should configure ModeSwitcher with instance-scoped layoutId for smooth active tab pill animation without cross-layout collision', () => {
+      const modeSwitcherPath = path.join(rootDir, 'src/components/common/ModeSwitcher.tsx');
+      expect(fs.existsSync(modeSwitcherPath)).toBe(true);
+
+      const content = fs.readFileSync(modeSwitcherPath, 'utf8');
+      expect(content).toContain('layoutId={`activeModePill-${instanceId}`}');
+    });
+
+    it('should configure CurriculumSidebar with consistent container.scrollBy on module toggle', () => {
+      const sidebarPath = path.join(rootDir, 'src/components/studio/CurriculumSidebar.tsx');
+      expect(fs.existsSync(sidebarPath)).toBe(true);
+
+      const content = fs.readFileSync(sidebarPath, 'utf8');
+      expect(content).toContain('container.scrollBy');
     });
   });
 });

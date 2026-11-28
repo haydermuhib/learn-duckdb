@@ -1,0 +1,59 @@
+[
+  {
+    "order": {
+      "created_at": "2026-06-01T09:20:48.953678+00:00",
+      "processed_at": "2026-06-01T09:20:48.953678+00:00",
+      "financial_status": "paid",
+      "fulfillment_status": "fulfilled",
+      "customer": {
+        "first_name": "Jordan",
+        "last_name": "Williams",
+        "email": "jordan.williams1083@example.com"
+      },
+      "billing_address": {
+        "first_name": "Jordan",
+        "last_name": "Williams",
+        "address1": "1620 Main Street",
+        "city": "Seattle",
+        "province": "Washington",
+        "country": "United States",
+        "zip": "98101"
+      },
+      "shipping_address": {
+        "first_name": "Jordan",
+        "last_name": "Williams",
+        "address1": "1620 Main Street",
+        "city": "Seattle",
+        "province": "Washington",
+        "country": "United States",
+        "zip": "98101"
+      },
+      "line_items": [
+        {
+          "variant_id": 69254412009666,
+          "quantity": 1,
+          "price": "10.0"
+        },
+        {
+          "variant_id": 69254412042434,
+          "quantity": 1,
+          "price": "25.0"
+        },
+        {
+          "variant_id": 69254412370114,
+          "quantity": 1,
+          "price": "2629.95"
+        }
+      ],
+      "tags": "segment_regular, transit_days_5",
+      "test": true,
+      "transactions": [
+        {
+          "kind": "sale",
+          "status": "success",
+          "amount": "2664.95"
+        }
+      ]
+    }
+  }
+]

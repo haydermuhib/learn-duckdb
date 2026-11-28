@@ -160,12 +160,12 @@ describe('Application Sanity & Health Checks', () => {
   });
 
   describe('Navigation & UI Interaction Sanity', () => {
-    it('should configure ModeSwitcher with instance-scoped layoutId for smooth active tab pill animation without cross-layout collision', () => {
+    it('should configure ModeSwitcher for instant mode selection with the active brutalist indicator', () => {
       const modeSwitcherPath = path.join(rootDir, 'src/components/common/ModeSwitcher.tsx');
       expect(fs.existsSync(modeSwitcherPath)).toBe(true);
 
       const content = fs.readFileSync(modeSwitcherPath, 'utf8');
-      expect(content).toContain('layoutId={`activeModePill-${instanceId}`}');
+      expect(content).toContain('bg-duck text-ink border border-ink shadow-brutal-xs font-black cursor-default');
     });
 
     it('should configure CurriculumSidebar with consistent container.scrollBy on module toggle', () => {

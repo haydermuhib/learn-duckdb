@@ -11,6 +11,7 @@ import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { DialectCompatibility } from './DialectCompatibility';
 import { ModeSwitcher } from '../common/ModeSwitcher';
+import logoUrl from '../../assets/logo.svg';
 import { BookOpen, Sparkles, ArrowLeft, RefreshCw, ChevronRight, ChevronLeft, HelpCircle, Keyboard, Zap, RotateCcw, AlertTriangle } from 'lucide-react';
 
 interface StudioLayoutProps {
@@ -670,7 +671,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
               >
                 <div className="flex items-center justify-between border-b border-ink/20 pb-2">
                   <div className="flex items-center gap-2">
-                    <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 object-contain shrink-0" />
+                    <img src={logoUrl} alt="Learn DuckDB" className="w-5 h-5 object-contain shrink-0" />
                     <span className="font-mono text-xs font-bold text-ink-muted uppercase">
                       Exercise {currentIndex + 1} of {EXERCISES.length}
                     </span>

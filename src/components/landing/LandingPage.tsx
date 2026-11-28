@@ -6,6 +6,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import { executeQuery, QueryResult } from '../../engine/duckdb';
 import { SnowflakeIcon, PythonIcon, BuyMeACoffeeIcon, renderParityBadge } from '../common/BrandIcons';
+import logoUrl from '../../assets/logo.svg';
 import {
   ArrowRight,
   Sparkles,
@@ -296,10 +297,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <header className="border-b-3 border-ink bg-surface-card sticky top-0 z-30 shadow-brutal-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <img src="/logo.svg" alt="Learn DuckDB" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
+            <img src={logoUrl} alt="Learn DuckDB" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
             <span className="font-extrabold text-base sm:text-xl tracking-tight">Learn Duckdb</span>
             <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-mono font-bold bg-duck px-1.5 sm:px-2 py-0.5 border border-ink ml-0.5">
-              v2.1.0 WASM
+              v2.1.1 WASM
             </span>
           </div>
 
@@ -807,7 +808,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="py-12 sm:py-16 px-4 sm:px-6 bg-duck text-center border-b-3 border-ink">
         <div className="max-w-xl mx-auto space-y-4 flex flex-col items-center">
           <motion.img
-            src="/logo.svg"
+            src={logoUrl}
             alt="Learn DuckDB"
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}

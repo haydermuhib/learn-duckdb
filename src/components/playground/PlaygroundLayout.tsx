@@ -16,6 +16,7 @@ import { PlaygroundSchemaExplorer } from './PlaygroundSchemaExplorer';
 import { KeyboardShortcutsModal } from '../studio/KeyboardShortcutsModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { ModeSwitcher } from '../common/ModeSwitcher';
+import logoUrl from '../../assets/logo.svg';
 import { BuyMeACoffeeIcon } from '../common/BrandIcons';
 import {
   ArrowLeft,
@@ -252,7 +253,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
 
         {/* Center Title (Hidden on mobile & tablet where space is limited, absolutely centered on desktop) */}
         <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 sm:gap-2 text-center pointer-events-none z-0">
-          <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
+          <img src={logoUrl} alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
           <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
             DuckDB Playground
           </span>

@@ -175,5 +175,27 @@ describe('Application Sanity & Health Checks', () => {
       const content = fs.readFileSync(sidebarPath, 'utf8');
       expect(content).toContain('container.scrollBy');
     });
+
+    it('should bundle logo via asset imports without hardcoded domain-absolute /logo.svg in components', () => {
+      const logoAssetPath = path.join(rootDir, 'src/assets/logo.svg');
+      expect(fs.existsSync(logoAssetPath)).toBe(true);
+
+      const landingPath = path.join(rootDir, 'src/components/landing/LandingPage.tsx');
+      const cheatSheetPath = path.join(rootDir, 'src/components/cheatsheet/CheatSheetPage.tsx');
+      const playgroundPath = path.join(rootDir, 'src/components/playground/PlaygroundLayout.tsx');
+      const studioPath = path.join(rootDir, 'src/components/studio/StudioLayout.tsx');
+
+      for (const p of [landingPath, cheatSheetPath, playgroundPath, studioPath]) {
+        const fileContent = fs.readFileSync(p, 'utf8');
+        expect(fileContent).not.toContain('src="/logo.svg"');
+        expect(fileContent).toContain('logoUrl');
+      }
+
+      const landingContent = fs.readFileSync(landingPath, 'utf8');
+      expect(landingContent).toContain('v2.1.1 WASM');
+
+      const cheatContent = fs.readFileSync(cheatSheetPath, 'utf8');
+      expect(cheatContent).toContain('v2.1.1 Reference');
+    });
   });
 });

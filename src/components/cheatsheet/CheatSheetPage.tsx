@@ -21,6 +21,7 @@ import {
   renderParityBadge,
 } from '../common/BrandIcons';
 import { ModeSwitcher } from '../common/ModeSwitcher';
+import logoUrl from '../../assets/logo.svg';
 import { SqlCodeBlock } from '../common/SqlCodeBlock';
 import {
   Search,
@@ -236,12 +237,12 @@ export const CheatSheetPage: React.FC<CheatSheetPageProps> = ({
 
         {/* Center Title (Hidden on mobile & tablet where space is limited, absolutely centered on desktop) */}
         <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 sm:gap-2 text-center pointer-events-none z-0">
-          <img src="/logo.svg" alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
+          <img src={logoUrl} alt="Learn DuckDB" className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" />
           <span className="font-extrabold text-xs sm:text-sm tracking-tight uppercase truncate">
             DuckDB Cheat Sheet
           </span>
           <span className="hidden sm:inline-block text-[10px] bg-duck px-1.5 py-0.2 font-mono font-bold border border-ink">
-            v2.1.0 Reference
+            v2.1.1 Reference
           </span>
         </div>
 

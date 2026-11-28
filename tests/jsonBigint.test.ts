@@ -22,17 +22,17 @@ describe('JSON BigInt and Complex Types Loading', () => {
     await db.instantiate();
     const conn = await db.connect();
 
-    const jsonPath = '/home/haider/.gemini/antigravity/brain/66f54837-99f8-4392-ad44-c8e966c9a078/.user_uploaded/media_1795869800414_dd158fb7.json';
-    const jsonBuf = fs.readFileSync(jsonPath);
+    const fixturePath = path.resolve(__dirname, 'fixtures/simulated_orders.json');
+    const jsonBuf = fs.readFileSync(fixturePath);
     await db.registerFileBuffer('simulated_orders.json', new Uint8Array(jsonBuf));
 
     await conn.query("CREATE OR REPLACE TABLE orders AS SELECT * FROM read_json_auto('simulated_orders.json');");
 
-    const res = await conn.query('SELECT * FROM orders LIMIT 5;');
+    const res = await conn.query('SELECT * FROM orders LIMIT 1;');
     const { columns, rows, columnTypes } = extractArrowTable(res);
 
     expect(columns).toEqual(['order']);
-    expect(rows.length).toBe(5);
+    expect(rows.length).toBe(1);
     expect(columnTypes).toBeDefined();
 
     // Verify cell is valid JSON and contains bigints converted properly

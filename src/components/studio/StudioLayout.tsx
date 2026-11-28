@@ -117,6 +117,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
 
   // Sync editor SQL when switching exercises
   useEffect(() => {
+    if (initialExerciseId) {
+      setCurrentId(initialExerciseId);
+    }
+  }, [initialExerciseId]);
+
+  useEffect(() => {
     setEditorSql(drafts[currentExercise.id] || '');
     setQueryResult(null);
     setFeedback(null);

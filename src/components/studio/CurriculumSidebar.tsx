@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, animate, useReducedMotion, type AnimationPlaybackControls } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { MODULES, EXERCISES } from '../../data/curriculum';
 import {
   BookOpen,
@@ -45,70 +45,7 @@ const EFFECTS_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const FEEDBACK_TRANSITION = { duration: 0.25, delay: 0, ease: EFFECTS_EASE };
 
-function animateContainerScroll(
-  container: HTMLElement,
-  rawTargetTop: number,
-  reduceMotion: boolean,
-  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>
-): void {
-  if (activeAnimRef.current) {
-    activeAnimRef.current.stop();
-    activeAnimRef.current = null;
-  }
 
-  const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
-  const clampedTarget = Math.max(0, Math.min(rawTargetTop, maxScrollTop));
-  const startTop = container.scrollTop;
-
-  if (Math.abs(clampedTarget - startTop) < 2) return;
-
-  if (reduceMotion) {
-    container.scrollTop = clampedTarget;
-
-    return;
-  }
-
-  activeAnimRef.current = animate(startTop, clampedTarget, {
-    duration: 0.45,
-    ease: EFFECTS_EASE,
-    onUpdate: latest => {
-      container.scrollTop = latest;
-    },
-    onComplete: () => {
-      activeAnimRef.current = null;
-    },
-  });
-}
-
-function scrollChildToTop(
-  container: HTMLElement,
-  target: HTMLElement,
-  collapseShiftAbove: number,
-  reduceMotion: boolean,
-  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>,
-  padding = 8
-): void {
-  const targetRect = target.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  const projectedOffset = targetRect.top - containerRect.top - padding - collapseShiftAbove;
-
-  animateContainerScroll(container, container.scrollTop + projectedOffset, reduceMotion, activeAnimRef);
-}
-
-function scrollChildToCenter(
-  container: HTMLElement,
-  target: HTMLElement,
-  reduceMotion: boolean,
-  activeAnimRef: React.MutableRefObject<AnimationPlaybackControls | null>
-): void {
-  const targetRect = target.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  const targetCenter = targetRect.top + targetRect.height / 2;
-  const containerCenter = containerRect.top + containerRect.height / 2;
-  const offset = targetCenter - containerCenter;
-
-  animateContainerScroll(container, container.scrollTop + offset, reduceMotion, activeAnimRef);
-}
 
 interface CurriculumSidebarProps {
   currentExerciseId: string;
@@ -146,7 +83,6 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeExerciseRef = useRef<HTMLElement | null>(null);
   const moduleCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const scrollAnimRef = useRef<AnimationPlaybackControls | null>(null);
   const activeExerciseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const moduleAccordionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -179,8 +115,17 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
 
       if (!activeEl || !container) return;
 
-      scrollChildToCenter(container, activeEl, shouldReduceMotion, scrollAnimRef);
-    }, 320);
+      const containerRect = container.getBoundingClientRect();
+      const activeRect = activeEl.getBoundingClientRect();
+      const targetCenter = activeRect.top + activeRect.height / 2;
+      const containerCenter = containerRect.top + containerRect.height / 2;
+      const offset = targetCenter - containerCenter;
+
+      container.scrollBy({
+        top: offset,
+        behavior: shouldReduceMotion ? 'auto' : 'smooth',
+      });
+    }, 280);
 
     return () => {
       if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
@@ -188,30 +133,8 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   }, [isOpen, currentExerciseId, shouldReduceMotion]);
 
   useEffect(() => {
-    const container = scrollContainerRef.current;
-
-    const handleUserInterrupt = () => {
-      if (scrollAnimRef.current) {
-        scrollAnimRef.current.stop();
-        scrollAnimRef.current = null;
-      }
-    };
-
-    if (container) {
-      container.addEventListener('wheel', handleUserInterrupt, { passive: true });
-      container.addEventListener('touchmove', handleUserInterrupt, { passive: true });
-    }
-
     return () => {
-      if (container) {
-        container.removeEventListener('wheel', handleUserInterrupt);
-        container.removeEventListener('touchmove', handleUserInterrupt);
-      }
-
-      handleUserInterrupt();
-
       if (activeExerciseTimerRef.current) clearTimeout(activeExerciseTimerRef.current);
-
       if (moduleAccordionTimerRef.current) clearTimeout(moduleAccordionTimerRef.current);
     };
   }, []);
@@ -219,37 +142,27 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   const toggleModule = (modId: string, modEl?: HTMLElement | null) => {
     const isOpening = !expandedModules[modId];
 
-    let collapseShiftAbove = 0;
-
-    if (isOpening && modEl) {
-      for (const [otherId, wasExpanded] of Object.entries(expandedModules)) {
-        if (!wasExpanded || otherId === modId) continue;
-
-        const otherCard = moduleCardRefs.current[otherId];
-
-        if (otherCard && (otherCard.compareDocumentPosition(modEl) & Node.DOCUMENT_POSITION_FOLLOWING)) {
-          const otherBody = otherCard.querySelector<HTMLElement>('[data-module-body]');
-
-          if (otherBody) {
-            collapseShiftAbove += otherBody.getBoundingClientRect().height;
-          }
-        }
-      }
-    }
-
     // Single accordion: opening one module collapses all others
     setExpandedModules(isOpening ? { [modId]: true } : {});
 
-    if (isOpening && modEl) {
+    if (isOpening) {
       if (moduleAccordionTimerRef.current) clearTimeout(moduleAccordionTimerRef.current);
 
       moduleAccordionTimerRef.current = setTimeout(() => {
         const container = scrollContainerRef.current;
+        const targetEl = moduleCardRefs.current[modId] || modEl;
 
-        if (!container) return;
+        if (!container || !targetEl) return;
 
-        scrollChildToTop(container, modEl, collapseShiftAbove, shouldReduceMotion, scrollAnimRef, 8);
-      }, 32);
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+        const offset = targetRect.top - containerRect.top - 8;
+
+        container.scrollBy({
+          top: offset,
+          behavior: shouldReduceMotion ? 'auto' : 'smooth',
+        });
+      }, 50);
     }
   };
 

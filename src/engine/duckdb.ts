@@ -6,6 +6,7 @@ import { DATABASES } from '../data/databases';
 
 export interface QueryResult {
   columns: string[];
+  columnTypes?: string[];
   rows: any[][];
   executionTimeMs: number;
   rowCount: number;
@@ -153,10 +154,93 @@ export async function loadDatabaseTables(conn: duckdb.AsyncDuckDBConnection, dbN
   }
 }
 
-export function extractArrowTable(arrowTable: any): { columns: string[]; rows: any[][] } {
+export function formatArrowType(type: any): string {
+  if (!type) return 'UNKNOWN';
+  const str = String(type);
+  if (str.startsWith('Int8') || str.startsWith('Int16') || str.startsWith('Int32')) return 'INT';
+  if (str.startsWith('Int64') || str.startsWith('Uint64') || str.startsWith('HugeInt') || str.startsWith('Int128')) return 'BIGINT';
+  if (str.startsWith('Float32')) return 'FLOAT';
+  if (str.startsWith('Float64')) return 'DOUBLE';
+  if (str.startsWith('Utf8') || str.startsWith('LargeUtf8')) return 'VARCHAR';
+  if (str.startsWith('Bool')) return 'BOOLEAN';
+  if (str.startsWith('Date')) return 'DATE';
+  if (str.startsWith('Timestamp')) return 'TIMESTAMP';
+  if (str.startsWith('Time')) return 'TIME';
+  if (str.startsWith('Decimal')) return 'DECIMAL';
+  if (str.startsWith('Struct')) return 'STRUCT';
+  if (str.startsWith('List') || str.startsWith('FixedSizeList')) return 'LIST';
+  if (str.startsWith('Map')) return 'MAP';
+  if (str.startsWith('Binary') || str.startsWith('LargeBinary')) return 'BLOB';
+  return str;
+}
+
+export function formatBigIntValue(val: bigint): number | string {
+  if (val <= BigInt(Number.MAX_SAFE_INTEGER) && val >= BigInt(Number.MIN_SAFE_INTEGER)) {
+    return Number(val);
+  }
+  return val.toString();
+}
+
+export function arrowValueToNative(val: any): any {
+  if (val === null || val === undefined) {
+    return null;
+  }
+  if (typeof val === 'bigint') {
+    return formatBigIntValue(val);
+  }
+  if (typeof val === 'number' || typeof val === 'string' || typeof val === 'boolean') {
+    return val;
+  }
+  if (val instanceof Date) {
+    return val.toISOString().replace('T', ' ').substring(0, 19);
+  }
+  if (val instanceof Uint8Array) {
+    return '\\x' + Array.from(val).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  if (typeof val.toJSON === 'function') {
+    try {
+      const json = val.toJSON();
+      return arrowValueToNative(json);
+    } catch {
+      // Fall through to other checks
+    }
+  }
+  if (Array.isArray(val)) {
+    return val.map(arrowValueToNative);
+  }
+  if (typeof val.toArray === 'function') {
+    try {
+      return Array.from(val.toArray()).map(arrowValueToNative);
+    } catch {
+      // Fall through
+    }
+  }
+  if (typeof val[Symbol.iterator] === 'function' && typeof val !== 'string') {
+    try {
+      const items: any[] = [];
+      for (const item of val) {
+        items.push(arrowValueToNative(item));
+      }
+      return items;
+    } catch {
+      // Fall through
+    }
+  }
+  if (typeof val === 'object') {
+    const res: Record<string, any> = {};
+    for (const [k, v] of Object.entries(val)) {
+      res[k] = arrowValueToNative(v);
+    }
+    return res;
+  }
+  return String(val);
+}
+
+export function extractArrowTable(arrowTable: any): { columns: string[]; rows: any[][]; columnTypes: string[] } {
   const numCols = arrowTable.numCols;
   const numRows = arrowTable.numRows;
   const columns = arrowTable.schema.fields.map((f: any) => f.name);
+  const columnTypes = arrowTable.schema.fields.map((f: any) => formatArrowType(f.type));
 
   const children: any[] = [];
   const colTypes: { isDate: boolean; isTimestamp: boolean; isDecimal: boolean; scale: number }[] = [];
@@ -198,18 +282,30 @@ export function extractArrowTable(arrowTable: any): { columns: string[]; rows: a
           const fractionalPart = padded.slice(padded.length - scale);
           val = Number((isNegative ? '-' : '') + integerPart + '.' + fractionalPart);
         } else {
-          val = Number(unscaledStr);
+          try {
+            const b = BigInt(unscaledStr);
+            if (b <= BigInt(Number.MAX_SAFE_INTEGER) && b >= BigInt(Number.MIN_SAFE_INTEGER)) {
+              val = Number(unscaledStr);
+            } else {
+              val = unscaledStr;
+            }
+          } catch {
+            val = Number(unscaledStr);
+          }
         }
       } else if (typeof val === 'bigint') {
-        val = Number(val);
+        val = formatBigIntValue(val);
       } else if (colTypes[c]?.isDate) {
         val = new Date(val).toISOString().substring(0, 10);
       } else if (colTypes[c]?.isTimestamp) {
-        val = new Date(val).toISOString().replace('T', ' ').substring(0, 19);
+        val = new Date(Number(val)).toISOString().replace('T', ' ').substring(0, 19);
       } else if (val instanceof Date) {
         val = val.toISOString().replace('T', ' ').substring(0, 19);
       } else if (typeof val === 'object' && val !== null) {
-        val = JSON.stringify(val);
+        const nativeVal = arrowValueToNative(val);
+        val = typeof nativeVal === 'object' && nativeVal !== null
+          ? JSON.stringify(nativeVal, (_, v) => (typeof v === 'bigint' ? v.toString() : v))
+          : nativeVal;
       }
 
       rowArr.push(val);
@@ -218,7 +314,7 @@ export function extractArrowTable(arrowTable: any): { columns: string[]; rows: a
     rows.push(rowArr);
   }
 
-  return { columns, rows };
+  return { columns, rows, columnTypes };
 }
 
 export async function executeQuery(sql: string): Promise<QueryResult> {
@@ -229,10 +325,11 @@ export async function executeQuery(sql: string): Promise<QueryResult> {
   const endTime = performance.now();
   const executionTimeMs = Math.round((endTime - startTime) * 100) / 100;
 
-  const { columns, rows } = extractArrowTable(arrowTable);
+  const { columns, rows, columnTypes } = extractArrowTable(arrowTable);
 
   return {
     columns,
+    columnTypes,
     rows,
     executionTimeMs,
     rowCount: rows.length,
